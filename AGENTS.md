@@ -12,7 +12,7 @@
 - **Use DIKW as the reasoning ladder.** Move from Data → Information → Knowledge → Wisdom; do not jump from raw observations or metrics directly to recommendations.
 - **Keep evidence and judgment separate.** Fact ≠ interpretation ≠ hypothesis ≠ recommendation. State which is which.
 - **No unsupported causal claims.** Association, segmentation, or observed differences do not establish causation.
-- **Preserve scope and safety.** Do not modify unrelated work. Never expose, copy, or commit secrets or private material.
+- **Preserve scope and safety.** Do not modify unrelated work. Never expose or commit secrets or private material. Keep approved local runtime secrets untracked.
 - **No unauthorized repository mutation.** Do not commit, push, reset, delete, rename, force-update, or perform other destructive Git/repository actions without Data's explicit approval.
 - **Keep execution and reporting bounded.** Follow only the authorized task. Do not restate repository governance, expand into future work, or produce unnecessary implementation/reporting detail. Report only what is needed to review the result, validation, material risks, and repository state.
 - **Keep validation proportional.** Use only checks that materially protect the current task; do not add ritual Git, test, tool, skill, or reporting steps without a concrete reason.

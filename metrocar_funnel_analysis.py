@@ -30,16 +30,18 @@
 #
 # ### ⚠️ Watch Out
 #
-# `METROCAR_DATABASE_URL` is loaded from the approved external `.env` before
-# this file runs. Its value is never displayed or written into this repository.
+# `load_dotenv()` reads the approved local `.env`. Its credential value remains
+# untracked and is never displayed.
 
 # %%
 import os
 
 import pandas as pd
 import sqlalchemy as sa
+from dotenv import load_dotenv
 
 
+load_dotenv()
 metrocar_url = os.environ["METROCAR_DATABASE_URL"]
 # The raw URL requests psycopg2; this environment uses the installed Psycopg 3.
 metrocar_url = metrocar_url.replace(
