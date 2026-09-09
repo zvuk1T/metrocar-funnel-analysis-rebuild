@@ -67,9 +67,14 @@ Keep fact, interpretation, hypothesis, and recommendation distinct.
 
 ### 📚 DataCamp Reference
 
-Optional. Add only when the technique is non-obvious or worth revisiting.
+Optional for obvious code. For non-obvious code, identify:
 
-Point to the relevant official DataCamp course/chapter/concept instead of re-teaching the lesson in the Metrocar file.
+- the official course;
+- chapter;
+- lesson/concept; and
+- a direct official lesson link when practical.
+
+Do not invent a more precise reference than the source supports.
 
 ### 🧑‍💼 Recruiter Check
 
