@@ -14,4 +14,6 @@
 - **No unsupported causal claims.** Association, segmentation, or observed differences do not establish causation.
 - **Preserve scope and safety.** Do not modify unrelated work. Never expose, copy, or commit secrets or private material.
 - **No unauthorized repository mutation.** Do not commit, push, reset, delete, rename, force-update, or perform other destructive Git/repository actions without Data's explicit approval.
+- **Keep execution and reporting bounded.** Follow only the authorized task. Do not restate repository governance, expand into future work, or produce unnecessary implementation/reporting detail. Report only what is needed to review the result, validation, material risks, and repository state.
+- **Keep validation proportional.** Use only checks that materially protect the current task; do not add ritual Git, test, tool, skill, or reporting steps without a concrete reason.
 - **STOP when complexity becomes disproportionate.** If the implementation becomes harder to explain than the analytical problem requires, stop and return to the simpler design.
