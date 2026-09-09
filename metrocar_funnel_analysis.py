@@ -43,10 +43,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 metrocar_url = os.environ["METROCAR_DATABASE_URL"]
-# The raw URL requests psycopg2; this environment uses the installed Psycopg 3.
-metrocar_url = metrocar_url.replace(
-    "postgresql://", "postgresql+psycopg://", 1
-)
 engine = sa.create_engine(metrocar_url)
 connection = engine.connect()
 
@@ -91,13 +87,6 @@ app_downloads_preview
 # ### 📚 DataCamp Reference
 #
 # **Course:** Introduction to Databases in Python
-#
-# - **Chapter 1 — Basics of Relational Databases:**
-#   [Connecting to your database](https://campus.datacamp.com/courses/introduction-to-relational-databases-in-python/basics-of-relational-databases?ex=3)
-#   and [Engines and connection strings](https://campus.datacamp.com/courses/introduction-to-relational-databases-in-python/basics-of-relational-databases?ex=4)
-# - **Chapter 2 — Applying Filtering, Ordering and Grouping to Queries:**
-#   [Connecting to a PostgreSQL database](https://campus.datacamp.com/courses/introduction-to-relational-databases-in-python/applying-filtering-ordering-and-grouping-to-queries?ex=2)
-#   and [ResultsSets and pandas DataFrames](https://campus.datacamp.com/courses/introduction-to-relational-databases-in-python/applying-filtering-ordering-and-grouping-to-queries?ex=15)
 #
 # ### 🧑‍💼 Recruiter Check
 #

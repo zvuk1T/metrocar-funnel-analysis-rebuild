@@ -67,12 +67,9 @@ Keep fact, interpretation, hypothesis, and recommendation distinct.
 
 ### 📚 DataCamp Reference
 
-Optional for obvious code. For non-obvious code, identify:
+Optional for obvious code. For non-obvious code, normally identify only the relevant official DataCamp course.
 
-- the official course;
-- chapter;
-- lesson/concept; and
-- a direct official lesson link when practical.
+Add chapter, lesson/concept, or direct official lesson link details only when they materially help learning.
 
 Do not invent a more precise reference than the source supports.
 
