@@ -1026,3 +1026,213 @@ signup_to_request_dropoff
 #
 # </details>
 # endregion
+# region Constructing the Customer Funnel — First Learning Slice
+# %% [markdown]
+# # Constructing the Customer Funnel
+#
+# ## Learning Slice 1A: Does every signup link to a recorded app download?
+#
+# ### 🎯 Goal — What & Why
+#
+# Validate the full signup-to-download relationship before using it in a
+# customer funnel. This separates relationship integrity from funnel behavior.
+#
+# ### 🗺️ Mental Model
+#
+# ```text
+# app_downloads: one row/download, unique app_download_key
+#                                ↑ membership check
+# signups:       one row/user,    session_id
+#                                ↓
+#                    one match result/signup row
+# ```
+#
+# ### ⚠️ Watch Out
+#
+# A missing relationship would be an integrity exception, not automatically a
+# customer drop-off.
+
+# %%
+# .isin() returns one Boolean match result for every signup row
+signup_has_download_match = signup_identifiers["session_id"].isin(
+    app_download_keys["app_download_key"]
+)
+
+matched_signup_records = int(signup_has_download_match.sum())
+unmatched_signup_records = int((~signup_has_download_match).sum())
+
+signup_download_integrity = pd.DataFrame(
+    [
+        {
+            "total_signup_records": total_signup_rows,
+            "matched_signup_records": matched_signup_records,
+            "unmatched_signup_records": unmatched_signup_records,
+        }
+    ]
+)
+signup_download_integrity
+
+# %% [markdown]
+# ### ✅ Result
+#
+# All 17,623 signup records matched an `app_download_key`; 0 signup records were
+# unmatched.
+#
+# ### 🧠 What We Learned
+#
+# The observed signup table has complete link coverage to `app_downloads`.
+# This validates relationship integrity only; it is not a conversion or
+# drop-off calculation.
+#
+# ### 📚 DataCamp Reference
+#
+# **Course:** Joining Data with pandas
+#
+# ### 🧑‍💼 Recruiter Check
+#
+# **Question:** Why test every signup-to-download link before building the funnel?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# A complete link check shows whether the tables connect as expected. Missing
+# links would first be integrity exceptions, not evidence of customer drop-off.
+#
+# </details>
+
+# %% [markdown]
+# ## Learning Slice 1B: How can ride activity become one state row per user?
+#
+# ### 🎯 Goal — What & Why
+#
+# Reduce repeated ride requests to one row per requesting `user_id`, with
+# Boolean columns showing whether that user requested and completed at least
+# one ride.
+#
+# ### 🗺️ Mental Model
+#
+# ```text
+# ride_requests:          one row/ride request
+#        │ one-to-one merge on ride_id
+#        ↓
+# ride activity:          one row/ride request + completion state
+#        │ group by user_id and ask .any()
+#        ↓
+# requesting user state:  one row/requesting user
+# ```
+#
+# ### ⚠️ Watch Out
+#
+# The request and completion DataFrames were loaded separately, so their rows
+# must be joined by `ride_id` rather than assumed to be in the same order.
+
+# %%
+# validate="one_to_one" rejects duplicate ride IDs that could multiply rows
+ride_activity = ride_requests[["ride_id", "user_id"]].merge(
+    ride_completion_fields[["ride_id", "pickup_ts", "dropoff_ts"]],
+    on="ride_id",
+    how="left",
+    validate="one_to_one",
+    indicator="_completion_fields_match",
+)
+
+# Every input row is a request; completion requires both ride timestamps
+ride_activity["ride_requested"] = True
+ride_activity["completed_ride"] = (
+    ride_activity["pickup_ts"].notna()
+    & ride_activity["dropoff_ts"].notna()
+)
+
+completed_ride_records_after_join = int(
+    ride_activity["completed_ride"].sum()
+)
+
+ride_activity_validation = {
+    "input_ride_request_rows": len(ride_requests),
+    "output_ride_activity_rows": len(ride_activity),
+    "distinct_output_ride_ids": ride_activity["ride_id"].nunique(),
+    "unmatched_completion_rows": int(
+        (ride_activity["_completion_fields_match"] != "both").sum()
+    ),
+    "completed_ride_records": completed_ride_records_after_join,
+    "matches_q04_completed_rides": (
+        completed_ride_records_after_join == completed_rides
+    ),
+}
+ride_activity_validation
+
+# %%
+# .any() means that at least one ride row for the user has a True value
+requesting_user_ride_state = (
+    ride_activity.groupby("user_id", as_index=False)
+    .agg(
+        requested_at_least_one_ride=("ride_requested", "any"),
+        completed_at_least_one_ride=("completed_ride", "any"),
+    )
+)
+requesting_user_ride_state.head()
+
+# %%
+completed_without_request = int(
+    (
+        requesting_user_ride_state["completed_at_least_one_ride"]
+        & ~requesting_user_ride_state["requested_at_least_one_ride"]
+    ).sum()
+)
+users_completed_at_least_one_ride = int(
+    requesting_user_ride_state["completed_at_least_one_ride"].sum()
+)
+
+requesting_user_state_validation = {
+    "ride_rows_with_missing_user_id": missing_request_user_ids,
+    "distinct_requesting_user_ids": distinct_requesting_users,
+    "user_state_rows": len(requesting_user_ride_state),
+    "rows_match_distinct_requesting_users": (
+        len(requesting_user_ride_state) == distinct_requesting_users
+    ),
+    "user_id_is_unique": (
+        not requesting_user_ride_state["user_id"].duplicated().any()
+    ),
+    "all_requested_flags_are_true": bool(
+        requesting_user_ride_state["requested_at_least_one_ride"].all()
+    ),
+    "completed_without_request": completed_without_request,
+    "users_completed_at_least_one_ride": users_completed_at_least_one_ride,
+}
+requesting_user_state_validation
+
+# %% [markdown]
+# ### ✅ Result
+#
+# The `ride_id` merge preserved 385,477 ride-request rows and 385,477 distinct
+# ride IDs without multiplication. The same pickup-and-drop-off rule identified
+# 223,652 completed ride records, matching Q04.
+#
+# The user-state output has 12,406 rows — one for each distinct requesting
+# `user_id` — and `user_id` is unique. Every requested flag is `True`, and no
+# completed flag is `True` without a requested flag. In this observed output,
+# 6,233 users completed at least one ride.
+#
+# ### 🧠 What We Learned
+#
+# Grouping Boolean ride states with `.any()` changes the grain from many ride
+# requests per user to one row per requesting user while retaining stage
+# attainment.
+#
+# ### 📚 DataCamp Reference
+#
+# **Course:** Data Manipulation with pandas
+#
+# ### 🧑‍💼 Recruiter Check
+#
+# **Question:** Why use `.any()` when reducing ride rows to user state?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# `.any()` returns `True` when at least one ride row for that user meets the
+# condition. It therefore represents “at least one” without counting the user
+# more than once.
+#
+# </details>
+# endregion
