@@ -1236,3 +1236,265 @@ requesting_user_state_validation
 #
 # </details>
 # endregion
+# region Constructing the Customer Funnel — Download-Anchored Base Table
+# %% [markdown]
+# ## Learning Slice 2: How can we build one state row per app download?
+#
+# ### 🎯 Goal — What & Why
+#
+# Keep every recorded app download as the base population, then attach signup
+# and ride-stage state without changing the one-row-per-download grain.
+#
+# ### 📐 Input and Output Grain
+#
+# - `signups`: one row per registered `user_id`
+# - `requesting_user_ride_state`: one row per requesting `user_id`
+# - `app_downloads`: one row per `app_download_key`
+# - output: one row per `app_download_key`
+#
+# ### 🗺️ Mental Model
+#
+# ```text
+# signups (17,623 rows)
+#   LEFT JOIN requesting-user state on user_id
+#         ↓
+# enriched signups (17,623 rows)
+#
+# app downloads (23,608 rows)
+#   LEFT JOIN enriched signups on app_download_key = session_id
+#         ↓
+# download-anchored base (23,608 rows)
+# ```
+#
+# ### ⚠️ Watch Out
+#
+# Join the reduced user-state table, not raw ride rows. Repeated ride rows
+# would multiply signup and download records.
+
+# %%
+ride_stage_columns = [
+    "requested_at_least_one_ride",
+    "completed_at_least_one_ride",
+]
+
+# Both inputs have one row per user, so the signup grain must remain unchanged
+signup_funnel_state = signup_identifiers[["user_id", "session_id"]].merge(
+    requesting_user_ride_state,
+    on="user_id",
+    how="left",
+    validate="one_to_one",
+    indicator="_ride_state_match",
+)
+
+signup_without_ride_state = (
+    signup_funnel_state["_ride_state_match"] == "left_only"
+)
+
+# No ride-state match means this signed-up user did not request or complete a ride
+signup_funnel_state[ride_stage_columns] = (
+    signup_funnel_state[ride_stage_columns]
+    .fillna(False)
+    .astype(bool)
+)
+
+signup_ride_state_join_validation = {
+    "input_signup_rows": total_signup_rows,
+    "output_signup_rows": len(signup_funnel_state),
+    "signup_rows_added_by_join": (
+        len(signup_funnel_state) - total_signup_rows
+    ),
+    "distinct_output_user_ids": (
+        signup_funnel_state["user_id"].nunique()
+    ),
+    "user_id_is_unique": (
+        not signup_funnel_state["user_id"].duplicated().any()
+    ),
+    "absent_requested_flags_are_false": bool(
+        (
+            ~signup_funnel_state.loc[
+                signup_without_ride_state,
+                "requested_at_least_one_ride",
+            ]
+        ).all()
+    ),
+    "absent_completed_flags_are_false": bool(
+        (
+            ~signup_funnel_state.loc[
+                signup_without_ride_state,
+                "completed_at_least_one_ride",
+            ]
+        ).all()
+    ),
+}
+signup_ride_state_join_validation
+
+# %%
+# Downloads stay on the left so every app_download_key remains in the base
+downloads_with_signup_state = app_download_keys[["app_download_key"]].merge(
+    signup_funnel_state[
+        [
+            "session_id",
+            "user_id",
+            "requested_at_least_one_ride",
+            "completed_at_least_one_ride",
+        ]
+    ],
+    left_on="app_download_key",
+    right_on="session_id",
+    how="left",
+    validate="one_to_one",
+    indicator="_signup_match",
+)
+
+downloads_with_signup_state["downloaded"] = True
+downloads_with_signup_state["signed_up"] = (
+    downloads_with_signup_state["_signup_match"] == "both"
+)
+
+# Downloads without a signup have no later user-stage membership
+downloads_with_signup_state[ride_stage_columns] = (
+    downloads_with_signup_state[ride_stage_columns]
+    .fillna(False)
+    .astype(bool)
+)
+
+base_funnel_columns = [
+    "app_download_key",
+    "user_id",
+    "downloaded",
+    "signed_up",
+    "requested_at_least_one_ride",
+    "completed_at_least_one_ride",
+]
+
+download_anchored_funnel_base = downloads_with_signup_state[
+    base_funnel_columns
+].copy()
+download_anchored_funnel_base.head()
+
+# %%
+downloaded_count = int(
+    download_anchored_funnel_base["downloaded"].sum()
+)
+signed_up_count = int(
+    download_anchored_funnel_base["signed_up"].sum()
+)
+requested_user_count = int(
+    download_anchored_funnel_base[
+        "requested_at_least_one_ride"
+    ].sum()
+)
+completed_user_count = int(
+    download_anchored_funnel_base[
+        "completed_at_least_one_ride"
+    ].sum()
+)
+
+download_anchored_base_validation = {
+    "input_download_rows": total_app_download_rows,
+    "output_base_rows": len(download_anchored_funnel_base),
+    "download_rows_added_by_join": (
+        len(download_anchored_funnel_base) - total_app_download_rows
+    ),
+    "distinct_app_download_keys": (
+        download_anchored_funnel_base["app_download_key"].nunique()
+    ),
+    "app_download_key_is_unique": (
+        not download_anchored_funnel_base[
+            "app_download_key"
+        ].duplicated().any()
+    ),
+    "columns_match_required_order": (
+        download_anchored_funnel_base.columns.tolist()
+        == base_funnel_columns
+    ),
+    "missing_stage_flags": int(
+        download_anchored_funnel_base[
+            [
+                "downloaded",
+                "signed_up",
+                "requested_at_least_one_ride",
+                "completed_at_least_one_ride",
+            ]
+        ].isna().sum().sum()
+    ),
+    "all_downloaded_flags_are_true": bool(
+        download_anchored_funnel_base["downloaded"].all()
+    ),
+    "downloaded": downloaded_count,
+    "signed_up": signed_up_count,
+    "requested_at_least_one_ride": requested_user_count,
+    "completed_at_least_one_ride": completed_user_count,
+    "stage_counts_match_accepted_results": (
+        downloaded_count == total_app_download_rows
+        and signed_up_count == registered_users
+        and requested_user_count == distinct_requesting_users
+        and completed_user_count == users_completed_at_least_one_ride
+    ),
+}
+download_anchored_base_validation
+
+# %%
+funnel_nesting_validation = {
+    "completed_true_requested_false": int(
+        (
+            download_anchored_funnel_base[
+                "completed_at_least_one_ride"
+            ]
+            & ~download_anchored_funnel_base[
+                "requested_at_least_one_ride"
+            ]
+        ).sum()
+    ),
+    "requested_true_signed_up_false": int(
+        (
+            download_anchored_funnel_base[
+                "requested_at_least_one_ride"
+            ]
+            & ~download_anchored_funnel_base["signed_up"]
+        ).sum()
+    ),
+    "signed_up_true_downloaded_false": int(
+        (
+            download_anchored_funnel_base["signed_up"]
+            & ~download_anchored_funnel_base["downloaded"]
+        ).sum()
+    ),
+}
+funnel_nesting_validation
+
+# %% [markdown]
+# ### ✅ Result
+#
+# Both left joins preserved their input grains: 17,623 signup rows after the
+# user-state join and 23,608 download rows with 23,608 distinct
+# `app_download_key` values in the final base.
+#
+# The stage flags reconcile to the accepted counts: 23,608 downloaded, 17,623
+# signed up, 12,406 requested at least one ride, and 6,233 completed at least
+# one ride. All three nesting checks returned 0 violations.
+#
+# ### 🧠 What We Learned
+#
+# Reducing ride activity before joining lets the source tables become one
+# cumulative state row per download without duplicating the base population.
+# Missing later-stage values become `False` only after their join meaning is
+# established.
+#
+# ### 📚 DataCamp Reference
+#
+# **Course:** Joining Data with pandas
+#
+# ### 🧑‍💼 Recruiter Check
+#
+# **Question:** Why must app downloads be the left table in the final join?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# Downloads define the required base grain. A left join retains downloads that
+# never matched a signup, while one-to-one validation prevents row
+# multiplication.
+#
+# </details>
+# endregion
