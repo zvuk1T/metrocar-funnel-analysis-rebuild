@@ -75,9 +75,11 @@ Do not invent a more precise reference than the source supports.
 
 ### 🧑‍💼 Recruiter Check
 
-One realistic recruiter/interview question that also serves as the Learning Check.
+One realistic recruiter/interview question that also serves as the Learning Check, plus a concise model answer.
 
-Data should be able to answer it in his own words before the slice is accepted.
+Hide the answer with `<details><summary>💡 Show answer</summary>...</details>` where the Markdown renderer supports it.
+
+Keep the answer short enough for Data to understand and later explain in his own words before the slice is accepted.
 
 ## Learning Style
 

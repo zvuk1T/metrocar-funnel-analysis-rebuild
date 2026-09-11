@@ -47,6 +47,20 @@ engine = sa.create_engine(metrocar_url)
 connection = engine.connect()
 
 # %% [markdown]
+# ### 🧑‍💼 Recruiter Check
+#
+# **Question:** What is the difference between the database URL, SQLAlchemy engine, and connection?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# The URL describes how to reach the database. The engine manages how SQLAlchemy
+# communicates with it. The connection is the active channel used to execute
+# database operations.
+#
+# </details>
+
+# %% [markdown]
 # ## Verify access and list the source tables
 #
 # ### 🎯 Goal — What & Why
@@ -90,4 +104,13 @@ app_downloads_preview
 #
 # ### 🧑‍💼 Recruiter Check
 #
-# What roles do the URL, engine, connection, inspector, and DataFrame each play?
+# **Question:** What does listing the tables and previewing five rows prove — and what does it not prove?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# It proves that the database is reachable and that pandas can read data. It does
+# not establish table grain, key uniqueness, relationships, data quality, or
+# funnel meaning.
+#
+# </details>
