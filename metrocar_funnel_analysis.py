@@ -192,7 +192,13 @@ app_download_key_check
 #
 # ### 📚 DataCamp Reference
 #
-# **Course:** Introduction to Databases in Python
+# **Course:** Data Manipulation with pandas
+#
+# **Course:** [https://www.datacamp.com/courses/data-manipulation-with-pandas](https://www.datacamp.com/courses/data-manipulation-with-pandas)
+#
+# **Relevant lesson:** Slicing and Indexing DataFrames → Explicit indexes
+#
+# **Lesson:** [https://campus.datacamp.com/courses/data-manipulation-with-pandas/slicing-and-indexing-dataframes?ex=1](https://campus.datacamp.com/courses/data-manipulation-with-pandas/slicing-and-indexing-dataframes?ex=1)
 #
 # ### 🧑‍💼 Recruiter Check
 #
