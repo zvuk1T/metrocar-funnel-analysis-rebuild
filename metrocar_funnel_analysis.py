@@ -1,3 +1,4 @@
+# region 00 — Setup & Database Connection
 # %% [markdown]
 # # Metrocar Funnel Analysis
 #
@@ -115,6 +116,8 @@ app_downloads_preview
 #
 # </details>
 
+# endregion
+# region Q01 — App Downloads
 # %% [markdown]
 # ## Understand the `app_downloads` table grain
 #
@@ -136,6 +139,7 @@ app_downloads_preview
 # must use every row.
 
 # %%
+# .tolist() → convert the column-label Index to a regular Python list
 app_downloads_column_names = app_downloads_preview.columns.tolist()
 app_downloads_column_names
 
@@ -167,7 +171,9 @@ app_download_keys = pd.read_sql(
 )
 
 total_app_download_rows = len(app_download_keys)
+# .nunique() → count distinct key values
 distinct_app_download_keys = app_download_keys["app_download_key"].nunique()
+# .duplicated().any() → check whether any key value repeats
 duplicate_app_download_keys_exist = app_download_keys[
     "app_download_key"
 ].duplicated().any()
@@ -247,6 +253,8 @@ recorded_app_downloads
 #
 # </details>
 
+# endregion
+# region Q02 — Registered Users
 # %% [markdown]
 # ## Understand the `signups` table grain
 #
@@ -351,6 +359,8 @@ registered_users
 #
 # </details>
 
+# endregion
+# region Q03 — Ride Requests
 # %% [markdown]
 # ## Business Question 3: How many ride requests occurred?
 #
@@ -387,6 +397,8 @@ ride_request_column_names
 total_ride_request_rows = len(ride_requests)
 distinct_ride_ids = ride_requests["ride_id"].nunique()
 duplicate_ride_ids_exist = ride_requests["ride_id"].duplicated().any()
+# .isna() → mark missing timestamps so they can be counted
+# int(...) → return the count as a normal Python integer
 missing_request_timestamps = int(ride_requests["request_ts"].isna().sum())
 
 ride_request_grain_check = {
@@ -427,6 +439,8 @@ total_ride_requests
 #
 # </details>
 
+# endregion
+# region Q04 — Requested vs Completed Rides
 # %% [markdown]
 # ## Business Question 4: How many rides were requested versus completed?
 #
@@ -457,11 +471,14 @@ ride_completion_fields = pd.read_sql(
 ride_completion_fields.head()
 
 # %%
+# .notna() → mark rows where each timestamp is present
 pickup_timestamp_present = ride_completion_fields["pickup_ts"].notna()
 dropoff_timestamp_present = ride_completion_fields["dropoff_ts"].notna()
+# & → require both Boolean conditions to be True
 completed_ride_mask = pickup_timestamp_present & dropoff_timestamp_present
 
 completed_rides = int(completed_ride_mask.sum())
+# ~ → invert a Boolean condition, here meaning the timestamp is absent
 pickup_without_dropoff = int(
     (pickup_timestamp_present & ~dropoff_timestamp_present).sum()
 )
@@ -504,6 +521,8 @@ requested_vs_completed
 #
 # </details>
 
+# endregion
+# region Q05 — Requests vs Requesting Users
 # %% [markdown]
 # ## Business Question 5: How do ride requests compare with requesting users?
 #
@@ -549,6 +568,8 @@ ride_requests_vs_users
 #
 # </details>
 
+# endregion
+# region Q06 — Average Ride Duration
 # %% [markdown]
 # ## Business Question 6: What was the average ride duration?
 #
@@ -562,15 +583,18 @@ ride_requests_vs_users
 # duration, and drop-off must not precede pickup.
 
 # %%
-valid_duration_mask = completed_ride_mask & ride_completion_fields[
-    "dropoff_ts"
-].ge(ride_completion_fields["pickup_ts"])
+valid_duration_mask = completed_ride_mask & (
+    ride_completion_fields["dropoff_ts"]
+    >= ride_completion_fields["pickup_ts"]
+)
 
+# .loc[] → select only valid rows and the columns needed for duration
 valid_duration_rides = ride_completion_fields.loc[
     valid_duration_mask,
     ["ride_id", "pickup_ts", "dropoff_ts"],
 ].copy()
 
+# .dt.total_seconds() / 60 → convert time differences to minutes
 valid_duration_rides["duration_minutes"] = (
     valid_duration_rides["dropoff_ts"] - valid_duration_rides["pickup_ts"]
 ).dt.total_seconds() / 60
@@ -578,12 +602,14 @@ valid_duration_rides["duration_minutes"] = (
 invalid_duration_order_count = int(
     (
         completed_ride_mask
-        & ride_completion_fields["dropoff_ts"].lt(
-            ride_completion_fields["pickup_ts"]
+        & (
+            ride_completion_fields["dropoff_ts"]
+            < ride_completion_fields["pickup_ts"]
         )
     ).sum()
 )
 valid_duration_ride_count = len(valid_duration_rides)
+# float(...) and round(..., 2) → return a normal two-decimal Python number
 average_ride_duration_minutes = round(
     float(valid_duration_rides["duration_minutes"].mean()),
     2,
@@ -623,6 +649,8 @@ ride_duration_summary
 #
 # </details>
 
+# endregion
+# region Q07 — Driver Acceptance
 # %% [markdown]
 # ## Business Question 7: How many rides were accepted by a driver?
 #
@@ -681,6 +709,8 @@ ride_acceptance_summary
 #
 # </details>
 
+# endregion
+# region Q08 — Successful Payments
 # %% [markdown]
 # ## Business Question 8: How many successful payments occurred, and how much was collected?
 #
@@ -726,6 +756,7 @@ transaction_grain_check = {
 transaction_grain_check
 
 # %%
+# .value_counts() → count rows in each observed payment status
 transaction_status_counts = transactions["charge_status"].value_counts(
     dropna=False
 )
@@ -733,7 +764,7 @@ transaction_status_counts
 
 # %%
 successful_payments = transactions.loc[
-    transactions["charge_status"].eq("Approved")
+    transactions["charge_status"] == "Approved"
 ]
 successful_payment_count = len(successful_payments)
 missing_successful_payment_amounts = int(
@@ -778,6 +809,8 @@ successful_payment_summary
 #
 # </details>
 
+# endregion
+# region Q09 — Requests by Platform
 # %% [markdown]
 # ## Business Question 9: How were ride requests distributed by platform?
 #
@@ -811,6 +844,10 @@ app_download_platforms = pd.read_sql(
 app_download_platforms.head()
 
 # %%
+# .merge() → attach each request's signup using user_id
+# how="left" → preserve every ride request from the left DataFrame
+# validate="many_to_one" → reject a join that could multiply request rows
+# indicator=... → record whether each request found a signup match
 ride_requests_with_signup = ride_requests[["ride_id", "user_id"]].merge(
     signup_identifiers[["user_id", "session_id"]],
     on="user_id",
@@ -834,10 +871,10 @@ platform_join_check = {
     "after_download_join": len(ride_requests_with_platform),
     "distinct_output_ride_ids": ride_requests_with_platform["ride_id"].nunique(),
     "missing_signup_links": int(
-        ride_requests_with_platform["_signup_match"].ne("both").sum()
+        (ride_requests_with_platform["_signup_match"] != "both").sum()
     ),
     "missing_download_links": int(
-        ride_requests_with_platform["_download_match"].ne("both").sum()
+        (ride_requests_with_platform["_download_match"] != "both").sum()
     ),
     "missing_platforms": int(
         ride_requests_with_platform["platform"].isna().sum()
@@ -849,7 +886,9 @@ platform_join_check
 ride_requests_by_platform = (
     ride_requests_with_platform["platform"]
     .value_counts(dropna=False)
+    # .rename_axis() → name the platform-label index
     .rename_axis("platform")
+    # .reset_index() → turn the indexed counts into DataFrame columns
     .reset_index(name="ride_requests")
 )
 ride_requests_by_platform["share_percent"] = (
@@ -884,6 +923,8 @@ ride_requests_by_platform
 #
 # </details>
 
+# endregion
+# region Q10 — Signup to Ride Request Drop-off
 # %% [markdown]
 # ## Business Question 10: What was the signup-to-ride-request drop-off?
 #
@@ -906,11 +947,14 @@ ride_requests_by_platform
 # Joining raw ride requests would repeat users and corrupt the signup denominator.
 
 # %%
+# .drop_duplicates() → reduce repeated requests to one row per user
 requesting_users = ride_requests[["user_id"]].drop_duplicates()
+# .isin() → check whether each requesting user appears in signups
 requesting_users_without_signup = int(
     (~requesting_users["user_id"].isin(signup_identifiers["user_id"])).sum()
 )
 
+# validate="one_to_one" → require one row per user on both sides
 signup_request_status = signup_identifiers[["user_id"]].merge(
     requesting_users,
     on="user_id",
@@ -918,9 +962,9 @@ signup_request_status = signup_identifiers[["user_id"]].merge(
     validate="one_to_one",
     indicator="_request_match",
 )
-signup_request_status["requested_at_least_one_ride"] = signup_request_status[
-    "_request_match"
-].eq("both")
+signup_request_status["requested_at_least_one_ride"] = (
+    signup_request_status["_request_match"] == "both"
+)
 
 signup_to_request_join_check = {
     "input_signup_rows": total_signup_rows,
@@ -978,3 +1022,4 @@ signup_to_request_dropoff
 # rows and preserves all 17,623 users in the denominator.
 #
 # </details>
+# endregion
