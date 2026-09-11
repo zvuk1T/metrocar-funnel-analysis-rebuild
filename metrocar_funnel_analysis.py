@@ -1724,3 +1724,111 @@ core_funnel_summary_validation
 #
 # </details>
 # endregion
+# region Constructing the Customer Funnel — Adjacent Drop-Off
+# %% [markdown]
+# ## Learning Slice 4: Which adjacent transition is weakest?
+#
+# ### 🎯 Goal — What & Why
+#
+# Use the validated one-row-per-stage summary to add the number of entrants who
+# did not continue from each previous stage and identify the weakest adjacent
+# transition.
+#
+# Percentage drop-off is the relative loss from the previous stage. Absolute
+# drop-off count is the number of entrants who did not continue from it.
+
+# %%
+core_funnel_metrics_before_dropoff_count = core_funnel_summary.copy()
+
+core_funnel_summary["dropoff_count_from_previous"] = (
+    core_funnel_summary["previous_stage_count"]
+    - core_funnel_summary["stage_count"]
+)
+core_funnel_summary
+
+# %%
+previous_stage_labels = core_funnel_summary["stage"].shift(1)
+adjacent_stage_rows = core_funnel_summary.loc[
+    core_funnel_summary["previous_stage_count"].notna()
+]
+
+lowest_conversion_index = adjacent_stage_rows[
+    "percent_of_previous"
+].idxmin()
+highest_dropoff_index = adjacent_stage_rows[
+    "dropoff_from_previous"
+].idxmax()
+
+weakest_transition = (
+    f"{previous_stage_labels.loc[lowest_conversion_index]} → "
+    f"{core_funnel_summary.loc[lowest_conversion_index, 'stage']}"
+)
+
+weakest_transition_result = {
+    "transition": weakest_transition,
+    "percent_of_previous": core_funnel_summary.loc[
+        lowest_conversion_index, "percent_of_previous"
+    ],
+    "dropoff_from_previous": core_funnel_summary.loc[
+        lowest_conversion_index, "dropoff_from_previous"
+    ],
+    "dropoff_count_from_previous": int(
+        core_funnel_summary.loc[
+            lowest_conversion_index,
+            "dropoff_count_from_previous",
+        ]
+    ),
+}
+weakest_transition_result
+
+# %%
+core_funnel_dropoff_validation = {
+    "download_dropoff_count_is_missing": bool(
+        pd.isna(
+            core_funnel_summary.loc[
+                0, "dropoff_count_from_previous"
+            ]
+        )
+    ),
+    "downstream_dropoff_counts_match_expected": (
+        core_funnel_summary.loc[
+            1:, "dropoff_count_from_previous"
+        ].tolist()
+        == [5985.0, 5217.0, 6173.0]
+    ),
+    "lowest_conversion_and_highest_dropoff_match": (
+        lowest_conversion_index == highest_dropoff_index
+    ),
+    "weakest_transition_matches_expected": (
+        weakest_transition
+        == (
+            "Requested at least one ride → "
+            "Completed at least one ride"
+        )
+    ),
+    "weakest_transition_values_match_expected": (
+        weakest_transition_result["percent_of_previous"] == 50.24
+        and weakest_transition_result["dropoff_from_previous"] == 49.76
+        and weakest_transition_result[
+            "dropoff_count_from_previous"
+        ] == 6173
+    ),
+    "existing_stage_counts_and_percentages_are_unchanged": (
+        core_funnel_summary[
+            core_funnel_metrics_before_dropoff_count.columns
+        ].equals(core_funnel_metrics_before_dropoff_count)
+    ),
+}
+core_funnel_dropoff_validation
+
+# %% [markdown]
+# ### ✅ Result
+#
+# ```text
+# Download (23,608) ─74.65%→ Signup (17,623) ─70.40%→ Requested (12,406) ─50.24%→ Completed (6,233)
+# ```
+#
+# `Requested at least one ride → Completed at least one ride` is the weakest
+# adjacent transition in the current core funnel: 50.24% converted from the
+# previous stage, 49.76% dropped off, and the absolute drop-off was 6,173.
+# endregion
