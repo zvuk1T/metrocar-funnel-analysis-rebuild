@@ -1505,3 +1505,222 @@ funnel_nesting_validation
 #
 # </details>
 # endregion
+# region Constructing the Customer Funnel — Four-Stage Summary
+# %% [markdown]
+# ## Learning Slice 3: How many downloads reached each core funnel stage?
+#
+# ### 🎯 Goal — What & Why
+#
+# Turn the validated download-level stage flags into an ordered four-row
+# summary that shows stage membership and two clearly defined percentage views.
+#
+# ### 📐 Input and Output Grain
+#
+# - input: one row per `app_download_key`
+# - output: one row per ordered funnel stage
+#
+# ```text
+# download-level base        four Boolean stage columns
+# one row/app_download_key ── sum each column ──→ one row/funnel stage
+# ```
+#
+# ### 🧮 Metric Meaning
+#
+# Summing a Boolean column counts membership because `True` contributes 1 and
+# `False` contributes 0. `.shift()` moves the preceding row's count beside the
+# current row, providing the previous-stage denominator.
+#
+# `percent_of_previous` compares with the immediately preceding stage.
+# `percent_of_top` compares every stage with the first row, Download. The
+# denominator is part of the metric meaning because it defines the population
+# being used for comparison.
+#
+# ### ⚠️ Watch Out
+#
+# Download has no previous stage in this table, so its previous-stage count,
+# conversion, and drop-off remain missing rather than being invented.
+
+# %%
+funnel_stage_columns = [
+    "downloaded",
+    "signed_up",
+    "requested_at_least_one_ride",
+    "completed_at_least_one_ride",
+]
+
+# True counts as 1 and False as 0 when Boolean columns are summed
+stage_counts_by_flag = (
+    download_anchored_funnel_base[funnel_stage_columns]
+    .sum()
+    .astype(int)
+)
+
+ordered_funnel_stage_labels = [
+    "Download",
+    "Signup",
+    "Requested at least one ride",
+    "Completed at least one ride",
+]
+
+core_funnel_summary = pd.DataFrame(
+    {
+        "stage": ordered_funnel_stage_labels,
+        "stage_count": [
+            int(stage_counts_by_flag["downloaded"]),
+            int(stage_counts_by_flag["signed_up"]),
+            int(
+                stage_counts_by_flag["requested_at_least_one_ride"]
+            ),
+            int(
+                stage_counts_by_flag["completed_at_least_one_ride"]
+            ),
+        ],
+    }
+)
+core_funnel_summary
+
+# %%
+# .shift(1) aligns each stage with the count from the row immediately above it
+core_funnel_summary["previous_stage_count"] = core_funnel_summary[
+    "stage_count"
+].shift(1)
+
+core_funnel_summary["percent_of_previous"] = (
+    core_funnel_summary["stage_count"]
+    / core_funnel_summary["previous_stage_count"]
+    * 100
+)
+core_funnel_summary["dropoff_from_previous"] = (
+    100 - core_funnel_summary["percent_of_previous"]
+)
+
+# Download is the selected top-stage denominator for the full core funnel
+top_stage_count = core_funnel_summary.loc[0, "stage_count"]
+core_funnel_summary["percent_of_top"] = (
+    core_funnel_summary["stage_count"] / top_stage_count * 100
+)
+
+percentage_columns = [
+    "percent_of_previous",
+    "dropoff_from_previous",
+    "percent_of_top",
+]
+# Calculate with full precision first, then round only the displayed metrics
+core_funnel_summary[percentage_columns] = core_funnel_summary[
+    percentage_columns
+].round(2)
+core_funnel_summary
+
+# %%
+accepted_funnel_stage_counts = [
+    downloaded_count,
+    signed_up_count,
+    requested_user_count,
+    completed_user_count,
+]
+
+downstream_percentage_totals = (
+    core_funnel_summary.loc[1:, "percent_of_previous"]
+    + core_funnel_summary.loc[1:, "dropoff_from_previous"]
+)
+
+core_funnel_summary_validation = {
+    "has_exactly_four_stage_rows": (
+        len(core_funnel_summary) == 4
+    ),
+    "stage_order_matches_expected": (
+        core_funnel_summary["stage"].tolist()
+        == ordered_funnel_stage_labels
+    ),
+    "columns_match_expected_order": (
+        core_funnel_summary.columns.tolist()
+        == [
+            "stage",
+            "stage_count",
+            "previous_stage_count",
+            "percent_of_previous",
+            "dropoff_from_previous",
+            "percent_of_top",
+        ]
+    ),
+    "stage_counts_reconcile_to_base": (
+        core_funnel_summary["stage_count"].tolist()
+        == accepted_funnel_stage_counts
+    ),
+    "stage_counts_are_non_increasing": bool(
+        core_funnel_summary["stage_count"].is_monotonic_decreasing
+    ),
+    "previous_stage_counts_align": (
+        core_funnel_summary.loc[1:, "previous_stage_count"].tolist()
+        == core_funnel_summary["stage_count"].iloc[:-1].tolist()
+    ),
+    "first_stage_previous_metrics_are_missing": bool(
+        core_funnel_summary.loc[
+            0,
+            [
+                "previous_stage_count",
+                "percent_of_previous",
+                "dropoff_from_previous",
+            ],
+        ].isna().all()
+    ),
+    "first_stage_percent_of_top_is_100": (
+        core_funnel_summary.loc[0, "percent_of_top"] == 100.00
+    ),
+    "downstream_percentages_sum_to_100": bool(
+        (downstream_percentage_totals.round(2) == 100.00).all()
+    ),
+    "percent_of_previous_matches_expected": (
+        core_funnel_summary.loc[
+            1:, "percent_of_previous"
+        ].tolist()
+        == [74.65, 70.40, 50.24]
+    ),
+    "dropoff_from_previous_matches_expected": (
+        core_funnel_summary.loc[
+            1:, "dropoff_from_previous"
+        ].tolist()
+        == [25.35, 29.60, 49.76]
+    ),
+    "percent_of_top_matches_expected": (
+        core_funnel_summary["percent_of_top"].tolist()
+        == [100.00, 74.65, 52.55, 26.40]
+    ),
+}
+core_funnel_summary_validation
+
+# %% [markdown]
+# ### ✅ Result
+#
+# The summary contains exactly four ordered stage rows. Counts remain 23,608,
+# 17,623, 12,406, and 6,233, and all calculated percentages match the expected
+# two-decimal values.
+#
+# Download has `percent_of_top = 100.00`; its previous-stage count,
+# `percent_of_previous`, and `dropoff_from_previous` remain missing. All
+# downstream percentage/drop-off pairs sum to 100.00 after rounding.
+#
+# ### 🧠 What We Learned
+#
+# The base and summary answer at different grains: one row per download records
+# individual stage state, while one row per stage compares aggregate counts.
+# For Completed, 50.24% of the previous stage and 26.40% of the top stage are
+# both correct because they use different denominators.
+#
+# ### 📚 DataCamp Reference
+#
+# **Course:** Data Manipulation with pandas
+#
+# ### 🧑‍💼 Recruiter Check
+#
+# **Question:** Why can Percent of Previous and Percent of Top differ for the same stage?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# They use different denominators. Percent of Previous compares with the stage
+# immediately above, while Percent of Top compares every stage with all
+# downloads.
+#
+# </details>
+# endregion
