@@ -1832,3 +1832,211 @@ core_funnel_dropoff_validation
 # adjacent transition in the current core funnel: 50.24% converted from the
 # previous stage, 49.76% dropped off, and the absolute drop-off was 6,173.
 # endregion
+# region Insights on the Customer Funnel — Acceptance Diagnostic
+# %% [markdown]
+# # Insights on the Customer Funnel
+# ## Diagnostic 1: Did non-completing requesters ever have an accepted ride?
+#
+# ### 🎯 Goal — What & Why
+#
+# Request → Complete is the weakest adjacent transition in the four-stage core
+# funnel. Acceptance is used here only to describe requesting users who did not
+# complete, not as a fifth funnel stage or an explanation for the drop-off.
+#
+# ### 📐 Input and Output Grain
+#
+# The input has one row per `ride_id`. A one-to-one join attaches `accept_ts`,
+# then `.any()` reduces the ride rows to one row per requesting `user_id` with
+# accepted-at-least-once and completed-at-least-once states.
+#
+# ```text
+# Requesting users who never completed
+# ├─ never accepted
+# └─ accepted ≥1, never completed
+# ```
+
+# %%
+# validate="one_to_one" rejects duplicate ride IDs that could multiply rows
+ride_activity_with_acceptance = ride_activity.merge(
+    ride_acceptance_fields[["ride_id", "accept_ts"]],
+    on="ride_id",
+    how="left",
+    validate="one_to_one",
+    indicator="_acceptance_fields_match",
+)
+
+# Q07 defines an accepted ride as a request with a recorded acceptance time
+ride_activity_with_acceptance["accepted_ride"] = (
+    ride_activity_with_acceptance["accept_ts"].notna()
+)
+accepted_ride_records_after_join = int(
+    ride_activity_with_acceptance["accepted_ride"].sum()
+)
+
+ride_acceptance_join_validation = {
+    "input_ride_rows": len(ride_activity),
+    "output_ride_rows": len(ride_activity_with_acceptance),
+    "distinct_output_ride_ids": (
+        ride_activity_with_acceptance["ride_id"].nunique()
+    ),
+    "unmatched_acceptance_rows": int(
+        (
+            ride_activity_with_acceptance[
+                "_acceptance_fields_match"
+            ]
+            != "both"
+        ).sum()
+    ),
+    "accepted_ride_records": accepted_ride_records_after_join,
+    "accepted_rides_match_q07": (
+        accepted_ride_records_after_join == accepted_rides
+    ),
+}
+ride_acceptance_join_validation
+
+# %%
+# .any() asks whether each user ever reached either recorded ride state
+requesting_user_acceptance_completion_state = (
+    ride_activity_with_acceptance.groupby("user_id", as_index=False)
+    .agg(
+        accepted_at_least_one_ride=("accepted_ride", "any"),
+        completed_at_least_one_ride=("completed_ride", "any"),
+    )
+)
+requesting_user_acceptance_completion_state.head()
+
+# %%
+accepted_requesting_user_count = int(
+    requesting_user_acceptance_completion_state[
+        "accepted_at_least_one_ride"
+    ].sum()
+)
+completed_requesting_user_count = int(
+    requesting_user_acceptance_completion_state[
+        "completed_at_least_one_ride"
+    ].sum()
+)
+
+non_completing_requesters = (
+    requesting_user_acceptance_completion_state.loc[
+        ~requesting_user_acceptance_completion_state[
+            "completed_at_least_one_ride"
+        ]
+    ]
+)
+non_completing_requester_count = len(non_completing_requesters)
+
+never_accepted_non_completer_count = int(
+    (
+        ~non_completing_requesters[
+            "accepted_at_least_one_ride"
+        ]
+    ).sum()
+)
+accepted_non_completer_count = int(
+    non_completing_requesters[
+        "accepted_at_least_one_ride"
+    ].sum()
+)
+
+non_completer_acceptance_split = pd.DataFrame(
+    [
+        {
+            "acceptance_state": "Never had an accepted ride",
+            "user_count": never_accepted_non_completer_count,
+        },
+        {
+            "acceptance_state": (
+                "Had at least one accepted ride but never completed"
+            ),
+            "user_count": accepted_non_completer_count,
+        },
+    ]
+)
+non_completer_acceptance_split[
+    "share_of_non_completing_requesters_pct"
+] = (
+    non_completer_acceptance_split["user_count"]
+    / non_completing_requester_count
+    * 100
+).round(2)
+non_completer_acceptance_split
+
+# %%
+completed_without_acceptance_user_count = int(
+    (
+        requesting_user_acceptance_completion_state[
+            "completed_at_least_one_ride"
+        ]
+        & ~requesting_user_acceptance_completion_state[
+            "accepted_at_least_one_ride"
+        ]
+    ).sum()
+)
+
+acceptance_diagnostic_validation = {
+    "user_state_rows": len(
+        requesting_user_acceptance_completion_state
+    ),
+    "user_state_rows_match_requesting_users": (
+        len(requesting_user_acceptance_completion_state)
+        == distinct_requesting_users
+    ),
+    "user_id_is_unique": (
+        not requesting_user_acceptance_completion_state[
+            "user_id"
+        ].duplicated().any()
+    ),
+    "accepted_at_least_one_users": accepted_requesting_user_count,
+    "completed_at_least_one_users": completed_requesting_user_count,
+    "completed_users_match_existing_state": (
+        completed_requesting_user_count
+        == users_completed_at_least_one_ride
+    ),
+    "non_completing_requesters": non_completing_requester_count,
+    "non_completers_match_core_dropoff": (
+        non_completing_requester_count
+        == weakest_transition_result[
+            "dropoff_count_from_previous"
+        ]
+    ),
+    "split_reconciles_to_non_completers": (
+        non_completer_acceptance_split["user_count"].sum()
+        == non_completing_requester_count
+    ),
+    "split_shares_sum_to_100": (
+        round(
+            float(
+                non_completer_acceptance_split[
+                    "share_of_non_completing_requesters_pct"
+                ].sum()
+            ),
+            2,
+        )
+        == 100.00
+    ),
+    "completed_without_acceptance_users": (
+        completed_without_acceptance_user_count
+    ),
+    "completed_without_acceptance_is_zero": (
+        completed_without_acceptance_user_count == 0
+    ),
+}
+acceptance_diagnostic_validation
+
+# %% [markdown]
+# ### ✅ Result
+#
+# The one-to-one `ride_id` join preserved all 385,477 ride rows, and 248,379
+# accepted ride records still reconcile to Q07. Reducing those rows produced
+# 12,406 unique requesting users: 12,278 had at least one accepted ride, 6,233
+# completed at least one ride, and 6,173 never completed a ride.
+#
+# Among the 6,173 non-completing requesters, 128 (2.07%) never had an accepted
+# ride. The other 6,045 (97.93%) had at least one recorded acceptance somewhere
+# in their ride history and no completed ride. At this user-history grain, zero
+# users with any completed ride had no recorded acceptance.
+#
+# These are observed user states across each user's ride history. They do not
+# show that acceptance causes completion or explain why a user did not complete.
+# endregion
