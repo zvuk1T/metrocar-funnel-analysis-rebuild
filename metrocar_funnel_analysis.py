@@ -1250,7 +1250,10 @@ requesting_user_state_validation
 # - `signups`: one row per registered `user_id`
 # - `requesting_user_ride_state`: one row per requesting `user_id`
 # - `app_downloads`: one row per `app_download_key`
-# - output: one row per `app_download_key`
+# - `download_anchored_funnel_base`: one row per `app_download_key`; this key
+#   defines the grain. `user_id` is a nullable downstream identifier available
+#   only after signup, so a missing `user_id` for a download without signup is
+#   expected and does not change the grain.
 #
 # ### 🗺️ Mental Model
 #
@@ -1277,7 +1280,9 @@ ride_stage_columns = [
     "completed_at_least_one_ride",
 ]
 
-# Both inputs have one row per user, so the signup grain must remain unchanged
+# Both inputs are unique on user_id, but requesting_user_ride_state contains
+# only registered users who requested at least one ride. The LEFT JOIN therefore
+# preserves one row per signup.
 signup_funnel_state = signup_identifiers[["user_id", "session_id"]].merge(
     requesting_user_ride_state,
     on="user_id",
@@ -1480,6 +1485,8 @@ funnel_nesting_validation
 # cumulative state row per download without duplicating the base population.
 # Missing later-stage values become `False` only after their join meaning is
 # established.
+# We intentionally defer platform, age-group, and download-date segmentation
+# until the stage-state base is validated.
 #
 # ### 📚 DataCamp Reference
 #
