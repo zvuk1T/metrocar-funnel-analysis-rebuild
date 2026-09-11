@@ -114,3 +114,95 @@ app_downloads_preview
 # funnel meaning.
 #
 # </details>
+
+# %% [markdown]
+# ## Understand the `app_downloads` table grain
+#
+# ### 🎯 Goal — What & Why
+#
+# Determine what one row represents and whether `app_download_key` uniquely
+# identifies each row before using downloads in a funnel.
+#
+# ### 🗺️ Mental Model
+#
+# ```text
+# one app_downloads row ──?── one download record
+# app_download_key       ──?── unique row identifier
+# ```
+#
+# ### ⚠️ Watch Out
+#
+# A five-row preview shows structure but cannot prove key uniqueness; that check
+# must use every row.
+
+# %%
+app_downloads_column_names = app_downloads_preview.columns.tolist()
+app_downloads_column_names
+
+# %% [markdown]
+# ### 🧑‍💼 Recruiter Check
+#
+# **Question:** What are df.columns and df.index, and what does .tolist() do?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# df.columns is a pandas Index containing the column labels, while df.index is a
+# pandas Index containing the row labels. .tolist() converts either Index into a
+# regular Python list.
+#
+# ```text
+# DataFrame → .columns / .index → pandas Index → .tolist() → Python list
+# ```
+#
+# </details>
+
+# %%
+app_downloads_preview
+
+# %%
+app_download_keys = pd.read_sql(
+    "SELECT app_download_key FROM app_downloads",
+    connection,
+)
+
+total_app_download_rows = len(app_download_keys)
+distinct_app_download_keys = app_download_keys["app_download_key"].nunique()
+duplicate_app_download_keys_exist = app_download_keys[
+    "app_download_key"
+].duplicated().any()
+
+app_download_key_check = {
+    "total_rows": total_app_download_rows,
+    "distinct_app_download_keys": distinct_app_download_keys,
+    "duplicates_exist": duplicate_app_download_keys_exist,
+}
+app_download_key_check
+
+# %% [markdown]
+# ### ✅ Result
+#
+# `app_downloads` has 23,608 rows and 23,608 distinct `app_download_key` values;
+# no duplicate keys were found.
+#
+# ### 🧠 What We Learned
+#
+# The supported table grain is one app download record per row, uniquely
+# identified by `app_download_key`; this does not mean one row per person or device.
+#
+# ### 📚 DataCamp Reference
+#
+# **Course:** Introduction to Databases in Python
+#
+# ### 🧑‍💼 Recruiter Check
+#
+# **Question:** How did you verify that `app_download_key` is unique?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# The full table has 23,608 rows and 23,608 distinct keys, and the duplicate
+# check found no repeats. This supports one keyed download record per row, not
+# one unique person or device.
+#
+# </details>
