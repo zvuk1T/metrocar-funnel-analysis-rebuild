@@ -212,3 +212,141 @@ app_download_key_check
 # one unique person or device.
 #
 # </details>
+
+# %% [markdown]
+# ## Business Question 1: How many times was the app downloaded?
+#
+# ### 🎯 Goal — What & Why
+#
+# Use the verified `app_downloads` grain to count recorded app downloads.
+
+# %%
+recorded_app_downloads = total_app_download_rows
+recorded_app_downloads
+
+# %% [markdown]
+# ### ✅ Result
+#
+# 23,608 recorded app downloads.
+#
+# ### 🧠 What We Learned
+#
+# Counting rows is valid here because one row was verified to represent one
+# keyed download record.
+#
+# ### 🧑‍💼 Recruiter Check
+#
+# **Question:** Why is counting rows a valid way to count app downloads in this table?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# The grain was verified first: each row represents one download record, and
+# `app_download_key` is unique. Therefore, counting rows counts recorded app
+# downloads without counting any key twice.
+#
+# </details>
+
+# %% [markdown]
+# ## Understand the `signups` table grain
+#
+# ### 🎯 Goal — What & Why
+#
+# Verify what one `signups` row represents before counting registered users.
+#
+# ### 🗺️ Mental Model
+#
+# ```text
+# app_downloads.app_download_key
+#               ↓ future link — not tested here
+#       signups.session_id
+#               ↓
+#        signups.user_id
+# ```
+#
+# ### ⚠️ Watch Out
+#
+# A signup row is not automatically a unique user; validate `user_id` first.
+
+# %%
+signups_preview = pd.read_sql(
+    "SELECT * FROM signups LIMIT 5",
+    connection,
+)
+signups_preview
+
+# %%
+signups_column_names = signups_preview.columns.tolist()
+signups_column_names
+
+# %%
+signup_identifiers = pd.read_sql(
+    "SELECT user_id, session_id FROM signups",
+    connection,
+)
+
+total_signup_rows = len(signup_identifiers)
+distinct_signup_user_ids = signup_identifiers["user_id"].nunique()
+duplicate_signup_user_ids_exist = signup_identifiers["user_id"].duplicated().any()
+distinct_signup_session_ids = signup_identifiers["session_id"].nunique()
+duplicate_signup_session_ids_exist = signup_identifiers[
+    "session_id"
+].duplicated().any()
+
+signups_grain_check = {
+    "total_rows": total_signup_rows,
+    "distinct_user_ids": distinct_signup_user_ids,
+    "duplicate_user_ids_exist": duplicate_signup_user_ids_exist,
+    "distinct_session_ids": distinct_signup_session_ids,
+    "duplicate_session_ids_exist": duplicate_signup_session_ids_exist,
+}
+signups_grain_check
+
+# %% [markdown]
+# ### ✅ Result
+#
+# `signups` has 17,623 rows and 17,623 distinct `user_id` values, with no
+# duplicate user IDs. `session_id` is also unique within this table.
+#
+# ### 🧠 What We Learned
+#
+# The supported grain is one registered-user signup record per row, uniquely
+# identified by `user_id`; the cross-table role of `session_id` is not yet tested.
+
+# %% [markdown]
+# ## Business Question 2: How many registered users were present?
+#
+# ### 🎯 Goal — What & Why
+#
+# Use the validated `signups` grain to count registered users.
+
+# %%
+registered_users = distinct_signup_user_ids
+registered_users
+
+# %% [markdown]
+# ### ✅ Result
+#
+# 17,623 registered users.
+#
+# ### 🧠 What We Learned
+#
+# The row count and distinct-user count agree because each row has a unique
+# `user_id` in the observed table.
+#
+# ### 📚 DataCamp Reference
+#
+# **Course:** Data Manipulation with pandas
+#
+# ### 🧑‍💼 Recruiter Check
+#
+# **Question:** Why is counting signup rows valid for counting registered users here?
+#
+# <details>
+# <summary>💡 Show answer</summary>
+#
+# The grain was verified first: 17,623 rows contain 17,623 distinct `user_id`
+# values with no duplicates. Therefore, each signup row counts one registered
+# user in this table.
+#
+# </details>
