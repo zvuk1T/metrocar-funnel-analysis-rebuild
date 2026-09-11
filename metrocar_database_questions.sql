@@ -30,6 +30,7 @@ FROM ride_requests;
 
 SELECT
     COUNT(*) AS requested_rides,
+    -- FILTER counts only rows where both completion timestamps are present.
     COUNT(*) FILTER (
         WHERE pickup_ts IS NOT NULL
           AND dropoff_ts IS NOT NULL
