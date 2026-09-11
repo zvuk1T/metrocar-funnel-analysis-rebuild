@@ -549,12 +549,14 @@ ride_requests_vs_users
 # %% [markdown]
 # ### ✅ Result
 #
-# 385,477 ride requests were made by 12,406 distinct users.
+# 385,477 ride requests were associated with 12,406 distinct requesting
+# `user_id` values.
 #
 # ### 🧠 What We Learned
 #
 # The analytical unit changes the answer: request rows measure activity, while
-# distinct `user_id` values measure people represented in that activity.
+# distinct `user_id` values measure distinct registered user records represented
+# in that activity.
 #
 # ### 🧑‍💼 Recruiter Check
 #
@@ -785,13 +787,14 @@ successful_payment_summary
 # %% [markdown]
 # ### ✅ Result
 #
-# `transactions` has one row per unique `transaction_id`. Of 223,652 rows,
-# 212,628 are `Approved`, collecting $4,251,667.61 in total.
+# The observed table has one row per unique `transaction_id` and one unique
+# `ride_id` per row. Therefore, 212,628 `Approved` transactions equal 212,628
+# rides with a successful recorded payment, totaling $4,251,667.61.
 #
 # ### 🧠 What We Learned
 #
-# `Approved` is the only observed affirmative status, so successful-payment
-# count and collected value use only approved transaction rows.
+# This equality is supported by the observed one-transaction-per-ride grain; it
+# is not an assumption about payment systems generally.
 #
 # ### 📚 DataCamp Reference
 #
