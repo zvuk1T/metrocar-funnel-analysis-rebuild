@@ -38,6 +38,7 @@
 import os
 
 import pandas as pd
+import plotly.express as px
 import sqlalchemy as sa
 from dotenv import load_dotenv
 
@@ -1831,6 +1832,49 @@ core_funnel_dropoff_validation
 # `Requested at least one ride → Completed at least one ride` is the weakest
 # adjacent transition in the current core funnel: 50.24% converted from the
 # previous stage, 49.76% dropped off, and the absolute drop-off was 6,173.
+# endregion
+# region Visualizing the Customer Funnel — Core Funnel
+# %% [markdown]
+# # Visualization 1: Metrocar Customer Funnel
+#
+# ### 🎯 Business Question
+#
+# How does the overall customer population narrow through the four core funnel
+# stages?
+#
+# ### 📐 Source and Grain
+#
+# The input grain is one row per funnel stage in the already validated
+# `core_funnel_summary`. The chart visualizes those accepted counts; it does not
+# calculate new funnel membership.
+
+# %%
+core_funnel_plot = core_funnel_summary[["stage", "stage_count"]].copy()
+core_funnel_plot["display_stage"] = [
+    "Download",
+    "Signup",
+    "Requested ≥1",
+    "Completed ≥1",
+]
+
+metrocar_customer_funnel = px.funnel(
+    core_funnel_plot,
+    x="stage_count",
+    y="display_stage",
+    text="stage_count",
+    title="Metrocar Customer Funnel",
+)
+metrocar_customer_funnel.update_traces(
+    texttemplate="%{value:,.0f}",
+    textposition="inside",
+)
+metrocar_customer_funnel
+
+# %% [markdown]
+# ### ✅ Existing Takeaway
+#
+# `Requested ≥1 → Completed ≥1` is the weakest adjacent transition, with
+# 50.24% Percent of Previous.
 # endregion
 # region Insights on the Customer Funnel — Acceptance Diagnostic
 # %% [markdown]

@@ -1,0 +1,23 @@
+# Metrocar analysis environment
+# Install with: python -m pip install -r requirements.txt
+
+# Data manipulation and analytical tables
+pandas==3.0.5
+
+# Database connection and SQL queries from Python
+SQLAlchemy==2.0.52
+
+# PostgreSQL driver used by SQLAlchemy
+psycopg[binary]==3.3.5
+
+# Loads the local database URL from the untracked .env file
+python-dotenv==1.2.3
+
+# Interactive analytical visualizations
+plotly==7.0.0
+
+# Notebook-format support required for Plotly rendering in VS Code Interactive
+nbformat==5.11.1
+
+# Python kernel used to run percent cells in VS Code Interactive
+ipykernel==7.3.0
