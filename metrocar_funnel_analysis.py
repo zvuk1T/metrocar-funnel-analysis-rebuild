@@ -2084,3 +2084,298 @@ acceptance_diagnostic_validation
 # These are observed user states across each user's ride history. They do not
 # show that acceptance causes completion or explain why a user did not complete.
 # endregion
+# region Ride Funnel — Visualization 2
+# %% [markdown]
+# ## Visualization 2: How many rides followed the strict ride path?
+#
+# ### 🎯 Business Question
+#
+# How does the recorded ride population narrow from Request through Finished,
+# Paid, and Reviewed?
+#
+# ### 📐 Grain and Meaning
+#
+# The customer funnel follows one download-derived entrant through user-stage
+# progression. This ride funnel instead follows one `ride_id` through a nested
+# ride-stage path. The two grains answer different questions and must not be
+# mixed.
+#
+# The final Reviewed stage includes reviewed rides within the Approved-payment
+# path. Additional reviewed rides outside that strict path remain documented
+# separately rather than being discarded.
+
+# %%
+reviews = pd.read_sql(
+    """
+    SELECT review_id, ride_id
+    FROM reviews
+    """,
+    connection,
+)
+reviews.head()
+
+# %%
+review_row_count = len(reviews)
+distinct_review_ids = reviews["review_id"].nunique()
+missing_review_ids = int(reviews["review_id"].isna().sum())
+distinct_reviewed_ride_ids = reviews["ride_id"].nunique()
+missing_reviewed_ride_ids = int(reviews["ride_id"].isna().sum())
+repeated_reviewed_ride_ids = int(reviews["ride_id"].duplicated().sum())
+
+reviewed_ride_ids = reviews[["ride_id"]].drop_duplicates()
+unknown_reviewed_ride_ids = int(
+    (
+        ~reviewed_ride_ids["ride_id"].isin(ride_requests["ride_id"])
+    ).sum()
+)
+
+review_relationship_validation = {
+    "review_rows": review_row_count,
+    "distinct_review_ids": distinct_review_ids,
+    "missing_review_ids": missing_review_ids,
+    "review_id_is_unique": (
+        not reviews["review_id"].duplicated().any()
+    ),
+    "distinct_reviewed_ride_ids": distinct_reviewed_ride_ids,
+    "missing_reviewed_ride_ids": missing_reviewed_ride_ids,
+    "repeated_reviewed_ride_ids": repeated_reviewed_ride_ids,
+    "unknown_reviewed_ride_ids": unknown_reviewed_ride_ids,
+}
+review_relationship_validation
+
+# %%
+# Both join inputs are reduced to one state row per ride_id before merging.
+approved_ride_state = successful_payments[["ride_id"]].drop_duplicates()
+approved_ride_state["approved_payment"] = True
+
+reviewed_ride_state = reviewed_ride_ids.copy()
+reviewed_ride_state["reviewed"] = True
+
+approved_ride_ids_without_request = int(
+    (
+        ~approved_ride_state["ride_id"].isin(ride_requests["ride_id"])
+    ).sum()
+)
+
+ride_level_stage_state = (
+    ride_activity[["ride_id", "completed_ride"]]
+    .rename(columns={"completed_ride": "finished"})
+    .copy()
+)
+ride_level_stage_state["requested"] = True
+
+ride_level_stage_state = ride_level_stage_state.merge(
+    approved_ride_state,
+    on="ride_id",
+    how="left",
+    validate="one_to_one",
+)
+ride_level_stage_state = ride_level_stage_state.merge(
+    reviewed_ride_state,
+    on="ride_id",
+    how="left",
+    validate="one_to_one",
+)
+
+# A missing join match means the ride did not reach that recorded state.
+ride_level_stage_state[["approved_payment", "reviewed"]] = (
+    ride_level_stage_state[["approved_payment", "reviewed"]]
+    .fillna(False)
+    .astype(bool)
+)
+ride_level_stage_state["reviewed_in_approved_payment_path"] = (
+    ride_level_stage_state["reviewed"]
+    & ride_level_stage_state["approved_payment"]
+)
+ride_level_stage_state = ride_level_stage_state[
+    [
+        "ride_id",
+        "requested",
+        "finished",
+        "approved_payment",
+        "reviewed",
+        "reviewed_in_approved_payment_path",
+    ]
+]
+ride_level_stage_state.head()
+
+# %%
+finished_outside_requested = int(
+    (
+        ride_level_stage_state["finished"]
+        & ~ride_level_stage_state["requested"]
+    ).sum()
+)
+paid_outside_finished = int(
+    (
+        ride_level_stage_state["approved_payment"]
+        & ~ride_level_stage_state["finished"]
+    ).sum()
+)
+reviewed_outside_finished = int(
+    (
+        ride_level_stage_state["reviewed"]
+        & ~ride_level_stage_state["finished"]
+    ).sum()
+)
+reviewed_outside_paid = int(
+    (
+        ride_level_stage_state["reviewed"]
+        & ~ride_level_stage_state["approved_payment"]
+    ).sum()
+)
+reviewed_with_approved_payment = int(
+    ride_level_stage_state["reviewed_in_approved_payment_path"].sum()
+)
+strict_reviewed_outside_finished = int(
+    (
+        ride_level_stage_state["reviewed_in_approved_payment_path"]
+        & ~ride_level_stage_state["finished"]
+    ).sum()
+)
+strict_reviewed_outside_paid = int(
+    (
+        ride_level_stage_state["reviewed_in_approved_payment_path"]
+        & ~ride_level_stage_state["approved_payment"]
+    ).sum()
+)
+
+ride_funnel_summary = pd.DataFrame(
+    {
+        "stage": [
+            "Request",
+            "Finished",
+            "Paid",
+            "Reviewed",
+        ],
+        "stage_count": [
+            int(ride_level_stage_state["requested"].sum()),
+            int(ride_level_stage_state["finished"].sum()),
+            int(ride_level_stage_state["approved_payment"].sum()),
+            int(
+                ride_level_stage_state[
+                    "reviewed_in_approved_payment_path"
+                ].sum()
+            ),
+        ],
+    }
+)
+ride_funnel_summary["previous_stage_count"] = ride_funnel_summary[
+    "stage_count"
+].shift(1)
+ride_funnel_summary["percent_of_previous"] = (
+    ride_funnel_summary["stage_count"]
+    / ride_funnel_summary["previous_stage_count"]
+    * 100
+).round(2)
+ride_funnel_summary
+
+# %%
+ride_funnel_validation = {
+    "ride_level_rows": len(ride_level_stage_state),
+    "distinct_ride_ids": ride_level_stage_state["ride_id"].nunique(),
+    "ride_id_is_unique": (
+        not ride_level_stage_state["ride_id"].duplicated().any()
+    ),
+    "approved_ride_ids_without_request": (
+        approved_ride_ids_without_request
+    ),
+    "requested_reconciles": (
+        ride_funnel_summary.loc[0, "stage_count"]
+        == total_ride_requests
+    ),
+    "finished_reconciles": (
+        ride_funnel_summary.loc[1, "stage_count"]
+        == completed_rides
+    ),
+    "approved_payment_reconciles": (
+        ride_funnel_summary.loc[2, "stage_count"]
+        == successful_payment_count
+    ),
+    "strict_reviewed_reconciles": (
+        ride_funnel_summary.loc[3, "stage_count"]
+        == reviewed_with_approved_payment
+    ),
+    "stage_counts_are_non_increasing": bool(
+        ride_funnel_summary["stage_count"].is_monotonic_decreasing
+    ),
+    "first_stage_previous_metrics_are_missing": bool(
+        ride_funnel_summary.loc[
+            0, ["previous_stage_count", "percent_of_previous"]
+        ].isna().all()
+    ),
+    "percent_of_previous_matches_expected": (
+        ride_funnel_summary.loc[1:, "percent_of_previous"].tolist()
+        == [58.02, 95.07, 69.82]
+    ),
+    "finished_outside_requested": finished_outside_requested,
+    "paid_outside_finished": paid_outside_finished,
+    "strict_reviewed_outside_finished": (
+        strict_reviewed_outside_finished
+    ),
+    "strict_reviewed_outside_paid": strict_reviewed_outside_paid,
+    "strict_stage_sets_are_nested": (
+        finished_outside_requested == 0
+        and paid_outside_finished == 0
+        and strict_reviewed_outside_paid == 0
+    ),
+    "all_reviewed_rides": distinct_reviewed_ride_ids,
+    "all_reviewed_outside_finished": reviewed_outside_finished,
+    "all_reviewed_outside_paid": reviewed_outside_paid,
+    "all_reviewed_with_approved_payment": (
+        reviewed_with_approved_payment
+    ),
+    "all_reviews_reconcile": (
+        reviewed_outside_paid + reviewed_with_approved_payment
+        == distinct_reviewed_ride_ids
+    ),
+}
+ride_funnel_validation
+
+# %%
+metrocar_ride_funnel = px.funnel(
+    ride_funnel_summary,
+    x="stage_count",
+    y="stage",
+    text="stage_count",
+    title="Metrocar Ride Funnel",
+)
+metrocar_ride_funnel.update_traces(
+    texttemplate="%{value:,.0f}",
+    textposition="inside",
+)
+
+ride_funnel_chart_validation = {
+    "has_one_funnel_trace": (
+        len(metrocar_ride_funnel.data) == 1
+        and metrocar_ride_funnel.data[0].type == "funnel"
+    ),
+    "title_matches_expected": (
+        metrocar_ride_funnel.layout.title.text == "Metrocar Ride Funnel"
+    ),
+    "plotted_labels_match_summary": (
+        list(metrocar_ride_funnel.data[0].y)
+        == ride_funnel_summary["stage"].tolist()
+    ),
+    "plotted_counts_match_summary": (
+        list(metrocar_ride_funnel.data[0].x)
+        == ride_funnel_summary["stage_count"].tolist()
+    ),
+}
+ride_funnel_chart_validation
+
+# %%
+metrocar_ride_funnel
+
+# %% [markdown]
+# ### ✅ Result
+#
+# The strict ride funnel contains 385,477 Request, 223,652 Finished, 212,628
+# Paid, and 148,464 Reviewed rides. Percent of Previous is 58.02%, 95.07%, and
+# 69.82% after the first stage.
+#
+# All 156,211 reviewed rides remain documented: 148,464 are within the
+# Approved-payment path and form the strict Reviewed stage, while 7,747 exist
+# outside that path. Those additional reviews are not treated as errors or
+# discarded. All strict adjacent-stage violation counts are zero.
+# endregion
