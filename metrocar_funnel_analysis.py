@@ -1847,14 +1847,31 @@ core_funnel_dropoff_validation
 # The input grain is one row per funnel stage in the already validated
 # `core_funnel_summary`. The chart visualizes those accepted counts; it does not
 # calculate new funnel membership.
+#
+# The chart stays visually minimal while hover provides the two
+# denominator-based funnel metrics.
 
 # %%
-core_funnel_plot = core_funnel_summary[["stage", "stage_count"]].copy()
+core_funnel_plot = core_funnel_summary[
+    [
+        "stage",
+        "stage_count",
+        "percent_of_previous",
+        "percent_of_top",
+    ]
+].copy()
 core_funnel_plot["display_stage"] = [
     "Download",
     "Signup",
     "Requested ≥1",
     "Completed ≥1",
+]
+core_funnel_plot["percent_of_previous_display"] = [
+    "N/A" if pd.isna(value) else f"{value:.2f}%"
+    for value in core_funnel_plot["percent_of_previous"]
+]
+core_funnel_plot["percent_of_top_display"] = [
+    f"{value:.2f}%" for value in core_funnel_plot["percent_of_top"]
 ]
 
 metrocar_customer_funnel = px.funnel(
@@ -1862,11 +1879,22 @@ metrocar_customer_funnel = px.funnel(
     x="stage_count",
     y="display_stage",
     text="stage_count",
+    custom_data=[
+        "percent_of_previous_display",
+        "percent_of_top_display",
+    ],
     title="Metrocar Customer Funnel",
 )
 metrocar_customer_funnel.update_traces(
     texttemplate="%{value:,.0f}",
     textposition="inside",
+    hovertemplate=(
+        "Stage: %{y}<br>"
+        "Count: %{x:,.0f}<br>"
+        "Percent of Previous: %{customdata[0]}<br>"
+        "Percent of Top: %{customdata[1]}"
+        "<extra></extra>"
+    ),
 )
 metrocar_customer_funnel
 
@@ -2268,6 +2296,12 @@ ride_funnel_summary["percent_of_previous"] = (
     / ride_funnel_summary["previous_stage_count"]
     * 100
 ).round(2)
+
+# Request is the selected top-stage denominator for this ride funnel
+ride_top_stage_count = ride_funnel_summary.loc[0, "stage_count"]
+ride_funnel_summary["percent_of_top"] = (
+    ride_funnel_summary["stage_count"] / ride_top_stage_count * 100
+).round(2)
 ride_funnel_summary
 
 # %%
@@ -2308,6 +2342,13 @@ ride_funnel_validation = {
         ride_funnel_summary.loc[1:, "percent_of_previous"].tolist()
         == [58.02, 95.07, 69.82]
     ),
+    "first_stage_percent_of_top_is_100": (
+        ride_funnel_summary.loc[0, "percent_of_top"] == 100.00
+    ),
+    "percent_of_top_matches_expected": (
+        ride_funnel_summary["percent_of_top"].tolist()
+        == [100.00, 58.02, 55.16, 38.51]
+    ),
     "finished_outside_requested": finished_outside_requested,
     "paid_outside_finished": paid_outside_finished,
     "strict_reviewed_outside_finished": (
@@ -2333,16 +2374,43 @@ ride_funnel_validation = {
 ride_funnel_validation
 
 # %%
+ride_funnel_plot = ride_funnel_summary[
+    [
+        "stage",
+        "stage_count",
+        "percent_of_previous",
+        "percent_of_top",
+    ]
+].copy()
+ride_funnel_plot["percent_of_previous_display"] = [
+    "N/A" if pd.isna(value) else f"{value:.2f}%"
+    for value in ride_funnel_plot["percent_of_previous"]
+]
+ride_funnel_plot["percent_of_top_display"] = [
+    f"{value:.2f}%" for value in ride_funnel_plot["percent_of_top"]
+]
+
 metrocar_ride_funnel = px.funnel(
-    ride_funnel_summary,
+    ride_funnel_plot,
     x="stage_count",
     y="stage",
     text="stage_count",
+    custom_data=[
+        "percent_of_previous_display",
+        "percent_of_top_display",
+    ],
     title="Metrocar Ride Funnel",
 )
 metrocar_ride_funnel.update_traces(
     texttemplate="%{value:,.0f}",
     textposition="inside",
+    hovertemplate=(
+        "Stage: %{y}<br>"
+        "Count: %{x:,.0f}<br>"
+        "Percent of Previous: %{customdata[0]}<br>"
+        "Percent of Top: %{customdata[1]}"
+        "<extra></extra>"
+    ),
 )
 
 ride_funnel_chart_validation = {
