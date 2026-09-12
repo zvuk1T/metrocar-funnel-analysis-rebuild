@@ -1,4 +1,4 @@
-# Metrocar Portfolio Story
+# Metrocar Story
 
 ## Purpose
 
@@ -86,7 +86,11 @@ The available evidence therefore does not support causal claims about driver sup
 
 A second funnel examines the journey at a different grain: one `ride_id`.
 
+**Strict ride funnel:**
+
 `385,477 Request → 223,652 Finished → 212,628 Paid → 148,464 Reviewed`
+
+The **Reviewed** stage includes only reviewed rides within the Approved-payment path.
 
 The ride funnel provides supporting operational context without being mixed with the customer-level funnel.
 
