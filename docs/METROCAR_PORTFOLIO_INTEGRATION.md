@@ -8,17 +8,25 @@ It does not define analytical meaning or frontend implementation.
 
 ## Architecture
 
-The Portfolio / Career Hub is the public hub through which visitors discover the Metrocar case study.
+The Portfolio / Career Hub is the public hub through which visitors discover the Metrocar case study and enter its fast Overview.
 
 ```text
 Portfolio / Career Hub
-→ project discovery
-→ Metrocar case study
+→ Metrocar Overview
+→ Explore Full Analysis
 ```
 
 Metrocar may be presented as a Featured Project if future portfolio curation selects it.
 
-Metrocar remains an independent repository and deployment. Its source should not be duplicated in the future portfolio repository.
+Metrocar remains one independent repository and deployment. The Overview and Full Analysis are two presentation depths within that same project, not duplicated projects, and Metrocar source should not be copied into the future portfolio repository.
+
+## Public Experience
+
+The **Metrocar Overview** is the compact recruiter-first entry. **Explore Full Analysis** opens the optional long-form analytical depth.
+
+The Full Analysis is a readable web or HTML presentation of the real learner-facing `metrocar_funnel_analysis.py`, not a second analytical implementation. GitHub remains available for repository and history access, but it is not required merely to follow the analytical reasoning.
+
+The exact Python-to-web presentation mechanism is intentionally open.
 
 ## Shared Shell
 
@@ -33,6 +41,8 @@ Metrocar should inherit the future portfolio's shared presentation conventions:
 - footer;
 - Back to Portfolio behavior.
 
+Both presentation depths should use this shared shell while allowing different content density: the Overview is compact, and the Full Analysis is a long-form reading experience.
+
 ## Visual Relationship
 
 The relationship should follow this principle:
@@ -45,13 +55,13 @@ Metrocar should be calmer and lower in saturation, using teal and muted-green an
 
 ## Metrocar-Specific Grammar
 
-The Metrocar page should preserve:
+Across its two presentation depths, Metrocar should preserve:
 
-- the Customer Funnel as the hero;
-- the `Requested → Completed` loss;
-- the acceptance-history diagnostic as the analytical climax;
-- the Ride Funnel as supporting context;
-- visible analytical grain and evidence limitations.
+- the business question and `Requested → Completed` loss;
+- the Customer Funnel and Ride Funnel on the Overview;
+- a prominent **Explore Full Analysis** route;
+- the acceptance-history diagnostic as the analytical climax of the Full Analysis;
+- visible analytical grain, validation, and evidence limitations in the deeper presentation.
 
 ## Hero Direction
 
@@ -92,6 +102,8 @@ Do not inherit:
 - exact shared navigation
 - exact typography
 - final design tokens
+- exact Python-to-web or HTML presentation mechanism
+- final Overview-to-Full-Analysis routing
 - frontend technology — Astro remains the existing portfolio preference, but is not locked for implementation
-- deployment/domain
+- final deployment topology and domain
 - final hero copy

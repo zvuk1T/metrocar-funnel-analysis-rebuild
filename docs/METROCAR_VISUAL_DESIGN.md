@@ -31,53 +31,53 @@ Story determines hierarchy
 
 ## Product Model
 
-Metrocar is an **interactive analytical case study**, not a generic dashboard.
+Metrocar is an **interactive analytical case study with two connected public reading depths**, not a generic dashboard and not one long page every visitor must consume.
 
-The page should read naturally as one vertical analytical story.
+### Metrocar Overview
 
-Recruiter or hiring manager is the primary reading mode. Technical depth should remain available without overwhelming the first view.
+The Overview is a compact, dashboard-like reading surface for approximately 3–10 seconds of recruiter attention. It must not become a generic dashboard application.
 
-## Progressive Depth
+- Keep text density low.
+- The provisional headline **Where does Metrocar lose momentum?** may lead, with the analytical business question as supporting framing.
+- Surface the **50.24% Requested ≥1 → Completed ≥1** result immediately.
+- Present the Customer Funnel and Ride Funnel as the two dominant interactive visual panels: side by side at suitable desktop widths and stacked on smaller screens.
+- Add only one concise, evidence-bounded takeaway.
+- Make **Explore Full Analysis** prominent; GitHub may remain a secondary route.
 
-**5–10 seconds**
+The acceptance-history result may appear as a brief summary, but its full reasoning and caveats should not be reproduced here.
 
-Understand the business question, the main customer loss, and the primary funnel.
+No filters, comparison engine, admin interface, KPI wall, or old Funnel Explorer behavior belongs in the Overview.
 
-**30–90 seconds**
+### Full Analysis / Deep Dive
 
-Follow the deeper investigation, analytical climax, supporting ride context, and evidence boundary.
-
-**Deep read**
-
-Inspect grain, definitions, limitations, methodology, validation, and GitHub.
-
-## Visual Hierarchy
-
-Visual weight should follow analytical importance.
+The Full Analysis is an optional long-form reading experience. It should preserve the structure and reasoning of the real learner-facing `metrocar_funnel_analysis.py`:
 
 ```text
-Business question / main point
-↓
-Customer Funnel — HERO
-↓
-Requested → Completed loss
-↓
-Deeper question
-↓
-Acceptance-history diagnostic — CLIMAX
-↓
-Ride Funnel — SUPPORTING CONTEXT
-↓
-Evidence boundary / next useful question
-↓
-Methodology / GitHub — QUIETER DEPTH
+business question → WHY → source/grain → code → result → validation → interpretation → limitation
 ```
 
-The Customer Funnel should lead directly into the question raised by its weakest transition.
+Syntax-highlighted code, explanatory text, results, validation, and limitations may all be intentionally detailed. That density must not leak back into the compact Overview.
 
-Do not interrupt that question-and-answer sequence with unrelated visual detail.
+## Overview Visual Hierarchy
 
-The Ride Funnel follows the diagnostic as supporting evidence at a different grain.
+Visual weight should support rapid comprehension:
+
+```text
+Provisional headline + business question + 50.24% result
+↓
+Customer Funnel | Ride Funnel
+↓
+Concise bounded takeaway
+↓
+Explore Full Analysis — PRIMARY ROUTE
+GitHub — SECONDARY ROUTE
+```
+
+Within the paired panels, the Customer Funnel remains the primary customer-level evidence and the Ride Funnel remains supporting context at a different grain.
+
+## Deep Analysis Reading Flow
+
+The deeper investigation should read naturally as one calm analytical narrative. The Customer Funnel leads into its weakest transition, the acceptance-history diagnostic supplies the analytical climax, and the evidence boundary remains next to the claim it qualifies.
 
 Sections should not receive equal size or emphasis merely because a grid allows it.
 
@@ -85,29 +85,27 @@ Sections should not receive equal size or emphasis merely because a grid allows 
 
 ### Customer Funnel
 
-The dominant analytical visual.
+The primary customer-level visual and the first of the two Overview panels.
 
 Stage names and counts must be immediately readable.
 
 The `Requested ≥1 → Completed ≥1` transition should receive deliberate emphasis without implying causation.
 
-### Acceptance-History Diagnostic
-
-The analytical climax.
-
-The contrast between **128 (2.07%)** and **6,045 (97.93%)** should be immediately understandable.
-
-The **user-history grain** and its limitation must remain visible.
-
-The visual must not imply that acceptance and non-completion occurred on the same ride.
-
 ### Ride Funnel
 
-A major supporting visual at `ride_id` grain.
+A supporting visual at `ride_id` grain and the second of the two Overview panels.
 
 It should belong clearly to the same visual system as the Customer Funnel while remaining secondary in narrative importance.
 
 The strict Reviewed stage represents reviewed rides within the Approved-payment path and must not be confused with all review evidence.
+
+### Acceptance-History Diagnostic
+
+This may be summarized compactly on the Overview and becomes the analytical climax in the Full Analysis.
+
+The contrast between **128 (2.07%)** and **6,045 (97.93%)** should be immediately understandable in the deeper presentation.
+
+The **user-history grain** and its limitation must remain visible. The visual must not imply that acceptance and non-completion occurred on the same ride.
 
 ## Color Direction
 
@@ -132,9 +130,9 @@ Avoid rainbow funnels, excessive glow, neon styling, and cyberpunk or Matrix eff
 
 Use typography, spacing, grouping, scale, position, and whitespace as the primary tools for hierarchy.
 
-Avoid uniform card grids when analytical importance is not uniform.
+The Overview may use two strong analytical panels without turning the whole page into a uniform card grid. The Full Analysis should use a comfortable long-form reading column with code and evidence grouped near their explanations.
 
-The page may be information-rich, but it should never feel crowded.
+The Full Analysis may be information-rich, but neither presentation depth should feel crowded.
 
 Every visual element should have a clear reason to exist.
 
@@ -190,6 +188,8 @@ Motion, if used at all, should be restrained and non-essential.
 Not a generic BI dashboard.
 
 Not an admin interface.
+
+Not a KPI wall, filter surface, comparison engine, or old Funnel Explorer.
 
 Not a showcase of every available metric.
 

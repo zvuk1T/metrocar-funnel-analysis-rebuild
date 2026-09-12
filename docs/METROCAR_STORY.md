@@ -2,17 +2,17 @@
 
 ## Purpose
 
-Metrocar is an educational ride-sharing funnel analysis rebuilt as a recruiter-facing portfolio case study.
+Metrocar is an educational ride-sharing funnel analysis rebuilt as a recruiter-facing portfolio case study with two public presentation depths: a fast Overview and an optional Full Analysis / Deep Dive.
 
 The story should show not only what the data says, but how the analysis moves from a business question to evidence, deeper investigation, and an evidence-bounded conclusion.
 
-The validated analytical rebuild remains the source of truth. This document defines only the story.
+The validated analytical rebuild remains the source of truth. This document defines what the analysis says and how readers move through its two presentation depths; it does not define visual design or frontend implementation.
 
 ## Audience
 
 Recruiter or hiring manager first. Technical reader second.
 
-A quick reader should understand the analytical reasoning without reading code. Deeper methodology, validation, and implementation remain available through GitHub.
+A quick reader should understand the essential result without reading code. An interested recruiter or technical reviewer should be able to follow the analytical reasoning in the Full Analysis, with GitHub available for repository and history access.
 
 ## Business Question
 
@@ -28,7 +28,34 @@ Only **50.24%** of requesting users complete at least one ride.
 
 > He identified where the customer journey breaks down, investigated the obvious explanation, and stopped where the evidence stopped.
 
-## Story Backbone
+## Public Presentation Model
+
+### Metrocar Overview
+
+The Overview is recruiter-first and should communicate the essentials in approximately 3–10 seconds:
+
+- Metrocar is an analytical case study;
+- the business question is where customers are lost between download and a completed ride;
+- the main customer-level result is **Requested ≥1 → Completed ≥1 = 50.24%**;
+- the Customer Funnel and Ride Funnel are the two principal visual summaries;
+- the bounded takeaway is that the main loss occurs after a request, while the available evidence does not establish why;
+- **Explore Full Analysis** provides the route to deeper reasoning.
+
+The acceptance-history diagnostic may be summarized briefly on the Overview. Its complete reasoning and caveats belong in the Full Analysis rather than being required on the first page.
+
+### Full Analysis / Deep Dive
+
+The existing `metrocar_funnel_analysis.py` is the real analysis and learner-facing analytical document. The Full Analysis should present that document in a readable web or HTML form so a reader can follow:
+
+```text
+business question → WHY → source/grain → code → result → validation → interpretation → limitation
+```
+
+GitHub remains available for repository and history access, but a reader should not have to leave the portfolio experience to understand the analytical reasoning. The exact conversion or build mechanism is not defined yet.
+
+## Full Analytical Story Backbone
+
+The Full Analysis follows the complete story below. The Overview selects only the essentials and does not need to reproduce every step.
 
 ```text
 Business problem
@@ -116,27 +143,13 @@ The next useful investigation would require **same-ride operational or cancellat
 
 ## Visual Anchors
 
-1. **Metrocar Customer Funnel** — primary evidence and main visual.
+1. **Metrocar Customer Funnel** — primary customer-level evidence.
 2. **Metrocar Ride Funnel** — supporting evidence at ride grain.
-3. **Acceptance-history diagnostic** — analytical reasoning climax.
-
-## Reader Journey
-
-**5–10 seconds**
-
-Understand the business problem and the weakest customer transition.
-
-**30–90 seconds**
-
-Understand both analytical grains, the deeper investigation, the main discovery, and the evidence boundary.
-
-**Deep read**
-
-Inspect stage definitions, grain, validation, limitations, and analytical code through GitHub.
+3. **Acceptance-history diagnostic** — analytical reasoning climax in the Full Analysis.
 
 ## Story Test
 
-Every public section should support the story backbone.
+Every section in either presentation depth should support the story backbone.
 
 A chart, metric, paragraph, or interaction belongs on the page only if it helps explain:
 
