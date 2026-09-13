@@ -2,6 +2,7 @@
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { Code } from "astro:components";
+import type { ShikiConfig } from "astro";
 import { Marked } from "marked";
 
 import FunnelChart from "../components/FunnelChart.astro";
@@ -146,6 +147,21 @@ const markdownCellCount = sourceCells.filter(
   (cell) => cell.type === "markdown",
 ).length;
 const codeCellCount = sourceCells.length - markdownCellCount;
+
+type CodeTransformer = NonNullable<ShikiConfig["transformers"]>[number];
+
+const fullLinePythonComments = {
+  name: "full-line-python-comments",
+  line(node, lineNumber) {
+    const sourceLine = (this.tokens[lineNumber - 1] ?? [])
+      .map((token) => token.content)
+      .join("");
+
+    if (/^[\t ]*#/.test(sourceLine)) {
+      this.addClassToHast(node, "python-comment-line");
+    }
+  },
+} satisfies CodeTransformer;
 ---
 
 <PageShell
@@ -261,6 +277,7 @@ const codeCellCount = sourceCells.length - markdownCellCount;
                   lang="python"
                   theme="github-dark"
                   wrap={false}
+                  transformers={[fullLinePythonComments]}
                 />
               </section>
             )}

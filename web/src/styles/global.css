@@ -1,6 +1,6 @@
 :root {
   color-scheme: dark;
-  --background: #0d100e;
+  --background: #0b0f0e;
   --background-soft: #111512;
   --surface: #171c19;
   --surface-raised: #1c231f;
@@ -10,10 +10,10 @@
   --line: rgba(198, 222, 207, 0.14);
   --line-strong: rgba(113, 198, 177, 0.32);
   --teal: #71c6b1;
-  --steel: #8ea6be;
-  --steel-line: rgba(142, 166, 190, 0.34);
-  --green: #73c991;
-  --lime: #c4dc72;
+  --ride-green: #73c991;
+  --ride-green-line: rgba(115, 201, 145, 0.34);
+  --action-green: #c4dc72;
+  --terminal-accent: #5cff8a;
   --warm: #d9946d;
   --content-width: 78rem;
   --reading-width: 48rem;
@@ -42,7 +42,7 @@ body {
       rgba(113, 198, 177, 0.08),
       transparent 29rem
     ),
-    linear-gradient(180deg, #0d100e 0%, #101411 52%, #0d100e 100%);
+    linear-gradient(180deg, #0b0f0e 0%, #101411 52%, #0b0f0e 100%);
   color: var(--text);
   font-family: var(--sans);
   font-size: 1rem;
@@ -70,7 +70,7 @@ code {
 }
 
 :focus-visible {
-  outline: 3px solid var(--lime);
+  outline: 3px solid var(--terminal-accent);
   outline-offset: 4px;
 }
 
@@ -93,7 +93,7 @@ code {
   padding: 0.65rem 0.9rem;
   transform: translateY(-180%);
   border-radius: 0.5rem;
-  background: var(--lime);
+  background: var(--action-green);
   color: #11150f;
   font-weight: 750;
   text-decoration: none;
@@ -113,7 +113,7 @@ code {
   position: relative;
   z-index: 10;
   border-bottom: 1px solid var(--line);
-  background: rgba(13, 16, 14, 0.9);
+  background: rgba(11, 15, 14, 0.9);
   backdrop-filter: blur(14px);
 }
 
@@ -289,12 +289,13 @@ h2 {
 
 .hero-metric {
   margin: 0;
-  color: var(--lime);
+  color: var(--terminal-accent);
   font-size: clamp(4rem, 6.5vw, 6.4rem);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   letter-spacing: -0.07em;
   line-height: 0.9;
+  text-shadow: 0 0 0.45rem rgba(92, 255, 138, 0.16);
 }
 
 .transition-label {
@@ -351,19 +352,19 @@ h2 {
 }
 
 .funnel-panel--ride {
-  border-top-color: var(--steel-line);
+  border-top-color: var(--ride-green-line);
   background:
-    linear-gradient(145deg, rgba(142, 166, 190, 0.065), transparent 45%),
+    linear-gradient(145deg, rgba(115, 201, 145, 0.065), transparent 45%),
     var(--surface);
 }
 
 .funnel-panel--ride .panel-kicker {
-  color: var(--steel);
+  color: var(--ride-green);
 }
 
 .funnel-panel--ride .grain-pill {
-  border-color: var(--steel-line);
-  color: var(--steel);
+  border-color: var(--ride-green-line);
+  color: var(--ride-green);
 }
 
 .panel-header {
@@ -444,9 +445,9 @@ h2 {
 
 .primary-button {
   padding: 0.88rem 1.05rem;
-  border: 1px solid var(--lime);
+  border: 1px solid var(--action-green);
   border-radius: 0.72rem;
-  background: var(--lime);
+  background: var(--action-green);
   color: #11150f;
 }
 
@@ -821,6 +822,21 @@ h2 {
   line-height: 1.6;
 }
 
+.analysis-code .astro-code .line.python-comment-line {
+  display: inline-block;
+  min-width: 100%;
+}
+
+.analysis-code .astro-code .line.python-comment-line > span {
+  transition: color 140ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .analysis-code .astro-code .line.python-comment-line:hover > span {
+    color: var(--terminal-accent) !important;
+  }
+}
+
 .analysis-funnel-evidence {
   --evidence-accent: var(--teal);
   width: min(100%, 61rem);
@@ -836,11 +852,11 @@ h2 {
 }
 
 .analysis-funnel-evidence--ride {
-  --evidence-accent: var(--steel);
-  border-top-color: var(--steel-line);
+  --evidence-accent: var(--ride-green);
+  border-top-color: var(--ride-green-line);
   background: linear-gradient(
     90deg,
-    rgba(142, 166, 190, 0.065),
+    rgba(115, 201, 145, 0.065),
     transparent 72%
   );
 }
@@ -876,7 +892,7 @@ h2 {
   max-width: var(--reading-width);
   margin: 0.3rem clamp(0.8rem, 2vw, 1.25rem) 0;
   padding-left: 0.8rem;
-  border-left: 2px solid var(--steel);
+  border-left: 2px solid var(--ride-green);
   color: var(--muted);
   font-size: 0.8rem;
 }

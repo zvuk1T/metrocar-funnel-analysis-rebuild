@@ -37,9 +37,9 @@ export const customerFunnel = {
 export const rideFunnel = {
   id: "ride-funnel-chart",
   tone: "ride",
-  accent: "#8ea6be",
-  connectorColor: "rgba(142, 166, 190, 0.26)",
-  colors: ["#8ea6be", "#8199b2", "#758ba4", "#697f97"],
+  accent: "#73c991",
+  connectorColor: "rgba(115, 201, 145, 0.26)",
+  colors: ["#73c991", "#69b783", "#60a576", "#57986c"],
   stages: [
     {
       stage: "Request",
