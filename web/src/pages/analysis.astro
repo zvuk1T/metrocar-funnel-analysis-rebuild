@@ -5,8 +5,10 @@ import { Code } from "astro:components";
 import type { ShikiConfig } from "astro";
 import { Marked } from "marked";
 
+import CodeGuide from "../components/CodeGuide.astro";
 import FunnelChart from "../components/FunnelChart.astro";
 import PageShell from "../layouts/PageShell.astro";
+import { codeGuides } from "../data/codeGuides.js";
 import { customerFunnel, rideFunnel } from "../data/funnels.js";
 import { parsePercentCells } from "../lib/percentCells.js";
 
@@ -15,6 +17,31 @@ const githubUrl =
 const sourcePath = resolve(process.cwd(), "../metrocar_funnel_analysis.py");
 const source = await readFile(sourcePath, "utf8");
 const sourceCells = parsePercentCells(source);
+
+const codeGuidesByCellIndex = new Map();
+
+for (const guide of codeGuides) {
+  const matchingCells = sourceCells.filter(
+    (cell) =>
+      cell.type === "code" && cell.content.includes(guide.sourceMatcher),
+  );
+
+  if (matchingCells.length !== 1) {
+    throw new Error(
+      `Code Guide "${guide.id}" matched ${matchingCells.length} source cells; expected exactly one`,
+    );
+  }
+
+  const [matchingCell] = matchingCells;
+
+  if (codeGuidesByCellIndex.has(matchingCell.index)) {
+    throw new Error(
+      `More than one Code Guide matched source cell ${matchingCell.index + 1}`,
+    );
+  }
+
+  codeGuidesByCellIndex.set(matchingCell.index, guide);
+}
 
 const tableOfContents = [];
 const usedHeadingIds = new Map();
@@ -66,7 +93,13 @@ const renderedCells = sourceCells.map((cell) => {
         ? "ride"
         : null;
 
-  if (cell.type === "code") return { ...cell, displayedFigure };
+  if (cell.type === "code") {
+    return {
+      ...cell,
+      displayedFigure,
+      codeGuide: codeGuidesByCellIndex.get(cell.index) ?? null,
+    };
+  }
 
   currentSourceCell = cell.index + 1;
 
@@ -279,6 +312,7 @@ const fullLinePythonComments = {
                   wrap={false}
                   transformers={[fullLinePythonComments]}
                 />
+                {cell.codeGuide && <CodeGuide guide={cell.codeGuide} />}
               </section>
             )}
 

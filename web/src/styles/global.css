@@ -10,8 +10,6 @@
   --line: rgba(198, 222, 207, 0.14);
   --line-strong: rgba(113, 198, 177, 0.32);
   --teal: #71c6b1;
-  --ride-green: #73c991;
-  --ride-green-line: rgba(115, 201, 145, 0.34);
   --action-green: #c4dc72;
   --terminal-accent: #5cff8a;
   --warm: #d9946d;
@@ -289,13 +287,12 @@ h2 {
 
 .hero-metric {
   margin: 0;
-  color: var(--terminal-accent);
-  font-size: clamp(4rem, 6.5vw, 6.4rem);
+  color: var(--teal);
+  font-size: clamp(2.7rem, 4.25vw, 4.2rem);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
   letter-spacing: -0.07em;
   line-height: 0.9;
-  text-shadow: 0 0 0.45rem rgba(92, 255, 138, 0.16);
 }
 
 .transition-label {
@@ -347,24 +344,8 @@ h2 {
     var(--surface);
 }
 
-.funnel-panel--customer .panel-kicker {
+.funnel-panel .panel-kicker {
   color: var(--teal);
-}
-
-.funnel-panel--ride {
-  border-top-color: var(--ride-green-line);
-  background:
-    linear-gradient(145deg, rgba(115, 201, 145, 0.065), transparent 45%),
-    var(--surface);
-}
-
-.funnel-panel--ride .panel-kicker {
-  color: var(--ride-green);
-}
-
-.funnel-panel--ride .grain-pill {
-  border-color: var(--ride-green-line);
-  color: var(--ride-green);
 }
 
 .panel-header {
@@ -833,8 +814,85 @@ h2 {
 
 @media (hover: hover) and (pointer: fine) {
   .analysis-code .astro-code .line.python-comment-line:hover > span {
-    color: var(--terminal-accent) !important;
+    color: var(--teal) !important;
   }
+}
+
+.code-guide {
+  margin: 0;
+  border-top: 1px solid rgba(113, 198, 177, 0.18);
+  background: rgba(113, 198, 177, 0.035);
+}
+
+.code-guide summary {
+  padding: 0.72rem 0.8rem;
+  color: var(--text-soft);
+  cursor: pointer;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.025em;
+}
+
+.code-guide summary::marker {
+  color: var(--teal);
+}
+
+.code-guide[open] summary {
+  color: var(--teal);
+}
+
+.code-guide-content {
+  padding: 0.15rem 0.8rem 0.9rem;
+  border-top: 1px solid rgba(113, 198, 177, 0.1);
+}
+
+.code-guide-item {
+  padding-top: 0.85rem;
+}
+
+.code-guide-item + .code-guide-item {
+  margin-top: 0.85rem;
+  border-top: 1px solid rgba(198, 222, 207, 0.1);
+}
+
+.code-guide-item h4 {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+}
+
+.code-guide-item h4 code {
+  color: var(--teal);
+}
+
+.code-guide-item dl {
+  margin: 0;
+}
+
+.code-guide-item dl div {
+  display: grid;
+  grid-template-columns: 4.6rem minmax(0, 1fr);
+  gap: 0.7rem;
+}
+
+.code-guide-item dl div + div {
+  margin-top: 0.42rem;
+}
+
+.code-guide-item dt {
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.code-guide-item dd {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.75rem;
+  line-height: 1.55;
 }
 
 .analysis-funnel-evidence {
@@ -847,16 +905,6 @@ h2 {
   background: linear-gradient(
     90deg,
     rgba(113, 198, 177, 0.055),
-    transparent 72%
-  );
-}
-
-.analysis-funnel-evidence--ride {
-  --evidence-accent: var(--ride-green);
-  border-top-color: var(--ride-green-line);
-  background: linear-gradient(
-    90deg,
-    rgba(115, 201, 145, 0.065),
     transparent 72%
   );
 }
@@ -892,7 +940,7 @@ h2 {
   max-width: var(--reading-width);
   margin: 0.3rem clamp(0.8rem, 2vw, 1.25rem) 0;
   padding-left: 0.8rem;
-  border-left: 2px solid var(--ride-green);
+  border-left: 2px solid var(--teal);
   color: var(--muted);
   font-size: 0.8rem;
 }

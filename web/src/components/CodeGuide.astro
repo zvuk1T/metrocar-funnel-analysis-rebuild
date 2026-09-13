@@ -1,0 +1,28 @@
+---
+const { guide } = Astro.props;
+---
+
+<details class="code-guide">
+  <summary>Explain this code</summary>
+  <div class="code-guide-content">
+    {guide.items.map((item) => (
+      <section class="code-guide-item">
+        <h4><code>{item.construct}</code></h4>
+        <dl>
+          <div>
+            <dt>What</dt>
+            <dd>{item.what}</dd>
+          </div>
+          <div>
+            <dt>Why here</dt>
+            <dd>{item.whyHere}</dd>
+          </div>
+          <div>
+            <dt>Output</dt>
+            <dd>{item.output}</dd>
+          </div>
+        </dl>
+      </section>
+    ))}
+  </div>
+</details>
