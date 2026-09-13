@@ -1,0 +1,126 @@
+---
+import PageShell from "../layouts/PageShell.astro";
+import FunnelChart from "../components/FunnelChart.astro";
+import { customerFunnel, rideFunnel } from "../data/funnels.js";
+
+const githubUrl =
+  "https://github.com/zvuk1T/metrocar-funnel-analysis-rebuild";
+---
+
+<PageShell
+  title="Metrocar · Analytical Case Study"
+  description="A concise, evidence-led view of where the Metrocar customer journey loses momentum."
+  current="overview"
+>
+  <main id="main-content" class="overview-main">
+    <section class="overview-hero" aria-labelledby="page-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Metrocar · Analytical Case Study</p>
+        <p class="provisional-label">Provisional headline</p>
+        <h1 id="page-title">
+          Where does Metrocar lose <span>momentum?</span>
+        </h1>
+        <p class="hero-question">
+          Where does Metrocar lose customers on the path from app download to
+          a completed ride?
+        </p>
+        <p class="hero-project-intro">
+          Metrocar is a ride-sharing funnel analysis that follows customers
+          from app download to completed ride to identify where the journey
+          loses momentum. Built with Python, pandas, SQL, and Plotly, it keeps
+          customer-level and ride-level evidence at their correct grain.
+        </p>
+      </div>
+
+      <aside class="hero-result" aria-label="Main customer-funnel result">
+        <p class="micro-label">Weakest adjacent transition</p>
+        <p class="hero-metric">50.24%</p>
+        <p class="transition-label">
+          <span>Requested ≥1</span>
+          <span aria-hidden="true">→</span>
+          <span>Completed ≥1</span>
+        </p>
+        <p class="hero-result-note">Percent of Previous</p>
+      </aside>
+    </section>
+
+    <ul class="trust-strip" aria-label="Project methods and validation">
+      <li>Python · Pandas · SQL · Plotly</li>
+      <li>Customer grain + <code>ride_id</code> grain</li>
+      <li>SQL ↔ Pandas reconciled</li>
+    </ul>
+
+    <section class="funnel-grid" aria-label="Metrocar funnel visualizations">
+      <article
+        class="funnel-panel funnel-panel--customer"
+        aria-labelledby="customer-panel-title"
+      >
+        <header class="panel-header">
+          <div>
+            <p class="panel-kicker">Customer progression</p>
+            <h2 id="customer-panel-title">Customer Funnel</h2>
+          </div>
+          <span class="grain-pill">Entrant / user stage</span>
+        </header>
+
+        <FunnelChart
+          funnel={customerFunnel}
+          ariaLabel="Customer Funnel: Download 23,608; Signup 17,623; Requested at least one ride 12,406; Completed at least one ride 6,233."
+          tableCaption="Customer Funnel values"
+        />
+      </article>
+
+      <article
+        class="funnel-panel funnel-panel--ride"
+        aria-labelledby="ride-panel-title"
+      >
+        <header class="panel-header">
+          <div>
+            <p class="panel-kicker">Supporting ride path</p>
+            <h2 id="ride-panel-title">Ride Funnel</h2>
+          </div>
+          <span class="grain-pill">One <code>ride_id</code></span>
+        </header>
+
+        <FunnelChart
+          funnel={rideFunnel}
+          ariaLabel="Ride Funnel: Request 385,477; Finished 223,652; Paid 212,628; Reviewed 148,464."
+          tableCaption="Ride Funnel values"
+        />
+
+        <p class="panel-note">
+          Reviewed means reviewed rides inside the Approved-payment path.
+        </p>
+
+      </article>
+    </section>
+
+    <section class="overview-close" aria-labelledby="takeaway-title">
+      <div>
+        <p class="eyebrow">Evidence-bounded takeaway</p>
+        <h2 id="takeaway-title">The loss is clear. Its cause is not.</h2>
+        <p>
+          Requested → Completed is the weakest customer-level transition. Most
+          non-completing requesters had some recorded acceptance somewhere in
+          their ride history, but the available evidence does not establish the
+          underlying cause.
+        </p>
+      </div>
+
+      <div class="overview-actions">
+        <a class="primary-button" href="/analysis/">
+          Explore Full Analysis <span aria-hidden="true">→</span>
+        </a>
+        <a
+          class="secondary-link"
+          href={githubUrl}
+          target="_blank"
+          rel="noreferrer"
+        >
+          View repository <span aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+</PageShell>

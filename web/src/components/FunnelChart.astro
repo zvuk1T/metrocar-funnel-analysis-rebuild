@@ -1,0 +1,124 @@
+---
+const {
+  funnel,
+  id = funnel.id,
+  ariaLabel,
+  tableCaption = `${funnel.tone} funnel values`,
+} = Astro.props;
+
+const chartPayload = JSON.stringify({
+  stages: funnel.stages,
+  colors: funnel.colors,
+  accent: funnel.accent,
+  connectorColor: funnel.connectorColor,
+});
+---
+
+<div
+  id={id}
+  class="plotly-funnel"
+  data-funnel-chart={chartPayload}
+  role="img"
+  aria-label={ariaLabel}
+></div>
+
+<div class="visually-hidden">
+  <table>
+    <caption>{tableCaption}</caption>
+    <thead>
+      <tr>
+        <th>Stage</th>
+        <th>Count</th>
+        <th>Percent of Previous</th>
+        <th>Percent of Top</th>
+      </tr>
+    </thead>
+    <tbody>
+      {funnel.stages.map((item) => (
+        <tr>
+          <th>{item.stage}</th>
+          <td>{item.count.toLocaleString("en-US")}</td>
+          <td>{item.percentOfPrevious}</td>
+          <td>{item.percentOfTop}</td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+<script>
+  import Plotly from "plotly.js-finance-dist-min";
+
+  const chartElements = document.querySelectorAll("[data-funnel-chart]");
+
+  for (const element of chartElements) {
+    if (!(element instanceof HTMLElement)) continue;
+    if (element.dataset.funnelRendered === "true") continue;
+
+    const serializedChart = element.dataset.funnelChart;
+    if (!serializedChart) continue;
+
+    const chart = JSON.parse(serializedChart);
+    element.dataset.funnelRendered = "true";
+
+    const trace = {
+      type: "funnel",
+      orientation: "h",
+      y: chart.stages.map((item) => item.stage),
+      x: chart.stages.map((item) => item.count),
+      customdata: chart.stages.map((item) => [
+        item.percentOfPrevious,
+        item.percentOfTop,
+      ]),
+      marker: {
+        color: chart.colors,
+        line: { color: "rgba(241, 245, 241, 0.12)", width: 1 },
+      },
+      connector: {
+        line: { color: chart.connectorColor, width: 1 },
+      },
+      texttemplate: "%{x:,.0f}",
+      textposition: "inside",
+      textfont: { color: "#0d100e", size: 14 },
+      hovertemplate:
+        "<b>%{y}</b><br>" +
+        "Count: %{x:,.0f}<br>" +
+        "Percent of Previous: %{customdata[0]}<br>" +
+        "Percent of Top: %{customdata[1]}" +
+        "<extra></extra>",
+    };
+
+    const layout = {
+      autosize: true,
+      showlegend: false,
+      paper_bgcolor: "rgba(0, 0, 0, 0)",
+      plot_bgcolor: "rgba(0, 0, 0, 0)",
+      margin: { l: 12, r: 12, t: 10, b: 12 },
+      font: {
+        color: "#c6cec8",
+        family: "ui-sans-serif, system-ui, sans-serif",
+        size: 13,
+      },
+      xaxis: { visible: false, fixedrange: true },
+      yaxis: {
+        automargin: true,
+        autorange: "reversed",
+        fixedrange: true,
+        tickfont: { color: "#d9e1dc", size: 13 },
+      },
+      hoverlabel: {
+        bgcolor: "#171c19",
+        bordercolor: chart.accent,
+        font: { color: "#f1f5f1", size: 13 },
+      },
+    };
+
+    const config = {
+      responsive: true,
+      displayModeBar: false,
+      displaylogo: false,
+    };
+
+    Plotly.newPlot(element, [trace], layout, config);
+  }
+</script>

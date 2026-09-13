@@ -1,0 +1,63 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  current: "overview" | "analysis";
+}
+
+const { title, description, current } = Astro.props;
+const githubUrl =
+  "https://github.com/zvuk1T/metrocar-funnel-analysis-rebuild";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#0d100e" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+
+    <header class="site-header" aria-label="Metrocar case-study navigation">
+      <div class="shell-inner site-header-inner">
+        <a class="brand-link" href="/" aria-label="Metrocar Overview">
+          <span class="brand-mark" aria-hidden="true">M</span>
+          <span>
+            <strong>Metrocar</strong>
+            <small>Portfolio case study</small>
+          </span>
+        </a>
+
+        <nav class="site-nav" aria-label="Case-study sections">
+          <a href="/" aria-current={current === "overview" ? "page" : undefined}>
+            Overview
+          </a>
+          <a
+            href="/analysis/"
+            aria-current={current === "analysis" ? "page" : undefined}
+          >
+            Full Analysis
+          </a>
+          <a href={githubUrl} target="_blank" rel="noreferrer">
+            GitHub <span aria-hidden="true">↗</span>
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <slot />
+
+    <footer class="site-footer">
+      <div class="shell-inner footer-inner">
+        <p>Metrocar · Analytical Case Study</p>
+        <p>Independent project · future Portfolio / Career Hub</p>
+      </div>
+    </footer>
+  </body>
+</html>

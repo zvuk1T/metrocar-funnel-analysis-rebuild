@@ -1,2 +1,8 @@
 .env
 .venv/
+.DS_Store
+
+# Astro frontend build output and local dependencies
+web/node_modules/
+web/dist/
+web/.astro/

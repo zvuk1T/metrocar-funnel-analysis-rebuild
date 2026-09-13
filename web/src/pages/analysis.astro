@@ -1,0 +1,324 @@
+---
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { Code } from "astro:components";
+import { Marked } from "marked";
+
+import FunnelChart from "../components/FunnelChart.astro";
+import PageShell from "../layouts/PageShell.astro";
+import { customerFunnel, rideFunnel } from "../data/funnels.js";
+import { parsePercentCells } from "../lib/percentCells.js";
+
+const githubUrl =
+  "https://github.com/zvuk1T/metrocar-funnel-analysis-rebuild";
+const sourcePath = resolve(process.cwd(), "../metrocar_funnel_analysis.py");
+const source = await readFile(sourcePath, "utf8");
+const sourceCells = parsePercentCells(source);
+
+const tableOfContents = [];
+const usedHeadingIds = new Map();
+const markdown = new Marked();
+let currentSourceCell = 0;
+
+function headingTitle(rawTitle) {
+  return rawTitle
+    .replace(/<[^>]+>/g, "")
+    .replace(/[`*~]/g, "")
+    .trim();
+}
+
+function uniqueHeadingId(title) {
+  const baseId = title
+    .normalize("NFKD")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "") || "section";
+  const occurrence = (usedHeadingIds.get(baseId) ?? 0) + 1;
+  usedHeadingIds.set(baseId, occurrence);
+  return occurrence === 1 ? baseId : `${baseId}-${occurrence}`;
+}
+
+markdown.use({
+  renderer: {
+    heading({ tokens, depth, text }) {
+      const content = this.parser.parseInline(tokens);
+
+      if (depth > 2) {
+        return `<h${depth}>${content}</h${depth}>`;
+      }
+
+      const title = headingTitle(text);
+      const id = uniqueHeadingId(title);
+      tableOfContents.push({ id, title, depth, sourceCell: currentSourceCell });
+      return `<h${depth} id="${id}">${content}</h${depth}>`;
+    },
+  },
+});
+
+const renderedCells = sourceCells.map((cell) => {
+  const displayedFigure =
+    cell.type === "code" &&
+    cell.content.trim().endsWith("metrocar_customer_funnel")
+      ? "customer"
+      : cell.type === "code" &&
+          cell.content.trim() === "metrocar_ride_funnel"
+        ? "ride"
+        : null;
+
+  if (cell.type === "code") return { ...cell, displayedFigure };
+
+  currentSourceCell = cell.index + 1;
+
+  return {
+    ...cell,
+    displayedFigure,
+    html: markdown.parse(cell.content, { async: false }),
+  };
+});
+
+function sourceCellForHeading(heading) {
+  const matchingCell = sourceCells.find(
+    (cell) =>
+      cell.type === "markdown" && cell.content.split("\n").includes(heading),
+  );
+
+  if (!matchingCell) {
+    throw new Error(`Missing chapter heading in analytical source: ${heading}`);
+  }
+
+  return matchingCell.index + 1;
+}
+
+// These groups organize navigation only; source cells still render in order.
+const chapterDefinitions = [
+  {
+    number: "01",
+    title: "Setup & Data Access",
+    startCell: sourceCellForHeading("# Metrocar Funnel Analysis"),
+  },
+  {
+    number: "02",
+    title: "Database Understanding & Business Questions",
+    startCell: sourceCellForHeading(
+      "## Understand the `app_downloads` table grain",
+    ),
+  },
+  {
+    number: "03",
+    title: "Constructing the Customer Funnel",
+    startCell: sourceCellForHeading("# Constructing the Customer Funnel"),
+  },
+  {
+    number: "04",
+    title: "Visualizations & Insights",
+    startCell: sourceCellForHeading(
+      "# Visualization 1: Metrocar Customer Funnel",
+    ),
+  },
+];
+
+const analysisChapters = chapterDefinitions.map((chapter, index) => {
+  const nextStartCell =
+    chapterDefinitions[index + 1]?.startCell ?? sourceCells.length + 1;
+  const links = tableOfContents.filter(
+    (heading) =>
+      heading.sourceCell >= chapter.startCell &&
+      heading.sourceCell < nextStartCell,
+  );
+
+  if (links.length === 0) {
+    throw new Error(`Navigation chapter has no source headings: ${chapter.title}`);
+  }
+
+  return { ...chapter, links };
+});
+
+const chapterLinkCount = analysisChapters.reduce(
+  (total, chapter) => total + chapter.links.length,
+  0,
+);
+
+if (chapterLinkCount !== tableOfContents.length) {
+  throw new Error("Not every source heading belongs to a navigation chapter");
+}
+
+const markdownCellCount = sourceCells.filter(
+  (cell) => cell.type === "markdown",
+).length;
+const codeCellCount = sourceCells.length - markdownCellCount;
+---
+
+<PageShell
+  title="Full Analysis · Metrocar"
+  description="The complete Metrocar learner-facing analysis, rendered from its real VS Code and Jupyter percent-cell Python source."
+  current="analysis"
+>
+  <main id="main-content" class="analysis-page">
+    <header class="analysis-intro">
+      <a class="back-link" href="/">← Metrocar Overview</a>
+      <p class="eyebrow">Metrocar · Full Analysis</p>
+      <h1>Follow the reasoning behind the result.</h1>
+      <p class="analysis-intro-copy">
+        This long-form view is generated at build time from the real{" "}
+        <code>metrocar_funnel_analysis.py</code>. It preserves authored explanations
+        and Python in source order; no analytical code runs in the browser.
+      </p>
+      <div class="source-facts" aria-label="Source transformation summary">
+        <span>{sourceCells.length} source cells</span>
+        <span>{markdownCellCount} explanation cells</span>
+        <span>{codeCellCount} Python cells</span>
+      </div>
+      <p class="source-limit">
+        Runtime DataFrame outputs are not reconstructed. The two validated
+        funnel figures reuse approved precomputed presentation values; no
+        Python runs in the browser.
+      </p>
+    </header>
+
+    <details class="analysis-toc-mobile">
+      <summary>On this page</summary>
+      <nav aria-label="Full Analysis table of contents">
+        <ol class="toc-chapters">
+          {analysisChapters.map((chapter) => (
+            <li class="toc-chapter">
+              <div class="toc-chapter-heading">
+                <span>{chapter.number}</span>
+                <strong>{chapter.title}</strong>
+              </div>
+              <ol class="toc-section-links">
+                {chapter.links.map((heading) => (
+                  <li
+                    class:list={{
+                      "toc-level-one": heading.depth === 1,
+                      "toc-level-two": heading.depth === 2,
+                    }}
+                  >
+                    <a href={`#${heading.id}`}>{heading.title}</a>
+                  </li>
+                ))}
+              </ol>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    </details>
+
+    <div class="analysis-layout">
+      <aside class="analysis-toc-desktop">
+        <p class="toc-title">Full Analysis</p>
+        <nav aria-label="Full Analysis table of contents">
+          <ol class="toc-chapters">
+            {analysisChapters.map((chapter) => (
+              <li class="toc-chapter">
+                <div class="toc-chapter-heading">
+                  <span>{chapter.number}</span>
+                  <strong>{chapter.title}</strong>
+                </div>
+                <ol class="toc-section-links">
+                  {chapter.links.map((heading) => (
+                    <li
+                      class:list={{
+                        "toc-level-one": heading.depth === 1,
+                        "toc-level-two": heading.depth === 2,
+                      }}
+                    >
+                      <a href={`#${heading.id}`}>{heading.title}</a>
+                    </li>
+                  ))}
+                </ol>
+              </li>
+            ))}
+          </ol>
+        </nav>
+        <a class="toc-github" href={githubUrl} target="_blank" rel="noreferrer">
+          Source on GitHub ↗
+        </a>
+      </aside>
+
+      <article class="analysis-stream" aria-label="Metrocar analytical source">
+        {renderedCells.map((cell) => (
+          <>
+            {cell.type === "markdown" ? (
+              <section
+                class="analysis-cell analysis-prose"
+                data-source-cell={cell.index + 1}
+                data-source-line={cell.markerLine}
+                set:html={cell.html}
+              />
+            ) : (
+              <section
+                class="analysis-cell analysis-code"
+                data-source-cell={cell.index + 1}
+                data-source-line={cell.markerLine}
+                aria-label={`Python source cell ${cell.index + 1}`}
+              >
+                <div class="code-cell-label" aria-hidden="true">
+                  <span>Python</span>
+                  <span>Source cell {cell.index + 1}</span>
+                </div>
+                <Code
+                  code={cell.content}
+                  lang="python"
+                  theme="github-dark"
+                  wrap={false}
+                />
+              </section>
+            )}
+
+            {cell.displayedFigure === "customer" && (
+              <section
+                class="analysis-funnel-evidence analysis-funnel-evidence--customer"
+                aria-labelledby="analysis-customer-funnel-title"
+              >
+                <header class="analysis-evidence-header">
+                  <p>Rendered evidence · Customer grain</p>
+                  <h3 id="analysis-customer-funnel-title">
+                    Metrocar Customer Funnel
+                  </h3>
+                </header>
+                <FunnelChart
+                  funnel={customerFunnel}
+                  id="analysis-customer-funnel-chart"
+                  ariaLabel="Customer Funnel: Download 23,608; Signup 17,623; Requested at least one ride 12,406; Completed at least one ride 6,233."
+                  tableCaption="Full Analysis Customer Funnel values"
+                />
+              </section>
+            )}
+
+            {cell.displayedFigure === "ride" && (
+              <section
+                class="analysis-funnel-evidence analysis-funnel-evidence--ride"
+                aria-labelledby="analysis-ride-funnel-title"
+              >
+                <header class="analysis-evidence-header">
+                  <p>Rendered evidence · One ride_id</p>
+                  <h3 id="analysis-ride-funnel-title">
+                    Metrocar Ride Funnel
+                  </h3>
+                </header>
+                <FunnelChart
+                  funnel={rideFunnel}
+                  id="analysis-ride-funnel-chart"
+                  ariaLabel="Ride Funnel: Request 385,477; Finished 223,652; Paid 212,628; Reviewed 148,464 within the Approved-payment path."
+                  tableCaption="Full Analysis Ride Funnel values"
+                />
+                <p class="analysis-evidence-note">
+                  Reviewed represents reviewed rides inside the
+                  Approved-payment path; the following result keeps the 7,747
+                  additional reviewed rides visible outside that strict path.
+                </p>
+              </section>
+            )}
+          </>
+        ))}
+      </article>
+    </div>
+
+    <nav class="analysis-end" aria-label="End of Full Analysis">
+      <a class="primary-button" href="/">← Return to Metrocar Overview</a>
+      <a class="secondary-link" href={githubUrl} target="_blank" rel="noreferrer">
+        View repository <span aria-hidden="true">↗</span>
+      </a>
+    </nav>
+  </main>
+</PageShell>
