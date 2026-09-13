@@ -48,8 +48,6 @@ from dotenv import load_dotenv
 load_dotenv()
 metrocar_url = os.environ["METROCAR_DATABASE_URL"]
 
-# The engine stores the connection configuration; connect() opens the active
-# database channel that pandas will reuse below.
 engine = sa.create_engine(metrocar_url)
 connection = engine.connect()
 
@@ -145,7 +143,6 @@ app_downloads_preview
 # must use every row.
 
 # %%
-# .tolist() → convert the column-label Index to a regular Python list
 app_downloads_column_names = app_downloads_preview.columns.tolist()
 app_downloads_column_names
 
@@ -186,8 +183,6 @@ duplicate_app_download_keys_exist = app_download_keys[
     "app_download_key"
 ].duplicated().any()
 
-# Keep the grain evidence together so row count, distinct keys, and duplicates
-# can be reviewed as one validation result.
 app_download_key_check = {
     "total_rows": total_app_download_rows,
     "distinct_app_download_keys": distinct_app_download_keys,
@@ -315,8 +310,6 @@ duplicate_signup_session_ids_exist = signup_identifiers[
     "session_id"
 ].duplicated().any()
 
-# Report both identifiers together because they support different claims: one
-# identifies the signup record, while the other supports a later relationship.
 signups_grain_check = {
     "total_rows": total_signup_rows,
     "distinct_user_ids": distinct_signup_user_ids,
@@ -419,8 +412,6 @@ duplicate_ride_ids_exist = ride_requests["ride_id"].duplicated().any()
 # a recorded request.
 missing_request_timestamps = int(ride_requests["request_ts"].isna().sum())
 
-# Collect the key and timestamp checks in one result so the supported request
-# grain can be reviewed before counting activity.
 ride_request_grain_check = {
     "total_rows": total_ride_request_rows,
     "distinct_ride_ids": distinct_ride_ids,
@@ -491,14 +482,11 @@ ride_completion_fields = pd.read_sql(
 ride_completion_fields.head()
 
 # %%
-# Row-aligned Boolean checks require both timestamps for the completed-ride
-# state.
+# Require both timestamps so a request is not mistaken for a completed ride.
 pickup_timestamp_present = ride_completion_fields["pickup_ts"].notna()
 dropoff_timestamp_present = ride_completion_fields["dropoff_ts"].notna()
 completed_ride_mask = pickup_timestamp_present & dropoff_timestamp_present
 
-# Boolean True values count as 1, so summing the mask counts rows that satisfy
-# both completion conditions.
 completed_rides = int(completed_ride_mask.sum())
 # Count partial timestamp states so the rule does not hide inconsistent
 # records.
@@ -559,7 +547,7 @@ requested_vs_completed
 # `user_id` answers how many users requested at least one ride.
 
 # %%
-# .nunique() counts each requesting user once despite repeated ride rows.
+# Count user IDs, not ride rows, so frequent requesters cannot inflate this total.
 distinct_requesting_users = ride_requests["user_id"].nunique()
 # Check missing user IDs separately because .nunique() excludes them and they
 # cannot connect to signup records later.
@@ -618,14 +606,12 @@ valid_duration_mask = completed_ride_mask & (
     >= ride_completion_fields["pickup_ts"]
 )
 
-# Select only valid rows and copy them before adding duration_minutes, leaving
-# the original timestamp DataFrame unchanged.
+# Work on valid-ride copies so source timestamps remain unchanged.
 valid_duration_rides = ride_completion_fields.loc[
     valid_duration_mask,
     ["ride_id", "pickup_ts", "dropoff_ts"],
 ].copy()
 
-# .dt.total_seconds() / 60 → convert time differences to minutes
 valid_duration_rides["duration_minutes"] = (
     valid_duration_rides["dropoff_ts"] - valid_duration_rides["pickup_ts"]
 ).dt.total_seconds() / 60
@@ -642,8 +628,7 @@ invalid_duration_order_count = int(
     ).sum()
 )
 valid_duration_ride_count = len(valid_duration_rides)
-# Calculate the mean only from validated durations, then return a normal
-# two-decimal Python number for the readable result.
+# Average the valid-duration cohort, not all ride requests.
 average_ride_duration_minutes = round(
     float(valid_duration_rides["duration_minutes"].mean()),
     2,
@@ -806,8 +791,7 @@ transaction_status_counts
 successful_payments = transactions.loc[
     transactions["charge_status"] == "Approved"
 ]
-# Count approved rows, check their amounts, and only then sum revenue. pandas
-# would otherwise skip missing amounts without making that issue visible.
+# Expose missing Approved amounts before summing, since pandas skips them.
 successful_payment_count = len(successful_payments)
 missing_successful_payment_amounts = int(
     successful_payments["purchase_amount_usd"].isna().sum()
@@ -935,9 +919,7 @@ ride_requests_by_platform = (
     # Keep missing platforms visible so grouped counts can still reconcile to
     # all ride requests.
     .value_counts(dropna=False)
-    # .rename_axis() → name the platform-label index
     .rename_axis("platform")
-    # .reset_index() → turn the indexed counts into DataFrame columns
     .reset_index(name="ride_requests")
 )
 ride_requests_by_platform["share_percent"] = (
@@ -996,14 +978,14 @@ ride_requests_by_platform
 # Joining raw ride requests would repeat users and corrupt the signup denominator.
 
 # %%
-# Reduce repeated ride rows to one requesting-user key before joining.
+# Deduplicate users so repeated rides cannot inflate the signup join.
 requesting_users = ride_requests[["user_id"]].drop_duplicates()
 # Verify that every requesting-user key belongs to the signup population.
 requesting_users_without_signup = int(
     (~requesting_users["user_id"].isin(signup_identifiers["user_id"])).sum()
 )
 
-# Keep signups on the left; one-to-one validation protects the user denominator.
+# Keep every signup in the denominator; unique user keys prevent multiplied rows.
 signup_request_status = signup_identifiers[["user_id"]].merge(
     requesting_users,
     on="user_id",
@@ -1032,12 +1014,10 @@ signup_dropoff_denominator = len(signup_request_status)
 registered_users_requesting_rides = int(
     signup_request_status["requested_at_least_one_ride"].sum()
 )
-# Subtract stage entrants from the signup population to obtain the absolute
-# number who did not continue.
 signup_dropoff_numerator = (
     signup_dropoff_denominator - registered_users_requesting_rides
 )
-# Divide that loss by the same signup denominator to express relative drop-off.
+# Compare non-requesting users with all signups, not only those who requested.
 signup_to_ride_request_dropoff_percent = round(
     100 * signup_dropoff_numerator / signup_dropoff_denominator,
     2,
@@ -1106,8 +1086,7 @@ signup_to_request_dropoff
 # customer drop-off.
 
 # %%
-# isin() compares each session_id with the full download-key set without
-# joining rows.
+# Check every signup link before interpreting a missing relationship as funnel behavior.
 signup_has_download_match = signup_identifiers["session_id"].isin(
     app_download_keys["app_download_key"]
 )
@@ -1183,7 +1162,7 @@ signup_download_integrity
 # must be joined by `ride_id` rather than assumed to be in the same order.
 
 # %%
-# validate="one_to_one" rejects duplicate ride IDs that could multiply rows
+# Match timestamps by ride_id and reject duplicate keys so rides cannot multiply.
 ride_activity = ride_requests[["ride_id", "user_id"]].merge(
     ride_completion_fields[["ride_id", "pickup_ts", "dropoff_ts"]],
     on="ride_id",
@@ -1221,8 +1200,7 @@ ride_activity_validation = {
 ride_activity_validation
 
 # %%
-# as_index=False keeps user_id as a column; "any" turns repeated ride rows into
-# at-least-one flags.
+# Collapse ride histories to one user state so frequent riders count once.
 requesting_user_ride_state = (
     ride_activity.groupby("user_id", as_index=False)
     .agg(
@@ -1244,8 +1222,6 @@ users_completed_at_least_one_ride = int(
     requesting_user_ride_state["completed_at_least_one_ride"].sum()
 )
 
-# The validation below checks both the one-row-per-user output grain and the
-# logical rule that completion cannot exist without a request.
 requesting_user_state_validation = {
     "ride_rows_with_missing_user_id": missing_request_user_ids,
     "distinct_requesting_user_ids": distinct_requesting_users,
@@ -1343,9 +1319,8 @@ ride_stage_columns = [
     "completed_at_least_one_ride",
 ]
 
-# Both inputs are unique on user_id, but requesting_user_ride_state contains
-# only registered users who requested at least one ride. The LEFT JOIN therefore
-# preserves one row per signup.
+# Keep every signup while joining only its unique requester state; unmatched
+# users must remain in the signup denominator.
 signup_funnel_state = signup_identifiers[["user_id", "session_id"]].merge(
     requesting_user_ride_state,
     on="user_id",
@@ -1358,15 +1333,14 @@ signup_without_ride_state = (
     signup_funnel_state["_ride_state_match"] == "left_only"
 )
 
-# No ride-state match means this signed-up user did not request or complete a ride
+# A signup absent from requester state reached neither recorded ride stage.
 signup_funnel_state[ride_stage_columns] = (
     signup_funnel_state[ride_stage_columns]
     .fillna(False)
     .astype(bool)
 )
 
-# For unmatched signups, invert each flag and use .all() to verify every absent
-# ride state was filled as False, not merely a sample of them.
+# Check every unmatched signup has both downstream flags set to False.
 signup_ride_state_join_validation = {
     "input_signup_rows": total_signup_rows,
     "output_signup_rows": len(signup_funnel_state),
@@ -1399,7 +1373,7 @@ signup_ride_state_join_validation = {
 signup_ride_state_join_validation
 
 # %%
-# Downloads stay on the left so every app_download_key remains in the base
+# Preserve downloads without signups; excluding them would shrink the funnel base.
 downloads_with_signup_state = app_download_keys[["app_download_key"]].merge(
     signup_funnel_state[
         [
@@ -1423,7 +1397,7 @@ downloads_with_signup_state["signed_up"] = (
     downloads_with_signup_state["_signup_match"] == "both"
 )
 
-# Downloads without a signup have no later user-stage membership
+# A download without signup cannot inherit later user-stage membership.
 downloads_with_signup_state[ride_stage_columns] = (
     downloads_with_signup_state[ride_stage_columns]
     .fillna(False)
@@ -1441,8 +1415,7 @@ base_funnel_columns = [
     "completed_at_least_one_ride",
 ]
 
-# Select only the agreed columns so helper merge fields cannot leak into the
-# final one-row-per-download base table.
+# Exclude merge metadata from the one-row-per-download analytical base.
 download_anchored_funnel_base = downloads_with_signup_state[
     base_funnel_columns
 ].copy()
@@ -1468,8 +1441,7 @@ completed_user_count = int(
     ].sum()
 )
 
-# Validate the base in groups: preserved download grain, required schema and
-# flags, then reconciliation to the previously accepted stage counts.
+# Recheck download grain, complete flags, and accepted counts before summarizing.
 download_anchored_base_validation = {
     "input_download_rows": total_app_download_rows,
     "output_base_rows": len(download_anchored_funnel_base),
@@ -1625,15 +1597,14 @@ funnel_stage_columns = [
     "completed_at_least_one_ride",
 ]
 
-# True counts as 1 and False as 0 when Boolean columns are summed
+# At one row per download, Boolean sums count entrants in each stage.
 stage_counts_by_flag = (
     download_anchored_funnel_base[funnel_stage_columns]
     .sum()
     .astype(int)
 )
 
-# Keep labels in the same explicit order as the stage flags so the summary
-# communicates progression rather than pandas' incidental column ordering.
+# Fix journey order explicitly; a wrong label order would misstate transitions.
 ordered_funnel_stage_labels = [
     "Download",
     "Signup",
@@ -1661,7 +1632,7 @@ core_funnel_summary = pd.DataFrame(
 core_funnel_summary
 
 # %%
-# .shift(1) aligns each stage with the count from the row immediately above it
+# Align each stage with its predecessor so conversion uses the right denominator.
 core_funnel_summary["previous_stage_count"] = core_funnel_summary[
     "stage_count"
 ].shift(1)
@@ -1834,8 +1805,8 @@ core_funnel_summary_validation
 # unchanged.
 core_funnel_metrics_before_dropoff_count = core_funnel_summary.copy()
 
-# Absolute drop-off subtracts people who reached the current stage from those
-# present at the previous stage; unlike percentage drop-off, its unit is people.
+# Subtract the current stage from the previous to count non-continuing entrants,
+# not percentage loss.
 core_funnel_summary["dropoff_count_from_previous"] = (
     core_funnel_summary["previous_stage_count"]
     - core_funnel_summary["stage_count"]
@@ -1843,17 +1814,14 @@ core_funnel_summary["dropoff_count_from_previous"] = (
 core_funnel_summary
 
 # %%
-# Shift stage names alongside counts so every downstream row can be labeled as
-# a readable "previous → current" transition.
+# Align prior stage names with counts to label each adjacent transition.
 previous_stage_labels = core_funnel_summary["stage"].shift(1)
-# notna() removes only the first row, whose shifted previous-stage count is
-# missing.
+# Exclude Download, which has no previous stage or adjacent transition.
 adjacent_stage_rows = core_funnel_summary.loc[
     core_funnel_summary["previous_stage_count"].notna()
 ]
 
-# Check both complementary metrics instead of hard-coding a stage; validation
-# can then confirm that lowest conversion is also highest percentage drop-off.
+# Derive and cross-check the weakest transition without hard-coding its stage.
 lowest_conversion_index = adjacent_stage_rows[
     "percent_of_previous"
 ].idxmin()
@@ -1866,8 +1834,6 @@ weakest_transition = (
     f"{core_funnel_summary.loc[lowest_conversion_index, 'stage']}"
 )
 
-# Gather the winning transition and its relative and absolute losses into one
-# small factual result for the learner-facing conclusion.
 weakest_transition_result = {
     "transition": weakest_transition,
     "percent_of_previous": core_funnel_summary.loc[
@@ -1886,8 +1852,7 @@ weakest_transition_result = {
 weakest_transition_result
 
 # %%
-# Validate the new count, the derived transition, and the unchanged earlier
-# metrics as three separate responsibilities.
+# Check new drop-off results while protecting accepted counts and percentages.
 core_funnel_dropoff_validation = {
     # The first stage has no previous-stage count to subtract.
     "download_dropoff_count_is_missing": bool(
@@ -1960,8 +1925,7 @@ core_funnel_dropoff_validation
 # denominator-based funnel metrics.
 
 # %%
-# Copy the validated columns before adding display-only labels and hover
-# strings.
+# Keep display labels and hover formatting separate from validated funnel metrics.
 core_funnel_plot = core_funnel_summary[
     [
         "stage",
@@ -1985,8 +1949,7 @@ core_funnel_plot["percent_of_top_display"] = [
     f"{value:.2f}%" for value in core_funnel_plot["percent_of_top"]
 ]
 
-# custom_data carries denominator-based metrics into hover without visual
-# clutter.
+# Show counts on the chart and keep denominator-based metrics in hover.
 metrocar_customer_funnel = px.funnel(
     core_funnel_plot,
     x="stage_count",
@@ -1998,8 +1961,6 @@ metrocar_customer_funnel = px.funnel(
     ],
     title="Metrocar Customer Funnel",
 )
-# Hover indexes follow custom_data order: [0] is Percent of Previous and [1] is
-# Percent of Top.
 metrocar_customer_funnel.update_traces(
     texttemplate="%{value:,.0f}",
     textposition="inside",
@@ -2043,7 +2004,8 @@ metrocar_customer_funnel
 # ```
 
 # %%
-# validate="one_to_one" rejects duplicate ride IDs that could multiply rows
+# Preserve one request row per ride_id; duplicate acceptance matches would
+# distort the later user-history diagnostic.
 ride_activity_with_acceptance = ride_activity.merge(
     ride_acceptance_fields[["ride_id", "accept_ts"]],
     on="ride_id",
@@ -2060,8 +2022,7 @@ accepted_ride_records_after_join = int(
     ride_activity_with_acceptance["accepted_ride"].sum()
 )
 
-# Verify that the acceptance join preserved ride grain, matched every ride, and
-# reproduced the already accepted Q07 count before moving to user history.
+# Reconcile ride grain, link coverage, and Q07 acceptance before reducing to users.
 ride_acceptance_join_validation = {
     "input_ride_rows": len(ride_activity),
     "output_ride_rows": len(ride_activity_with_acceptance),
@@ -2084,8 +2045,8 @@ ride_acceptance_join_validation = {
 ride_acceptance_join_validation
 
 # %%
-# as_index=False keeps user_id as a column; "any" turns repeated ride rows into
-# at-least-one flags.
+# Reduce repeated rides to one user-history state; acceptance and completion
+# may have occurred on different rides.
 requesting_user_acceptance_completion_state = (
     ride_activity_with_acceptance.groupby("user_id", as_index=False)
     .agg(
@@ -2109,7 +2070,7 @@ completed_requesting_user_count = int(
     ].sum()
 )
 
-# Filter the one-row-per-user state to requesters with no completed ride.
+# Isolate the non-completing requesters from the weak core-funnel transition.
 non_completing_requesters = (
     requesting_user_acceptance_completion_state.loc[
         ~requesting_user_acceptance_completion_state[
@@ -2119,7 +2080,7 @@ non_completing_requesters = (
 )
 non_completing_requester_count = len(non_completing_requesters)
 
-# Split that cohort into mutually exclusive acceptance-history states.
+# Partition this user cohort by whether any ride in its history was accepted.
 never_accepted_non_completer_count = int(
     (
         ~non_completing_requesters[
@@ -2133,8 +2094,6 @@ accepted_non_completer_count = int(
     ].sum()
 )
 
-# Build a compact two-row result so the mutually exclusive cohort split is easy
-# to inspect before calculating shares.
 non_completer_acceptance_split = pd.DataFrame(
     [
         {
@@ -2266,8 +2225,7 @@ acceptance_diagnostic_validation
 # separately rather than being discarded.
 
 # %%
-# Load only review and ride identifiers because this step validates linkage,
-# not ratings.
+# Load only identifiers needed to validate review-to-ride membership, not ratings.
 reviews = pd.read_sql(
     """
     SELECT review_id, ride_id
@@ -2287,8 +2245,7 @@ distinct_reviewed_ride_ids = reviews["ride_id"].nunique()
 missing_reviewed_ride_ids = int(reviews["ride_id"].isna().sum())
 repeated_reviewed_ride_ids = int(reviews["ride_id"].duplicated().sum())
 
-# Reduce to distinct ride IDs before joining, even though no repeats are
-# observed.
+# Use one key per reviewed ride so reviews cannot multiply the request base.
 reviewed_ride_ids = reviews[["ride_id"]].drop_duplicates()
 # Confirm every reviewed ride can be anchored to a requested ride before review
 # state is added to the ride funnel.
@@ -2313,8 +2270,7 @@ review_relationship_validation = {
 review_relationship_validation
 
 # %%
-# Reduce payment and review records to one Boolean state row per ride_id before
-# joining.
+# Reduce Paid and Reviewed lookups to ride_id grain before joining to requests.
 approved_ride_state = successful_payments[["ride_id"]].drop_duplicates()
 approved_ride_state["approved_payment"] = True
 
@@ -2339,8 +2295,7 @@ ride_level_stage_state = (
 )
 ride_level_stage_state["requested"] = True
 
-# Left joins preserve requested rides; one-to-one validation rejects row
-# multiplication.
+# Preserve every requested ride while rejecting matches that would inflate it.
 ride_level_stage_state = ride_level_stage_state.merge(
     approved_ride_state,
     on="ride_id",
@@ -2404,8 +2359,7 @@ reviewed_outside_paid = int(
         & ~ride_level_stage_state["approved_payment"]
     ).sum()
 )
-# Keep the all-reviews overlap separate from the strict Reviewed stage so the
-# 7,747 reviews outside Paid remain visible evidence.
+# Keep within-Paid reviews separate from outside-Paid evidence.
 reviewed_with_approved_payment = int(
     ride_level_stage_state["reviewed_in_approved_payment_path"].sum()
 )
@@ -2422,8 +2376,7 @@ strict_reviewed_outside_paid = int(
     ).sum()
 )
 
-# Use the nested Reviewed flag rather than the all-reviews flag for the final
-# stage count.
+# Count only reviews inside the Approved-payment path as strict Reviewed.
 ride_funnel_summary = pd.DataFrame(
     {
         "stage": [
@@ -2444,8 +2397,7 @@ ride_funnel_summary = pd.DataFrame(
         ],
     }
 )
-# .shift() supplies the preceding count used by Percent of Previous; Request
-# remains missing because there is no earlier ride stage.
+# Align each stage with its previous denominator; Request has no prior stage.
 ride_funnel_summary["previous_stage_count"] = ride_funnel_summary[
     "stage_count"
 ].shift(1)
@@ -2539,7 +2491,7 @@ ride_funnel_validation = {
 ride_funnel_validation
 
 # %%
-# Copy the validated columns before adding display-only hover strings.
+# Keep hover formatting in a plotting copy, leaving strict stage counts intact.
 ride_funnel_plot = ride_funnel_summary[
     [
         "stage",
@@ -2557,8 +2509,7 @@ ride_funnel_plot["percent_of_top_display"] = [
     f"{value:.2f}%" for value in ride_funnel_plot["percent_of_top"]
 ]
 
-# custom_data carries denominator-based metrics into hover without visual
-# clutter.
+# Show counts on the chart and keep denominator-based metrics in hover.
 metrocar_ride_funnel = px.funnel(
     ride_funnel_plot,
     x="stage_count",
@@ -2570,8 +2521,6 @@ metrocar_ride_funnel = px.funnel(
     ],
     title="Metrocar Ride Funnel",
 )
-# Hover indexes follow custom_data order: [0] is Percent of Previous and [1] is
-# Percent of Top.
 metrocar_ride_funnel.update_traces(
     texttemplate="%{value:,.0f}",
     textposition="inside",
