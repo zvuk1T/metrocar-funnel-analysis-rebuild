@@ -23,7 +23,10 @@ const codeGuidesByCellIndex = new Map();
 for (const guide of codeGuides) {
   const matchingCells = sourceCells.filter(
     (cell) =>
-      cell.type === "code" && cell.content.includes(guide.sourceMatcher),
+      cell.type === "code" &&
+      (guide.exactMatch
+        ? cell.content.trim() === guide.sourceMatcher
+        : cell.content.includes(guide.sourceMatcher)),
   );
 
   if (matchingCells.length !== 1) {
@@ -41,6 +44,16 @@ for (const guide of codeGuides) {
   }
 
   codeGuidesByCellIndex.set(matchingCell.index, guide);
+}
+
+const codeCellWithoutGuide = sourceCells.find(
+  (cell) => cell.type === "code" && !codeGuidesByCellIndex.has(cell.index),
+);
+
+if (codeCellWithoutGuide) {
+  throw new Error(
+    `Python source cell ${codeCellWithoutGuide.index + 1} has no Code Guide`,
+  );
 }
 
 const tableOfContents = [];
