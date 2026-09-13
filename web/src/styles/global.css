@@ -809,13 +809,7 @@ h2 {
 }
 
 .analysis-code .astro-code .line.python-comment-line > span {
-  transition: color 140ms ease;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .analysis-code .astro-code .line.python-comment-line:hover > span {
-    color: var(--teal) !important;
-  }
+  color: #71C6B1 !important;
 }
 
 .code-guide {
@@ -843,12 +837,51 @@ h2 {
 }
 
 .code-guide-content {
-  padding: 0.15rem 0.8rem 0.9rem;
+  padding: 0.9rem 0.85rem 1rem;
   border-top: 1px solid rgba(113, 198, 177, 0.1);
 }
 
-.code-guide-item {
+.code-guide-walkthrough {
+  max-width: 52rem;
+}
+
+.code-guide-walkthrough section + section {
+  margin-top: 0.85rem;
+}
+
+.code-guide-walkthrough h4,
+.code-guide-methods-title {
+  margin: 0 0 0.28rem;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.code-guide-walkthrough h4 {
+  color: var(--teal);
+}
+
+.code-guide-walkthrough p {
+  margin: 0;
+  color: var(--text-soft);
+  font-size: 0.84rem;
+  line-height: 1.65;
+}
+
+.code-guide-methods {
+  margin-top: 1rem;
   padding-top: 0.85rem;
+  border-top: 1px solid rgba(113, 198, 177, 0.16);
+}
+
+.code-guide-methods-title {
+  color: var(--muted);
+}
+
+.code-guide-item {
+  padding-top: 0.7rem;
 }
 
 .code-guide-item + .code-guide-item {
@@ -856,12 +889,12 @@ h2 {
   border-top: 1px solid rgba(198, 222, 207, 0.1);
 }
 
-.code-guide-item h4 {
+.code-guide-item h5 {
   margin: 0 0 0.65rem;
   font-size: 0.82rem;
 }
 
-.code-guide-item h4 code {
+.code-guide-item h5 code {
   color: var(--teal);
 }
 

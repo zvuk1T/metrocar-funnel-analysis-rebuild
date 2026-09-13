@@ -5,6 +5,16 @@ export const codeGuides = [
     id: "validate-download-key",
     sourceMatcher:
       'duplicate_app_download_keys_exist = app_download_keys[',
+    walkthrough: {
+      context:
+        "The earlier five-row preview confirmed database access and the table structure, but it could not establish the full `app_downloads` grain.",
+      goal:
+        "Test whether `app_download_key` uniquely identifies one download record before downloads are used as the customer-funnel base.",
+      action:
+        "Load every download key, compare the total row count with the distinct-key count, explicitly check for duplicates, and keep the three checks together in one validation result.",
+      result:
+        "The table has 23,608 rows and 23,608 distinct keys, with no duplicates. This supports one download record per `app_download_key` for the next count; it does not establish one person or device per key.",
+    },
     items: [
       {
         construct: ".nunique()",
@@ -24,6 +34,16 @@ export const codeGuides = [
     id: "completed-ride-mask",
     sourceMatcher:
       "completed_ride_mask = pickup_timestamp_present & dropoff_timestamp_present",
+    walkthrough: {
+      context:
+        "The preceding step established 385,477 unique ride-request rows at `ride_id` grain. The source has no separate completion flag, so completion must be derived from the accepted timestamp definition.",
+      goal:
+        "Identify completed ride records while preserving one row per `ride_id` and check for inconsistent partial timestamp states.",
+      action:
+        "Create row-aligned masks for pickup and drop-off presence, combine them with AND to define completion, and sum the completed mask. Count pickup-only and drop-off-only rows separately so partial timestamp states remain visible rather than being silently grouped with other incomplete rides.",
+      result:
+        "223,652 of 385,477 ride requests meet the accepted completion rule, and no row has only a pickup or only a drop-off timestamp. This establishes the row-level completion state used later in the analysis.",
+    },
     items: [
       {
         construct: ".notna()",
@@ -48,6 +68,16 @@ export const codeGuides = [
   {
     id: "calculate-valid-ride-duration",
     sourceMatcher: 'valid_duration_rides["duration_minutes"] = (',
+    walkthrough: {
+      context:
+        "The accepted completion mask already identifies rides with both timestamps, but elapsed time is valid only when drop-off is not earlier than pickup.",
+      goal:
+        "Measure average pickup-to-drop-off duration for valid completed rides without including incomplete or reversed records.",
+      action:
+        "Filter completed rides to chronological timestamps and copy only the needed columns. Subtract pickup from drop-off, convert the resulting timedeltas to minutes, count any reversed completed records, and then calculate the mean from the valid rows.",
+      result:
+        "All 223,652 completed rides have valid timestamp order, and their average recorded duration is 52.61 minutes. The result describes valid completed rides, not all ride requests.",
+    },
     items: [
       {
         construct: ".loc[mask, columns].copy()",
@@ -73,6 +103,16 @@ export const codeGuides = [
     id: "many-to-one-platform-joins",
     sourceMatcher:
       'ride_requests_with_signup = ride_requests[["ride_id", "user_id"]].merge(',
+    walkthrough: {
+      context:
+        "Ride requests carry `user_id`, while platform is stored on the signup-linked download record. The request, signup, and download grains were validated earlier, so the two relationships can now be joined explicitly.",
+      goal:
+        "Attach the signup-linked platform to every ride request without changing the one-row-per-`ride_id` denominator, while exposing any missing relationships.",
+      action:
+        "LEFT JOIN requests to signups on `user_id`, then join the resulting session key to downloads through `session_id = app_download_key`. Require many-to-one cardinality, retain merge indicators, and reconcile rows, distinct ride IDs, and missing matches after both joins.",
+      result:
+        "Both joins preserve all 385,477 ride requests and distinct ride IDs, with no missing signup, download, or platform matches. The next cell can therefore aggregate the preserved request rows by platform.",
+    },
     items: [
       {
         construct: '.merge(..., how="left")',
@@ -98,6 +138,16 @@ export const codeGuides = [
     id: "requesting-user-membership",
     sourceMatcher:
       'requesting_users = ride_requests[["user_id"]].drop_duplicates()',
+    walkthrough: {
+      context:
+        "`ride_requests` is still at one row per ride request, so the same registered `user_id` can appear many times. `signup_identifiers` has one row per registered user, and that complete signup population must remain the denominator for Signup → Request drop-off.",
+      goal:
+        "Create one request-membership flag for every signup without allowing repeat ride requests to multiply signup rows, and verify that every requester belongs to the signup population.",
+      action:
+        "First reduce the ride table to distinct requesting-user keys and check those keys against the signup IDs. Then left-join them onto the complete signup population with one-to-one validation, use the merge indicator to mark request membership, and reconcile the signup row count and user grain.",
+      result:
+        "`signup_request_status` contains one row per signed-up `user_id` with an explicit request flag. All 17,623 signup records are preserved and no requesting user falls outside that population, so the next cell can calculate drop-off from a stable denominator.",
+    },
     items: [
       {
         construct: ".drop_duplicates()",
@@ -122,6 +172,16 @@ export const codeGuides = [
   {
     id: "reduce-rides-to-user-state",
     sourceMatcher: "requesting_user_ride_state = (",
+    walkthrough: {
+      context:
+        "The preceding join produced `ride_activity` at one row per `ride_id`, preserving all 385,477 requests and applying the accepted completion rule. A single user may still have many ride rows.",
+      goal:
+        "Reduce those repeated ride rows to one state row per requesting `user_id` while retaining whether each user ever requested and ever completed a ride.",
+      action:
+        "Group the ride-level rows by `user_id`. Within each group, use `any` on the request and completion flags so a user receives `True` when at least one of their rides reached that state.",
+      result:
+        "`requesting_user_ride_state` has one row per requesting user with two at-least-one Boolean states. The following validation confirms 12,406 requesting users, including 6,233 who completed at least one ride, so this table can be joined without multiplying signup rows.",
+    },
     items: [
       {
         construct: ".groupby(..., as_index=False)",
@@ -140,6 +200,16 @@ export const codeGuides = [
   {
     id: "fill-absent-ride-state",
     sourceMatcher: "signup_funnel_state[ride_stage_columns] = (",
+    walkthrough: {
+      context:
+        "`signup_identifiers` contains every registered user, while `requesting_user_ride_state` contains only the subset who requested at least one ride. Both inputs are unique on `user_id`, so a left join will leave missing ride-state values only for signups absent from the requester table.",
+      goal:
+        "Attach request and completion state to every signup, preserve one row per registered `user_id`, and represent absence from the requester table as explicit `False` stage membership.",
+      action:
+        "Left-join the requesting-user state onto the signup population with one-to-one validation and retain the merge indicator. Identify unmatched signups, replace their missing request and completion values with `False`, convert both columns to Boolean type, and validate the preserved grain and filled states.",
+      result:
+        "`signup_funnel_state` contains all 17,623 signup rows with explicit request and completion flags and no multiplication. It is now a safe one-row-per-signup lookup for the next join onto the download population.",
+    },
     items: [
       {
         construct: ".fillna(False).astype(bool)",
@@ -159,6 +229,16 @@ export const codeGuides = [
     id: "derive-funnel-percentages",
     sourceMatcher:
       'core_funnel_summary["previous_stage_count"] = core_funnel_summary[',
+    walkthrough: {
+      context:
+        "`core_funnel_summary` already contains four ordered rows, one per customer-funnel stage, with counts derived from the validated download-level base. The remaining question is how each stage compares with both its immediate predecessor and the selected top stage.",
+      goal:
+        "Add previous-stage conversion, adjacent percentage drop-off, and Percent of Top with explicit denominators while leaving the first stage's previous-stage metrics undefined.",
+      action:
+        "Shift `stage_count` down one row so each downstream stage aligns with its preceding count. Divide by that aligned denominator for Percent of Previous, subtract from 100 for percentage drop-off, use the Download count as the Percent-of-Top denominator, and round only the displayed metrics.",
+      result:
+        "The grain remains one row per ordered stage, now with both denominator-based percentage views. Download keeps missing previous-stage metrics and 100.00% of top; the downstream values are ready for the following reconciliation checks.",
+    },
     items: [
       {
         construct: ".shift(1)",
@@ -183,6 +263,16 @@ export const codeGuides = [
   {
     id: "find-weakest-transition",
     sourceMatcher: "lowest_conversion_index = adjacent_stage_rows[",
+    walkthrough: {
+      context:
+        "The ordered `core_funnel_summary` already contains validated counts, Percent of Previous, percentage drop-off, and absolute drop-off count. The weakest adjacent transition should now be identified from those calculated metrics rather than named in advance.",
+      goal:
+        "Find the transition with the lowest Percent of Previous, confirm that it also has the highest percentage drop-off, and collect its relative and absolute losses.",
+      action:
+        "Shift the stage labels so every downstream row can be paired with its predecessor, then exclude Download because it has no previous-stage denominator. Use `.idxmin()` and `.idxmax()` to locate the extreme rows, build the readable transition label, and retrieve that row's metrics.",
+      result:
+        "`weakest_transition_result` identifies Requested at least one ride → Completed at least one ride: 50.24% converted, 49.76% dropped off, and the absolute drop-off is 6,173 users. The following cell verifies that both percentage measures select the same transition.",
+    },
     items: [
       {
         construct: ".idxmin() and .idxmax()",
@@ -201,6 +291,16 @@ export const codeGuides = [
   {
     id: "plot-customer-funnel",
     sourceMatcher: "metrocar_customer_funnel = px.funnel(",
+    walkthrough: {
+      context:
+        "The validated `core_funnel_summary` already contains one row per ordered customer-funnel stage, and the weakest transition has been established. This cell is presentation-only: it should visualize accepted values without rebuilding membership.",
+      goal:
+        "Create a clean Plotly customer funnel that shows absolute counts directly and keeps both denominator-based percentages available in hover.",
+      action:
+        "Copy the stage, count, Percent of Previous, and Percent of Top columns into a plotting view. Add concise labels, format the first hover percentage as `N/A`, pass the view to `px.funnel()`, carry both percentages in `custom_data`, and define the visible counts and exact hover text.",
+      result:
+        "`metrocar_customer_funnel` displays 23,608 → 17,623 → 12,406 → 6,233 in validated order. It adds presentation labels and hover text only; `core_funnel_summary` and customer-stage membership remain unchanged.",
+    },
     items: [
       {
         construct: "px.funnel()",
@@ -226,6 +326,16 @@ export const codeGuides = [
     id: "build-strict-ride-path",
     sourceMatcher:
       'ride_level_stage_state["reviewed_in_approved_payment_path"] = (',
+    walkthrough: {
+      context:
+        "Reviews have been validated at `ride_id` grain and reduced to a unique lookup. Approved-payment records and the existing ride-level completion state are also available, but raw review membership must remain distinct from the strict Paid → Reviewed path.",
+      goal:
+        "Produce one state row per requested `ride_id` containing Requested, Finished, Approved payment, all-Reviewed, and strict Reviewed-within-Approved flags.",
+      action:
+        "Reduce Approved-payment rides to one marked row per `ride_id`, then start from the request-based `ride_activity` table and reuse its completion state as Finished. Left-join the unique payment and review lookups with one-to-one validation, convert absent matches to `False`, and intersect Reviewed with Approved payment for the strict final-stage flag.",
+      result:
+        "`ride_level_stage_state` preserves one row per requested `ride_id` and retains both all-review and strict-review membership. The next cell can validate the nested ride path while separately preserving the 7,747 reviewed rides outside Paid.",
+    },
     items: [
       {
         construct: ".drop_duplicates()",
@@ -244,6 +354,12 @@ export const codeGuides = [
         what: "Returns True only where both row-aligned conditions are True.",
         whyHere: "The strict Reviewed stage includes only rides that are both reviewed and in the Approved-payment path.",
         output: "A nested reviewed_in_approved_payment_path flag at ride_id grain.",
+      },
+      {
+        construct: ".fillna(False).astype(bool)",
+        what: "Replaces missing lookup matches with False and stores the stage columns as Boolean values.",
+        whyHere: "A requested ride absent from a downstream lookup did not reach that recorded state, so the final table needs an explicit False rather than a missing value.",
+        output: "Complete True/False payment and review flags for every requested ride row.",
       },
     ],
   },

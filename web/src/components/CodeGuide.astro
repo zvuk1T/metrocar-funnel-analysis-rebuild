@@ -1,28 +1,66 @@
 ---
 const { guide } = Astro.props;
+
+const guideTextParts = (text) =>
+  text.split(/(`[^`]+`)/g).filter(Boolean).map((part) => ({
+    isCode: part.startsWith("`") && part.endsWith("`"),
+    text: part.startsWith("`") && part.endsWith("`")
+      ? part.slice(1, -1)
+      : part,
+  }));
 ---
 
 <details class="code-guide">
   <summary>Explain this code</summary>
   <div class="code-guide-content">
-    {guide.items.map((item) => (
-      <section class="code-guide-item">
-        <h4><code>{item.construct}</code></h4>
-        <dl>
-          <div>
-            <dt>What</dt>
-            <dd>{item.what}</dd>
-          </div>
-          <div>
-            <dt>Why here</dt>
-            <dd>{item.whyHere}</dd>
-          </div>
-          <div>
-            <dt>Output</dt>
-            <dd>{item.output}</dd>
-          </div>
-        </dl>
+    <div class="code-guide-walkthrough">
+      <section>
+        <h4>Context</h4>
+        <p>{guideTextParts(guide.walkthrough.context).map((part) =>
+          part.isCode ? <code>{part.text}</code> : part.text
+        )}</p>
       </section>
-    ))}
+      <section>
+        <h4>Goal</h4>
+        <p>{guideTextParts(guide.walkthrough.goal).map((part) =>
+          part.isCode ? <code>{part.text}</code> : part.text
+        )}</p>
+      </section>
+      <section>
+        <h4>Action</h4>
+        <p>{guideTextParts(guide.walkthrough.action).map((part) =>
+          part.isCode ? <code>{part.text}</code> : part.text
+        )}</p>
+      </section>
+      <section>
+        <h4>Result</h4>
+        <p>{guideTextParts(guide.walkthrough.result).map((part) =>
+          part.isCode ? <code>{part.text}</code> : part.text
+        )}</p>
+      </section>
+    </div>
+
+    <div class="code-guide-methods">
+      <h4 class="code-guide-methods-title">Methods used</h4>
+      {guide.items.map((item) => (
+        <section class="code-guide-item">
+          <h5><code>{item.construct}</code></h5>
+          <dl>
+            <div>
+              <dt>What</dt>
+              <dd>{item.what}</dd>
+            </div>
+            <div>
+              <dt>Why here</dt>
+              <dd>{item.whyHere}</dd>
+            </div>
+            <div>
+              <dt>Output</dt>
+              <dd>{item.output}</dd>
+            </div>
+          </dl>
+        </section>
+      ))}
+    </div>
   </div>
 </details>
