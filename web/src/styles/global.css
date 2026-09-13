@@ -837,95 +837,60 @@ h2 {
 }
 
 .code-guide-content {
-  padding: 0.9rem 0.85rem 1rem;
+  padding: 0.8rem 0.85rem 0.95rem;
   border-top: 1px solid rgba(113, 198, 177, 0.1);
 }
 
-.code-guide-walkthrough {
+.code-guide-steps {
   max-width: 52rem;
-}
-
-.code-guide-walkthrough section + section {
-  margin-top: 0.85rem;
-}
-
-.code-guide-walkthrough h4,
-.code-guide-methods-title {
-  margin: 0 0 0.28rem;
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  font-weight: 750;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-}
-
-.code-guide-walkthrough h4 {
-  color: var(--teal);
-}
-
-.code-guide-walkthrough p {
   margin: 0;
-  color: var(--text-soft);
-  font-size: 0.84rem;
-  line-height: 1.65;
+  padding: 0;
+  list-style: none;
 }
 
-.code-guide-methods {
-  margin-top: 1rem;
-  padding-top: 0.85rem;
-  border-top: 1px solid rgba(113, 198, 177, 0.16);
-}
-
-.code-guide-methods-title {
-  color: var(--muted);
-}
-
-.code-guide-item {
-  padding-top: 0.7rem;
-}
-
-.code-guide-item + .code-guide-item {
-  margin-top: 0.85rem;
+.code-guide-step + .code-guide-step {
+  margin-top: 0.8rem;
+  padding-top: 0.8rem;
   border-top: 1px solid rgba(198, 222, 207, 0.1);
 }
 
-.code-guide-item h5 {
-  margin: 0 0 0.65rem;
-  font-size: 0.82rem;
+.code-guide-step pre {
+  margin: 0 0 0.38rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
 }
 
-.code-guide-item h5 code {
+.code-guide-step pre code {
   color: var(--teal);
+  font-size: 0.78rem;
+  font-weight: 680;
+  line-height: 1.5;
 }
 
-.code-guide-item dl {
-  margin: 0;
-}
-
-.code-guide-item dl div {
-  display: grid;
-  grid-template-columns: 4.6rem minmax(0, 1fr);
-  gap: 0.7rem;
-}
-
-.code-guide-item dl div + div {
-  margin-top: 0.42rem;
-}
-
-.code-guide-item dt {
-  color: var(--muted);
-  font-family: var(--mono);
-  font-size: 0.6rem;
-  font-weight: 750;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.code-guide-item dd {
+.code-guide-step p,
+.code-guide-after p {
   margin: 0;
   color: var(--text-soft);
-  font-size: 0.75rem;
-  line-height: 1.55;
+  font-size: 0.79rem;
+  line-height: 1.6;
+}
+
+.code-guide-after {
+  max-width: 52rem;
+  margin-top: 0.85rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid rgba(113, 198, 177, 0.16);
+}
+
+.code-guide-after span {
+  display: block;
+  margin-bottom: 0.24rem;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 0.59rem;
+  font-weight: 750;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
 }
 
 .analysis-funnel-evidence {
