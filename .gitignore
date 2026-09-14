@@ -6,3 +6,6 @@
 web/node_modules/
 web/dist/
 web/.astro/
+
+# Private local reasoning and project history
+/thinking-archive/
