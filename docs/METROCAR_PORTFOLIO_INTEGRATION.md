@@ -26,7 +26,7 @@ The **Metrocar Overview** is the compact recruiter-first entry. **Explore Full A
 
 The Full Analysis is a readable web or HTML presentation of the real learner-facing `metrocar_funnel_analysis.py`, not a second analytical implementation. GitHub remains available for repository and history access, but it is not required merely to follow the analytical reasoning.
 
-The exact Python-to-web presentation mechanism is intentionally open.
+The current implementation uses Astro to render the authored Python source at build time; it does not execute Python or reconstruct runtime tables.
 
 ## Shared Shell
 
@@ -42,6 +42,13 @@ Metrocar should inherit the future portfolio's shared presentation conventions:
 - Back to Portfolio behavior.
 
 Both presentation depths should use this shared shell while allowing different content density: the Overview is compact, and the Full Analysis is a long-form reading experience.
+
+### Homepage return link
+
+The shared shell supports a **Back to Homepage** link on both the Overview and Full Analysis through the optional build-time `HOMEPAGE_URL`, an absolute Homepage base URL.
+It resolves `#projects` against that base URL, preserving its path and consistently targeting the Projects section.
+When `HOMEPAGE_URL` is unset or empty, the link is omitted.
+Supply the value only at build time; do not persist validation or production hostnames in repository files.
 
 ## Visual Relationship
 
@@ -65,7 +72,7 @@ Across its two presentation depths, Metrocar should preserve:
 
 ## Hero Direction
 
-A strong historical candidate for the hero headline is:
+Data has accepted the hero headline:
 
 > **Where does Metrocar lose momentum?**
 
@@ -73,7 +80,7 @@ The current analytical business question remains:
 
 > **Where does Metrocar lose customers on the path from app download to a completed ride?**
 
-The first may serve as the hero headline while the second provides analytical framing. Final public copy is not locked yet.
+The accepted hero headline provides the entry point while the business question retains the analytical framing.
 
 ## Historical Ideas Worth Retaining
 
@@ -102,8 +109,6 @@ Do not inherit:
 - exact shared navigation
 - exact typography
 - final design tokens
-- exact Python-to-web or HTML presentation mechanism
-- final Overview-to-Full-Analysis routing
-- frontend technology — Astro remains the existing portfolio preference, but is not locked for implementation
 - final deployment topology and domain
-- final hero copy
+
+The final Learning review remains deferred.

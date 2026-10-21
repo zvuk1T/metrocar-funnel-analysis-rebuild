@@ -10,6 +10,10 @@ interface Props {
 const { title, description, current } = Astro.props;
 const githubUrl =
   "https://github.com/zvuk1T/metrocar-funnel-analysis-rebuild";
+const homepageBaseUrl = import.meta.env.HOMEPAGE_URL?.trim();
+const homepageUrl = homepageBaseUrl
+  ? new URL("#projects", homepageBaseUrl).href
+  : undefined;
 ---
 
 <!doctype html>
@@ -56,7 +60,10 @@ const githubUrl =
     <footer class="site-footer">
       <div class="shell-inner footer-inner">
         <p>Metrocar · Analytical Case Study</p>
-        <p>Independent project · future Portfolio / Career Hub</p>
+        <p>Educational MasterSchool case study</p>
+        {homepageUrl && (
+          <a class="secondary-link" href={homepageUrl}>Back to Homepage</a>
+        )}
       </div>
     </footer>
   </body>
