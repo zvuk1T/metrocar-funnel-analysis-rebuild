@@ -67,6 +67,9 @@ denominators, and chart values. SQL/Python reconciliation covered
 - [Python analysis and explanations](metrocar_funnel_analysis.py)
 - [SQL Q01–Q10](metrocar_database_questions.sql)
 - [Web presentation source](web/)
+- [Historical MasterSchool source brief](docs/MASTERSCHOOL_METROCAR_SOURCE_BRIEF.md)
+- [How we work and learn](docs/HOW-WE-WORK-AND-LEARN.md)
+- [Image assets](assets/)
 
 ## Reproduce
 
