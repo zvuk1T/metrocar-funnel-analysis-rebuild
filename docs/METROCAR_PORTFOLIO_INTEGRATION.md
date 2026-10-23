@@ -30,7 +30,7 @@ The current implementation uses Astro to render the authored Python source at bu
 
 ## Shared Shell
 
-Metrocar should inherit the future portfolio's shared presentation conventions:
+Metrocar's two pages share their own presentation shell. The Homepage and independent projects share quality and usability standards; they do not require identical visual treatments. Coordinate:
 
 - navigation conventions;
 - typography hierarchy;
@@ -52,13 +52,27 @@ Supply the value only at build time; do not persist validation or production hos
 
 ## Visual Relationship
 
-The relationship should follow this principle:
+The approved relationship follows this principle:
 
-> **same visual family; different intensity**
+> **Independent project identities. Shared quality and usability.**
 
-The Portfolio / Career Hub homepage may be more expressive, with stronger selective lime, more personality, and restrained atmospheric or technical effects.
+The Homepage maintains its own visual identity. Shared standards are clarity, accessibility, navigation quality, responsiveness, performance, maintainability, and truthful presentation.
 
-Metrocar should be calmer and lower in saturation, using teal and muted-green analytical accents with less glow so that evidence and visualizations dominate.
+Data has approved the following Metrocar palette as an **MSIT-inspired design interpretation**, not a verified official Masterschool brand palette or an affiliation claim:
+
+| Role | Color |
+| --- | --- |
+| Dark forest background | `#10382E` |
+| Raised surfaces | `#20483D` |
+| Primary peach accent | `#F4BFA7` |
+| Restrained lavender accent | `#CBBBEF` |
+| Analytical teal | `#71C6B1` |
+| Main text | `#F6F3EE` |
+| Secondary text | `#C6CEC8` |
+
+Use peach for the primary action and key result, lavender sparingly for secondary emphasis, and teal for analytical charts. Preserve readable contrast, restrained effects, long-form reading comfort, analytical hierarchy, and the exact meaning of the evidence.
+
+Future MasterSchool projects may adopt this visual identity following Data's review. Each independent project remains authoritative for its own implementation, evidence, and analytical presentation. This design approval does not itself establish deployment status.
 
 ## Metrocar-Specific Grammar
 
@@ -108,7 +122,7 @@ Do not inherit:
 
 - exact shared navigation
 - exact typography
-- final design tokens
+- future design-token changes beyond the approved palette
 - final deployment topology and domain
 
 The final Learning review remains deferred.

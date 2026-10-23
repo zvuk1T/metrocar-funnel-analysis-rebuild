@@ -17,12 +17,12 @@ const homepageUrl = homepageBaseUrl
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" class:list={{ "has-homepage-return": Boolean(homepageUrl) }}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#0b0f0e" />
+    <meta name="theme-color" content="#10382e" />
     <title>{title}</title>
   </head>
   <body>
@@ -54,6 +54,17 @@ const homepageUrl = homepageBaseUrl
         </nav>
       </div>
     </header>
+
+    {homepageUrl && (
+      <nav class="homepage-return" aria-label="Return to Homepage">
+        <div class="shell-inner homepage-return-inner">
+          <a class="homepage-return-link" href={homepageUrl}>
+            <span class="homepage-return-arrow" aria-hidden="true">←</span>
+            Back to Homepage
+          </a>
+        </div>
+      </nav>
+    )}
 
     <slot />
 

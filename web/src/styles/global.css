@@ -1,20 +1,21 @@
 :root {
   color-scheme: dark;
-  --background: #0b0f0e;
-  --background-soft: #111512;
-  --surface: #171c19;
-  --surface-raised: #1c231f;
-  --text: #f1f5f1;
+  --background: #10382e;
+  --background-soft: var(--background);
+  --surface: #20483d;
+  --surface-raised: var(--surface);
+  --text: #f6f3ee;
   --text-soft: #c6cec8;
-  --muted: #929d96;
-  --line: rgba(198, 222, 207, 0.14);
+  --muted: var(--text-soft);
+  --line: rgba(198, 206, 200, 0.2);
   --line-strong: rgba(113, 198, 177, 0.32);
   --teal: #71c6b1;
-  --action-green: #c4dc72;
-  --terminal-accent: #5cff8a;
-  --warm: #d9946d;
+  --action-accent: #f4bfa7;
+  --secondary-accent: #cbbbef;
+  --warm: var(--action-accent);
   --content-width: 78rem;
   --reading-width: 48rem;
+  --homepage-return-height: 0rem;
   --radius-large: 1.5rem;
   --radius-medium: 0.9rem;
   --sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -31,16 +32,21 @@ html {
   scroll-behavior: smooth;
 }
 
+html.has-homepage-return {
+  --homepage-return-height: 3.25rem;
+  scroll-padding-top: calc(var(--homepage-return-height) + 0.5rem);
+}
+
 body {
   min-width: 20rem;
   margin: 0;
   background:
     radial-gradient(
       circle at 88% 2%,
-      rgba(113, 198, 177, 0.08),
+      color-mix(in srgb, var(--secondary-accent) 6%, transparent),
       transparent 29rem
     ),
-    linear-gradient(180deg, #0b0f0e 0%, #101411 52%, #0b0f0e 100%);
+    var(--background);
   color: var(--text);
   font-family: var(--sans);
   font-size: 1rem;
@@ -68,7 +74,7 @@ code {
 }
 
 :focus-visible {
-  outline: 3px solid var(--terminal-accent);
+  outline: 3px solid var(--secondary-accent);
   outline-offset: 4px;
 }
 
@@ -91,8 +97,8 @@ code {
   padding: 0.65rem 0.9rem;
   transform: translateY(-180%);
   border-radius: 0.5rem;
-  background: var(--action-green);
-  color: #11150f;
+  background: var(--action-accent);
+  color: var(--background);
   font-weight: 750;
   text-decoration: none;
 }
@@ -111,7 +117,7 @@ code {
   position: relative;
   z-index: 10;
   border-bottom: 1px solid var(--line);
-  background: rgba(11, 15, 14, 0.9);
+  background: color-mix(in srgb, var(--background) 90%, transparent);
   backdrop-filter: blur(14px);
 }
 
@@ -122,6 +128,51 @@ code {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+}
+
+.homepage-return {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  min-height: var(--homepage-return-height);
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  background: var(--background);
+}
+
+.homepage-return-inner {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.homepage-return-link {
+  display: inline-flex;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.5rem;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 0.25rem;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-decoration: none;
+}
+
+.homepage-return-arrow {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.homepage-return-link:hover,
+.homepage-return-link:focus-visible {
+  color: var(--secondary-accent);
+}
+
+.homepage-return-link:focus-visible {
+  outline: 2px solid var(--secondary-accent);
+  outline-offset: 2px;
 }
 
 .brand-link {
@@ -183,7 +234,7 @@ code {
 
 .site-nav a:hover,
 .site-nav a[aria-current="page"] {
-  border-color: var(--teal);
+  border-color: var(--secondary-accent);
   color: var(--text);
 }
 
@@ -210,7 +261,7 @@ code {
 
 .eyebrow {
   margin: 0 0 1rem;
-  color: var(--teal);
+  color: var(--secondary-accent);
   font-size: 0.7rem;
   font-weight: 750;
 }
@@ -272,10 +323,14 @@ h2 {
 .hero-result {
   position: relative;
   padding: clamp(1.5rem, 4vw, 2.4rem);
-  border: 1px solid var(--line-strong);
+  border: 1px solid color-mix(in srgb, var(--action-accent) 40%, transparent);
   border-radius: var(--radius-large);
   background:
-    linear-gradient(145deg, rgba(113, 198, 177, 0.1), transparent 58%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--action-accent) 6%, transparent),
+      transparent 58%
+    ),
     var(--surface);
 }
 
@@ -287,7 +342,7 @@ h2 {
 
 .hero-metric {
   margin: 0;
-  color: var(--teal);
+  color: var(--action-accent);
   font-size: clamp(2.7rem, 4.25vw, 4.2rem);
   font-variant-numeric: tabular-nums;
   font-weight: 700;
@@ -376,6 +431,8 @@ h2 {
   height: clamp(21rem, 39vw, 27rem);
   min-width: 0;
   margin-top: 0.75rem;
+  border-radius: var(--radius-medium);
+  background: var(--background);
 }
 
 .panel-note {
@@ -391,7 +448,7 @@ h2 {
   padding: clamp(1.5rem, 4vw, 2.5rem);
   border-left: 3px solid var(--warm);
   border-radius: 0 var(--radius-large) var(--radius-large) 0;
-  background: rgba(217, 148, 109, 0.055);
+  background: color-mix(in srgb, var(--warm) 5.5%, transparent);
   align-items: end;
   gap: 2rem;
 }
@@ -426,24 +483,24 @@ h2 {
 
 .primary-button {
   padding: 0.88rem 1.05rem;
-  border: 1px solid var(--action-green);
+  border: 1px solid var(--action-accent);
   border-radius: 0.72rem;
-  background: var(--action-green);
-  color: #11150f;
+  background: var(--action-accent);
+  color: var(--background);
 }
 
 .primary-button:hover {
-  background: #d0e586;
+  background: color-mix(in srgb, var(--action-accent) 88%, var(--text));
 }
 
 .secondary-link {
   padding: 0.55rem 0;
-  border-bottom: 1px solid var(--teal);
+  border-bottom: 1px solid var(--secondary-accent);
   color: var(--text-soft);
 }
 
 .secondary-link:hover {
-  color: var(--teal);
+  color: var(--secondary-accent);
 }
 
 .analysis-page {
@@ -468,7 +525,7 @@ h2 {
 }
 
 .back-link:hover {
-  color: var(--teal);
+  color: var(--secondary-accent);
 }
 
 .analysis-intro h1 {
@@ -566,7 +623,7 @@ h2 {
 }
 
 .toc-chapter-heading span {
-  color: var(--teal);
+  color: var(--secondary-accent);
   font-family: var(--mono);
   font-size: 0.58rem;
   font-weight: 800;
@@ -603,7 +660,7 @@ h2 {
 
 .analysis-toc-mobile a:hover,
 .analysis-toc-desktop a:hover {
-  color: var(--teal);
+  color: var(--secondary-accent);
 }
 
 .toc-level-one a {
@@ -628,7 +685,7 @@ h2 {
 .toc-github {
   margin-top: 1.1rem;
   border-top: 1px solid var(--line);
-  color: var(--teal) !important;
+  color: var(--secondary-accent) !important;
 }
 
 .analysis-stream {
@@ -955,7 +1012,7 @@ h2 {
 
 .site-footer {
   border-top: 1px solid var(--line);
-  background: #0a0c0b;
+  background: var(--background);
 }
 
 .footer-inner {
@@ -1029,9 +1086,9 @@ h2 {
 
   .analysis-toc-desktop {
     position: sticky;
-    top: 1.25rem;
+    top: calc(var(--homepage-return-height) + 1.25rem);
     display: block;
-    max-height: calc(100vh - 2.5rem);
+    max-height: calc(100vh - var(--homepage-return-height) - 2.5rem);
     padding-right: 1rem;
     overflow-y: auto;
   }
