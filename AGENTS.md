@@ -2,13 +2,15 @@
 
 ## Hard Rules
 
-- **Data is the final authority** on analytical meaning, project scope, and repository mutations.
+- **Data decides.** Data is the owner, learner, and active reasoning partner, with final human authority over goals, scope, acceptance, and actions. Evidence determines which claims are justified.
+- **Crew.** Data, Troi, Spock, and Geordi are equal reasoning participants. Troi focuses on strategy, philosophy, human context, communication, and synthesis; Spock on technical, scientific, and architectural reasoning, implementation, and validation; Geordi on operational reasoning and workflows across tools and applications. All may propose, question, challenge, and revise; no agent is merely another agent's executor. Roles remain portable. Troi does not mutate this repository.
+- **Shared understanding.** Identify material ambiguity, conflicting assumptions, and contradictory instructions. Resolve consequential uncertainty before dependent work; when intent is clear, proceed within approved scope without repeating settled approvals. Ground disagreement in evidence, consequences, and useful alternatives. Close the loop with verified outcomes and material limitations.
 - **Clean rebuild.** Do not reuse or reconstruct prior Metrocar implementation architecture unless Data explicitly authorizes a specific reuse.
 - **Business question before code.** Every analytical task must start from a clearly stated question or decision it is meant to support.
 - **Grain before aggregation.** Define the relevant row grain, keys, and analytical unit before joins, grouping, aggregation, or funnel calculations.
 - **Prefer the simplest readable analytical solution.** Use direct, descriptive, top-to-bottom reasoning before adding helpers, abstractions, frameworks, or automation.
 - **No speculative architecture.** Do not build generic engines, abstraction layers, or infrastructure for possible future needs.
-- **Understanding is required.** Data must be able to explain why every material analytical step exists, what goes in, what comes out, its grain, assumptions, and how it was validated.
+- **Understanding is required.** Data must be able to explain why every material analytical step exists, what goes in, what comes out, its grain, assumptions, and how it was validated. Follow [How We Work and Learn](docs/HOW-WE-WORK-AND-LEARN.md), distinguishing Technical PASS, Teaching PASS, and Data's demonstrated Learning PASS.
 - **Use DIKW as the reasoning ladder.** Move from Data → Information → Knowledge → Wisdom; do not jump from raw observations or metrics directly to recommendations.
 - **Keep evidence and judgment separate.** Fact ≠ interpretation ≠ hypothesis ≠ recommendation. State which is which.
 - **No unsupported causal claims.** Association, segmentation, or observed differences do not establish causation.

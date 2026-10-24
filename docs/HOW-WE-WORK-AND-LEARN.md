@@ -13,13 +13,21 @@ Use VS Code/Jupyter percent cells:
 
 Markdown teaches WHY; code demonstrates HOW.
 
+## Collaboration and communication
+
+Current environments: Troi–ChatGPT, Spock–Codex, Geordi–Work. These are portable assignments; action authority remains governed by [AGENTS.md](../AGENTS.md) and Data's approved scope.
+
+Work on one coherent analytical question at a time. Discuss purpose, assumptions, evidence, and alternatives before settling implementation choices. Involve the relevant crew without requiring every role for every task.
+
+Build shared understanding through active listening and common-ground checks: restate consequential uncertainty in plain language and confirm the intended meaning before dependent work. Make assumptions visible without inventing false choices or asking about settled matters. Constructive disagreement identifies evidence, consequences, and useful alternatives; revise positions when better evidence appears. Close the loop by comparing the verified result with the agreed outcome and stating remaining limitations.
+
 ## Learning Flow
 
 For each meaningful analytical idea:
 
 question → source/grain → concept → simple code → result → interpretation → recruiter check
 
-Keep each step as short as possible.
+Keep each step as short as possible. Use Data Literacy to question provenance, definitions, grain, and assumptions. DIKW connects validated observations to interpretation and proportionate recommendations; storytelling keeps the question, evidence, meaning, and limitations visible.
 
 ## Learning Cell Pattern
 
@@ -91,11 +99,15 @@ Keep the answer short enough for Data to understand and later explain in his own
 
 ## Learning PASS
 
-A meaningful slice passes when Data can explain:
+At a meaningful analytical slice, distinguish:
+
+- **Technical PASS:** the analysis meets the agreed requirements and passes relevant validation.
+- **Teaching PASS:** the real analytical document is accurate, concise, student-readable, and explains WHY before HOW and the evidence limits.
+- **Learning PASS:** Data demonstrates the following reasoning in his own words:
 
 question → input grain → operation → output → validation → meaning
 
-Technical PASS alone is not Learning PASS.
+Include the material assumptions and limits. Technical or Teaching PASS, a supplied model answer, and permission to proceed do not establish Learning PASS. An unassessed criterion remains unassessed. Use a short conversational check at a meaningful step, without mandatory per-cell confirmations or separate PASS reports for routine work.
 
 ## Recruiter Storytelling
 
