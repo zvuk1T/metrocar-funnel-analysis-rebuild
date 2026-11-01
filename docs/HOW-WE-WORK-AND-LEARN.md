@@ -21,73 +21,49 @@ Work on one coherent analytical question at a time. Discuss purpose, assumptions
 
 Build shared understanding through active listening and common-ground checks: restate consequential uncertainty in plain language and confirm the intended meaning before dependent work. Make assumptions visible without inventing false choices or asking about settled matters. Constructive disagreement identifies evidence, consequences, and useful alternatives; revise positions when better evidence appears. Close the loop by comparing the verified result with the agreed outcome and stating remaining limitations.
 
-## Learning Flow
+## Question-Driven Learning
 
-For each meaningful analytical idea:
+Work on one meaningful learning unit, not every code cell. A unit may span several cells when they answer the same analytical question.
 
-question → source/grain → concept → simple code → result → interpretation → recruiter check
+**❓ Question + 📋 Source & Context → 🎯 Goal & Approach (WHY) → 💻 Code / Method (HOW) → ✅ Evidence, Answer & Limits → 🧠 What We Learned.**
 
-Keep each step as short as possible. Use Data Literacy to question provenance, definitions, grain, and assumptions. DIKW connects validated observations to interpretation and proportionate recommendations; storytelling keeps the question, evidence, meaning, and limitations visible.
+### ❓ Question + 📋 Source & Context
 
-## Learning Cell Pattern
+Start with a source-grounded question. Identify the actual inputs, relevant row grain, keys, definitions, and material assumptions before choosing an operation.
 
-Use only the elements that help the current step. Do not force every label into every cell.
+### 🎯 Goal & Approach — WHY
 
-### 🎯 Goal — What & Why
+Explain what the unit aims to establish and why the chosen method fits the question. Identify the evidence needed to answer it.
 
-One or two short sentences: what are we trying to learn or answer, and why does this step matter?
+### 💻 Code / Method — HOW
 
-### 🗺️ Mental Model
+Preserve authentic source material and code. Use the simplest readable implementation, descriptive intermediate variables, and visible transformations. Explain important new objects and changes of grain beside the relevant operations.
 
-Optional. Use a small ASCII diagram when it makes a join, grain change, funnel, transformation, or relationship easier to understand and remember.
+Additional web framing or interpretation must remain distinguishable from the source analysis. Do not change analytical evidence to make the public story more attractive; changes to the analytical source require their own authorized scope.
 
-Example:
-```text
-app_downloads
-      │
-      │ LEFT JOIN
-      ↓
-   signups
-      │
-      ↓
-Downloaded → Signed Up
-```
+### ✅ Evidence, Answer & Limits
 
-### ⚠️ Watch Out
+Show the relevant verified output and explicitly answer the opening question. Separate fact, interpretation, hypothesis, and recommendation.
 
-Optional. One short sentence only when there is a real analytical trap, assumption, or common mistake worth seeing before the code.
-
-### 💻 Code
-
-Use the simplest readable implementation with descriptive intermediate variables and visible transformations.
-
-Prefer one analytical idea per code cell or small coherent group of cells.
-
-### ✅ Result
-
-One short sentence: what did the code produce?
+If the evidence is insufficient, state **Not established** and identify the gap. A result, graph, or subsequent question does not substitute for answering the original question.
 
 ### 🧠 What We Learned
 
-One short sentence: what does the result mean, what should be remembered, and what does the evidence not justify?
+State the supported insight or transferable understanding concisely. A new question is useful only when what the evidence revealed justifies it; do not force one into every lesson.
 
-Keep fact, interpretation, hypothesis, and recommendation distinct.
+DIKW connects observations, context, understanding, and responsible judgment. It is not an additional set of required headings. Data Literacy keeps provenance, definitions, grain, assumptions, and limits visible.
 
-### 📚 DataCamp Reference
+### Optional learning aids
 
-Optional for obvious code. For non-obvious code, normally identify only the relevant official DataCamp course.
+Use mental models, warnings, ethical notes, charts, and DataCamp references only when they improve understanding. Preserve useful source aids without adding a fixed set to every cell. Prefer a small ASCII mental model when it clarifies a join, grain change, funnel, or relationship.
 
-Add chapter, lesson/concept, or direct official lesson link details only when they materially help learning.
+For DataCamp references, identify the relevant official course; add lesson or concept details only when verified and useful. Do not invent a more precise reference than the evidence supports.
 
-Do not invent a more precise reference than the source supports.
+### 🧑‍💼 Recruiter / Transfer Check — optional
 
-### 🧑‍💼 Recruiter Check
+At a meaningful learning milestone, use one realistic question about applying or explaining the learning, with a concise, supported answer.
 
-One realistic recruiter/interview question that also serves as the Learning Check, plus a concise model answer.
-
-Hide the answer with `<details><summary>💡 Show answer</summary>...</details>` where the Markdown renderer supports it.
-
-Keep the answer short enough for Data to understand and later explain in his own words before the slice is accepted.
+Hide the answer with `<details><summary>💡 Show answer</summary>...</details>` where the renderer supports it. The prepared answer supports reflection; it does not establish Data's demonstrated understanding or require a check after every cell.
 
 ## Learning Style
 
@@ -111,7 +87,7 @@ Include the material assumptions and limits. Technical or Teaching PASS, a suppl
 
 ## Recruiter Storytelling
 
-Use STAR only for completed larger analytical slices or the final Metrocar case study:
+Use STAR when helpful for completed larger analytical slices or the final Metrocar case study:
 ```text
 Situation → Task → Action → Result
 ```
