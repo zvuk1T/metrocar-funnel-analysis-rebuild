@@ -528,7 +528,7 @@ h2 {
   color: var(--secondary-accent);
 }
 
-.analysis-intro h1 {
+.analysis-intro h2 {
   max-width: 13ch;
   margin-bottom: 1.35rem;
   font-size: clamp(2.8rem, 7vw, 5.4rem);
@@ -705,12 +705,14 @@ h2 {
   margin-top: 1rem;
 }
 
-.analysis-prose h1,
-.analysis-prose h2 {
+.analysis-prose [data-source-depth="1"],
+.analysis-prose [data-source-depth="2"] {
   scroll-margin-top: 1.5rem;
+  font-weight: 630;
+  letter-spacing: -0.045em;
 }
 
-.analysis-prose h1 {
+.analysis-prose [data-source-depth="1"] {
   max-width: 18ch;
   margin: clamp(4rem, 8vw, 6rem) 0 1.4rem;
   color: var(--text);
@@ -718,11 +720,11 @@ h2 {
   line-height: 1;
 }
 
-.analysis-prose:first-child h1:first-child {
+.analysis-prose:first-child [data-source-depth="1"]:first-child {
   margin-top: 0;
 }
 
-.analysis-prose h2 {
+.analysis-prose [data-source-depth="2"] {
   max-width: 27ch;
   margin: clamp(3rem, 6vw, 4.75rem) 0 1.25rem;
   padding-top: 1rem;
@@ -732,7 +734,7 @@ h2 {
   line-height: 1.08;
 }
 
-.analysis-prose h3 {
+.analysis-prose [data-source-depth="3"] {
   margin: 2rem 0 0.85rem;
   color: var(--teal);
   font-family: var(--mono);
@@ -742,7 +744,7 @@ h2 {
   text-transform: uppercase;
 }
 
-.analysis-prose h4 {
+.analysis-prose [data-source-depth="4"] {
   margin: 1.6rem 0 0.65rem;
   color: var(--text);
   font-size: 1rem;
@@ -858,15 +860,6 @@ h2 {
   border-radius: 0;
   font-size: clamp(0.72rem, 1.35vw, 0.82rem);
   line-height: 1.6;
-}
-
-.analysis-code .astro-code .line.python-comment-line {
-  display: inline-block;
-  min-width: 100%;
-}
-
-.analysis-code .astro-code .line.python-comment-line > span {
-  color: #71C6B1 !important;
 }
 
 .code-guide {

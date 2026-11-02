@@ -75,11 +75,12 @@ const chartPayload = JSON.stringify({
         line: { color: "rgba(241, 245, 241, 0.12)", width: 1 },
       },
       connector: {
+        fillcolor: chart.connectorColor,
         line: { color: chart.connectorColor, width: 1 },
       },
       texttemplate: "%{x:,.0f}",
       textposition: "inside",
-      textfont: { color: "#0d100e", size: 14 },
+      textfont: { color: "#0d100e", size: 16 },
       hovertemplate:
         "<b>%{y}</b><br>" +
         "Count: %{x:,.0f}<br>" +
@@ -95,7 +96,7 @@ const chartPayload = JSON.stringify({
       plot_bgcolor: "rgba(0, 0, 0, 0)",
       margin: { l: 12, r: 12, t: 10, b: 12 },
       font: {
-        color: "#c6cec8",
+        color: "#10382e",
         family: "ui-sans-serif, system-ui, sans-serif",
         size: 13,
       },
@@ -104,12 +105,12 @@ const chartPayload = JSON.stringify({
         automargin: true,
         autorange: "reversed",
         fixedrange: true,
-        tickfont: { color: "#d9e1dc", size: 13 },
+        tickfont: { color: "#10382e", size: 14 },
       },
       hoverlabel: {
-        bgcolor: "#171c19",
+        bgcolor: "#ffffff",
         bordercolor: chart.accent,
-        font: { color: "#f1f5f1", size: 13 },
+        font: { color: "#10382e", size: 14 },
       },
     };
 

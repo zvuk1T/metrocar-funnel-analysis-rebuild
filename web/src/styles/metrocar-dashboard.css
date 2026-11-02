@@ -1,0 +1,240 @@
+/* A compact introduction above the unchanged source-based Full Analysis. */
+.metrocar-project.overview-main {
+  width: 100%;
+  padding: 0;
+}
+
+.metrocar-dashboard {
+  width: min(calc(100% - 2rem), var(--content-width));
+  margin-inline: auto;
+  padding-block: 1.5rem;
+  scroll-margin-top: calc(var(--homepage-return-height) + 1rem);
+}
+
+.metrocar-dashboard .overview-hero {
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.metrocar-dashboard .eyebrow,
+.metrocar-dashboard .micro-label,
+.metrocar-dashboard .panel-kicker {
+  margin-bottom: 0.5rem;
+  color: var(--text-soft);
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+}
+
+.metrocar-dashboard h1 {
+  max-width: 24ch;
+  margin-bottom: 0.6rem;
+  font-size: clamp(2.25rem, 3.2vw, 2.875rem);
+  line-height: 1.06;
+}
+
+.metrocar-dashboard h1 span {
+  color: var(--text);
+}
+
+.metrocar-dashboard .hero-question {
+  max-width: 47rem;
+  margin-bottom: 0.5rem;
+  color: var(--text);
+  font-size: 1.125rem;
+  line-height: 1.4;
+}
+
+.metrocar-dashboard .hero-project-intro {
+  color: var(--text-soft);
+  font-size: 0.875rem;
+  line-height: 1.45;
+}
+
+.metrocar-dashboard .hero-result {
+  padding: 1.25rem;
+  border-color: var(--action-accent);
+  border-radius: var(--radius-medium);
+  background: color-mix(in srgb, var(--action-accent) 35%, var(--surface));
+}
+
+.metrocar-dashboard .hero-metric {
+  color: var(--text);
+  font-size: clamp(3.5rem, 5vw, 4.5rem);
+  line-height: 1;
+}
+
+.metrocar-dashboard .transition-label {
+  margin: 0.65rem 0 0.35rem;
+  font-family: var(--sans);
+  font-size: 1rem;
+}
+
+.metrocar-dashboard .hero-result-note {
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.metrocar-dashboard .trust-strip {
+  margin-block: 1rem;
+}
+
+.metrocar-dashboard .trust-strip li {
+  padding-block: 0.55rem;
+  font-family: var(--sans);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.metrocar-dashboard :not(pre) > code {
+  color: var(--text);
+}
+
+.metrocar-dashboard .funnel-grid {
+  gap: 1rem;
+}
+
+.metrocar-dashboard .funnel-panel {
+  padding: 1rem;
+  border-radius: var(--radius-medium);
+  background: var(--surface);
+}
+
+.metrocar-dashboard .panel-header {
+  min-height: 0;
+  gap: 0.75rem;
+}
+
+.metrocar-dashboard .panel-header h2 {
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+.metrocar-dashboard .panel-kicker {
+  margin-bottom: 0.25rem;
+}
+
+.metrocar-dashboard .grain-pill {
+  padding: 0.3rem 0.45rem;
+  border-color: var(--line);
+  color: var(--text-soft);
+  font-family: var(--sans);
+  font-size: 0.875rem;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.metrocar-dashboard .plotly-funnel {
+  height: 16rem;
+  margin-top: 0.65rem;
+  background: transparent;
+}
+
+.metrocar-dashboard .panel-note {
+  min-height: 0;
+  margin-top: 0.55rem;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.metrocar-dashboard .overview-close {
+  margin-top: 1rem;
+  padding: 1rem 1.15rem;
+  border-radius: 0 var(--radius-medium) var(--radius-medium) 0;
+  background: color-mix(in srgb, var(--action-accent) 14%, var(--surface));
+  align-items: center;
+  gap: 1rem;
+}
+
+.metrocar-dashboard .overview-close .eyebrow {
+  margin-bottom: 0.35rem;
+}
+
+.metrocar-dashboard .overview-close h2 {
+  max-width: none;
+  margin-bottom: 0.35rem;
+  font-size: 1.5rem;
+  line-height: 1.15;
+}
+
+.metrocar-dashboard .overview-close p:last-child {
+  max-width: none;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.45;
+}
+
+.metrocar-dashboard .overview-actions {
+  gap: 0.5rem 1rem;
+}
+
+.metrocar-dashboard .primary-button {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.metrocar-dashboard .secondary-link {
+  color: var(--text-soft);
+  font-size: 0.875rem;
+}
+
+.metrocar-dashboard .secondary-link:hover {
+  color: var(--text);
+}
+
+@media (min-width: 48rem) {
+  .metrocar-dashboard {
+    width: min(calc(100% - 4rem), var(--content-width));
+  }
+}
+
+@media (min-width: 60rem) {
+  .metrocar-dashboard {
+    padding-block: 1rem;
+  }
+
+  .metrocar-dashboard .overview-hero {
+    grid-template-columns: minmax(0, 1fr) 21rem;
+    gap: 2rem;
+  }
+
+  .metrocar-dashboard .hero-result {
+    padding: 1rem 1.25rem;
+  }
+
+  .metrocar-dashboard .trust-strip {
+    margin-block: 0.875rem;
+  }
+
+  .metrocar-dashboard .plotly-funnel {
+    height: 13rem;
+  }
+
+  .metrocar-dashboard .overview-close {
+    grid-template-columns: minmax(0, 1fr) auto;
+    margin-top: 0.875rem;
+    padding-block: 0.875rem;
+  }
+
+  .metrocar-dashboard .overview-actions {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 43rem) {
+  .metrocar-dashboard .panel-header {
+    gap: 0.5rem;
+  }
+
+  .metrocar-dashboard .funnel-panel {
+    padding: 0.875rem;
+  }
+
+  .metrocar-dashboard .overview-close {
+    padding: 1rem;
+  }
+
+  .metrocar-dashboard .primary-button {
+    max-width: 100%;
+  }
+}

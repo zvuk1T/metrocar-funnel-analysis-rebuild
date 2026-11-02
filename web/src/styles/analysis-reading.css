@@ -1,0 +1,256 @@
+/* Full Analysis uses the same warm reading surface as the NLP analysis. */
+html.analysis-reading {
+  color-scheme: light;
+  --background: #f6f3ee;
+  --background-soft: color-mix(in srgb, #71c6b1 12%, #f6f3ee);
+  --surface: #ffffff;
+  --text: #10382e;
+  --text-soft: #476157;
+  --line: #c6cec8;
+  --line-strong: #b3cabe;
+}
+
+.analysis-reading body {
+  background: var(--background);
+}
+
+.analysis-reading :focus-visible {
+  outline-color: var(--text);
+}
+
+.analysis-reading :is(.brand-mark, .eyebrow, .toc-chapter-heading span) {
+  color: var(--text);
+}
+
+.analysis-reading :is(.brand-link small, .site-nav a, .homepage-return-link, .back-link, .source-facts span, .source-limit, .footer-inner) {
+  font-size: 0.875rem;
+}
+
+.analysis-reading :is(.homepage-return-link, .back-link, .secondary-link):hover {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.analysis-reading .homepage-return-link:focus-visible {
+  outline-color: var(--text);
+  color: var(--text);
+}
+
+.analysis-reading :is(.skip-link, .primary-button) {
+  color: var(--text);
+}
+
+.analysis-reading .analysis-stream {
+  font-size: 1.125rem;
+  line-height: 1.7;
+}
+
+.analysis-reading .analysis-prose {
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.analysis-reading .analysis-prose :is([data-source-depth="1"], [data-source-depth="2"]) {
+  max-width: none;
+  margin-block: 3rem 1.5rem;
+  padding: 0.875rem 1.125rem;
+  border-top: 0;
+  border-left: 3px solid var(--text);
+  background: color-mix(in srgb, var(--teal) 24%, var(--background));
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+.analysis-reading .analysis-prose [data-source-depth="1"] {
+  margin-top: 4rem;
+  padding-block: 1.125rem;
+  font-size: 1.75rem;
+}
+
+.analysis-reading .analysis-prose [data-source-depth="3"] {
+  color: var(--text);
+  font-size: 1.25rem;
+}
+
+.analysis-reading .analysis-prose [data-source-depth="4"] {
+  font-size: 1.125rem;
+}
+
+.analysis-reading .analysis-prose a,
+.analysis-reading .toc-github {
+  color: #20483d !important;
+  text-underline-offset: 0.18em;
+}
+
+.analysis-reading .analysis-prose a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.analysis-reading .analysis-intro-copy > code,
+.analysis-reading :is(.analysis-prose, .code-guide) :not(pre) > code {
+  padding: 0.12em 0.3em;
+  border-radius: 3px;
+  background: var(--background-soft);
+  color: var(--text);
+  font-size: 1rem;
+  overflow-wrap: anywhere;
+}
+
+.analysis-reading .analysis-prose blockquote {
+  border-left-color: var(--secondary-accent);
+  background: color-mix(in srgb, var(--secondary-accent) 12%, var(--surface));
+}
+
+.analysis-reading .analysis-prose pre:not(.astro-code) {
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.analysis-reading .analysis-prose pre code {
+  color: inherit;
+  font-size: inherit;
+}
+
+.analysis-reading .analysis-prose details {
+  padding: 0.15rem 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--surface);
+}
+
+.analysis-reading .analysis-prose details[open] summary {
+  color: var(--text);
+}
+
+.analysis-reading .analysis-prose table {
+  background: var(--surface);
+  font-size: 1rem;
+}
+
+.analysis-reading .analysis-prose th {
+  background: var(--background-soft);
+}
+
+.analysis-reading .analysis-toc-mobile {
+  padding-inline: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0.5rem;
+  background: var(--surface);
+}
+
+.analysis-reading :is(.toc-title, .toc-chapter-heading span, .toc-chapter-heading strong, .analysis-toc-mobile a, .analysis-toc-desktop a) {
+  font-size: 0.875rem;
+}
+
+.analysis-reading :is(.analysis-toc-mobile a, .analysis-toc-desktop a) {
+  padding-block: 0.45rem;
+}
+
+.analysis-reading :is(.analysis-toc-mobile a, .analysis-toc-desktop a):hover {
+  background: var(--background-soft);
+  color: var(--text);
+}
+
+.analysis-reading .analysis-code {
+  background: var(--surface);
+}
+
+.analysis-reading .code-cell-label {
+  padding: 0.75rem 1rem;
+  border-color: var(--line);
+  font-size: 0.875rem;
+}
+
+.analysis-reading .analysis-code .astro-code {
+  /* VS Code Dark Modern uses Dark+ syntax on a neutral editor surface. */
+  background-color: #1f1f1f !important;
+  color: #cccccc !important;
+  color-scheme: dark;
+  padding: 1.25rem;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.analysis-reading .analysis-code .astro-code code {
+  color: inherit;
+  font-size: inherit;
+}
+
+.analysis-reading .analysis-code .astro-code:focus-visible {
+  outline-color: var(--action-accent);
+  outline-offset: -4px;
+}
+
+.analysis-reading .code-guide {
+  border-color: var(--line);
+  background: var(--surface);
+}
+
+.analysis-reading .code-guide summary {
+  padding: 0.85rem 1rem;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.analysis-reading .code-guide summary::marker {
+  color: var(--text);
+}
+
+.analysis-reading .code-guide-content {
+  padding: 1rem;
+  border-color: var(--line);
+}
+
+.analysis-reading :is(.code-guide-step + .code-guide-step, .code-guide-after) {
+  border-color: var(--line);
+}
+
+.analysis-reading .code-guide-step pre code {
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.analysis-reading :is(.code-guide-step p, .code-guide-after p) {
+  color: var(--text-soft);
+  font-size: 1rem;
+}
+
+.analysis-reading .code-guide-after span {
+  font-size: 0.875rem;
+}
+
+.analysis-reading .analysis-funnel-evidence {
+  --evidence-accent: var(--text-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-medium);
+  background: var(--surface);
+}
+
+.analysis-reading :is(.analysis-evidence-header p, .analysis-evidence-note) {
+  font-size: 0.875rem;
+}
+
+.analysis-reading .analysis-funnel-evidence .plotly-funnel {
+  background: transparent;
+}
+
+@media (max-width: 999px) {
+  .analysis-reading .analysis-prose [data-source-depth="1"] {
+    margin-top: 3rem;
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 43rem) {
+  .analysis-reading .analysis-prose :is([data-source-depth="1"], [data-source-depth="2"]) {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .analysis-reading .analysis-code .astro-code {
+    padding: 1rem 0.875rem;
+  }
+}

@@ -86,6 +86,10 @@ table_names
 # same database connection. This is only a connection check, not analysis.
 
 # %%
+# region Explain this code
+# `read_sql()` runs the query through the open connection and returns a pandas DataFrame.
+# `LIMIT 5` restricts this preview to five rows; it does not test the whole table.
+# endregion
 app_downloads_preview = pd.read_sql(
     "SELECT * FROM app_downloads LIMIT 5",
     connection,

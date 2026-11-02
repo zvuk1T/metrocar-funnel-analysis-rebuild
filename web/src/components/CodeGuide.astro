@@ -1,5 +1,5 @@
 ---
-const { guide } = Astro.props;
+const { guide, explanation } = Astro.props;
 
 const inlineCodeParts = (text) =>
   text.split(/(`[^`]+`)/g).filter(Boolean).map((part) => ({
@@ -10,9 +10,16 @@ const inlineCodeParts = (text) =>
   }));
 ---
 
-<details class="code-guide">
+<details class="code-guide" data-explanation-source={explanation ? "python" : undefined}>
   <summary>Explain this code</summary>
   <div class="code-guide-content">
+    {explanation ? (
+      <div class="code-guide-step">
+        <p>{inlineCodeParts(explanation).map((part) =>
+          part.isCode ? <code>{part.text}</code> : part.text
+        )}</p>
+      </div>
+    ) : (<>
     <ol class="code-guide-steps">
       {guide.steps.map((step) => (
         <li class="code-guide-step">
@@ -32,5 +39,6 @@ const inlineCodeParts = (text) =>
         )}</p>
       </div>
     )}
+    </>)}
   </div>
 </details>

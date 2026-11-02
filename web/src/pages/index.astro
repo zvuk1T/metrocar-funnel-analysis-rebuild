@@ -1,4 +1,5 @@
 ---
+import FullAnalysis from "../components/FullAnalysis.astro";
 import PageShell from "../layouts/PageShell.astro";
 import FunnelChart from "../components/FunnelChart.astro";
 import { customerFunnel, rideFunnel } from "../data/funnels.js";
@@ -10,9 +11,9 @@ const githubUrl =
 <PageShell
   title="Metrocar · Analytical Case Study"
   description="A concise, evidence-led view of where the Metrocar customer journey loses momentum."
-  current="overview"
 >
-  <main id="main-content" class="overview-main">
+  <main id="main-content" class="overview-main metrocar-project">
+    <section id="dashboard" class="metrocar-dashboard" aria-labelledby="page-title" tabindex="-1">
     <section class="overview-hero" aria-labelledby="page-title">
       <div class="hero-copy">
         <p class="eyebrow">Metrocar · Analytical Case Study</p>
@@ -24,21 +25,19 @@ const githubUrl =
           a completed ride?
         </p>
         <p class="hero-project-intro">
-          An educational MasterSchool case study exploring Metrocar's ride-sharing
-          funnel. Built with Python, pandas, SQL, and Plotly, it keeps customer-level
-          and ride-level evidence at their correct grain.
+          Educational MasterSchool case study.
         </p>
       </div>
 
       <aside class="hero-result" aria-label="Main customer-funnel result">
-        <p class="micro-label">Weakest adjacent transition</p>
+        <p class="micro-label">Requesters who completed a ride</p>
         <p class="hero-metric">50.24%</p>
         <p class="transition-label">
           <span>Requested ≥1</span>
           <span aria-hidden="true">→</span>
           <span>Completed ≥1</span>
         </p>
-        <p class="hero-result-note">Percent of Previous</p>
+        <p class="hero-result-note">6,233 of 12,406 requesters</p>
       </aside>
     </section>
 
@@ -95,19 +94,17 @@ const githubUrl =
 
     <section class="overview-close" aria-labelledby="takeaway-title">
       <div>
-        <p class="eyebrow">Evidence-bounded takeaway</p>
         <h2 id="takeaway-title">The loss is clear. Its cause is not.</h2>
         <p>
-          Requested → Completed is the weakest customer-level transition. Most
-          non-completing requesters had some recorded acceptance somewhere in
-          their ride history, but the available evidence does not establish the
-          underlying cause.
+          Requested → Completed is the weakest customer transition. Recorded
+          acceptance elsewhere in a customer's ride history does not establish
+          the cause.
         </p>
       </div>
 
       <div class="overview-actions">
-        <a class="primary-button" href="/analysis/">
-          Explore Full Analysis <span aria-hidden="true">→</span>
+        <a class="primary-button" href="#full-analysis">
+          Explore Full Analysis <span aria-hidden="true">↓</span>
         </a>
         <a
           class="secondary-link"
@@ -119,6 +116,8 @@ const githubUrl =
         </a>
       </div>
     </section>
+    </section>
+    <FullAnalysis />
   </main>
 
 </PageShell>

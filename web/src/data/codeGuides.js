@@ -1,4 +1,4 @@
-// Frontend-only explanations for the executable Python cells.
+// Remaining frontend-only explanations; the preview pilot is owned by Python.
 // Each source matcher identifies exactly one code cell at build time.
 export const codeGuides = [
   {
@@ -30,17 +30,6 @@ export const codeGuides = [
         code: "inspector = sa.inspect(engine)\ntable_names = inspector.get_table_names()",
         explanation:
           "`sa.inspect()` creates a schema inspector from the database engine, and `get_table_names()` lists the available source tables. This tells us which tables we can inspect next; it does not yet verify their contents or grain.",
-      },
-    ],
-  },
-  {
-    id: "preview-download-rows",
-    sourceMatcher: "app_downloads_preview = pd.read_sql(",
-    steps: [
-      {
-        code: 'pd.read_sql("SELECT * FROM app_downloads LIMIT 5", connection)',
-        explanation:
-          "`read_sql()` runs the query through the open connection and returns a pandas DataFrame. `LIMIT 5` restricts this preview to five rows; it does not test the whole table.",
       },
     ],
   },

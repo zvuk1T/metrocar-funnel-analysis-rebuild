@@ -1,13 +1,14 @@
 ---
 import "../styles/global.css";
+import "../styles/analysis-reading.css";
+import "../styles/metrocar-dashboard.css";
 
 interface Props {
   title: string;
   description: string;
-  current: "overview" | "analysis";
 }
 
-const { title, description, current } = Astro.props;
+const { title, description } = Astro.props;
 const githubUrl =
   "https://github.com/zvuk1T/metrocar-funnel-analysis-rebuild";
 const homepageBaseUrl = import.meta.env.HOMEPAGE_URL?.trim();
@@ -17,12 +18,12 @@ const homepageUrl = homepageBaseUrl
 ---
 
 <!doctype html>
-<html lang="en" class:list={{ "has-homepage-return": Boolean(homepageUrl) }}>
+<html lang="en" class:list={{ "has-homepage-return": Boolean(homepageUrl), "analysis-reading": true }}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#10382e" />
+    <meta name="theme-color" content="#F6F3EE" />
     <title>{title}</title>
   </head>
   <body>
@@ -30,7 +31,7 @@ const homepageUrl = homepageBaseUrl
 
     <header class="site-header" aria-label="Metrocar case-study navigation">
       <div class="shell-inner site-header-inner">
-        <a class="brand-link" href="/" aria-label="Metrocar Overview">
+        <a class="brand-link" href="#dashboard" aria-label="Metrocar Dashboard">
           <span class="brand-mark" aria-hidden="true">M</span>
           <span>
             <strong>Metrocar</strong>
@@ -39,13 +40,8 @@ const homepageUrl = homepageBaseUrl
         </a>
 
         <nav class="site-nav" aria-label="Case-study sections">
-          <a href="/" aria-current={current === "overview" ? "page" : undefined}>
-            Overview
-          </a>
-          <a
-            href="/analysis/"
-            aria-current={current === "analysis" ? "page" : undefined}
-          >
+          <a href="#dashboard">Dashboard</a>
+          <a href="#full-analysis">
             Full Analysis
           </a>
           <a href={githubUrl} target="_blank" rel="noreferrer">
