@@ -59,8 +59,6 @@ const chartPayload = JSON.stringify({
     if (!serializedChart) continue;
 
     const chart = JSON.parse(serializedChart);
-    element.dataset.funnelRendered = "true";
-
     const trace = {
       type: "funnel",
       orientation: "h",
@@ -120,6 +118,24 @@ const chartPayload = JSON.stringify({
       displaylogo: false,
     };
 
-    Plotly.newPlot(element, [trace], layout, config);
+    const resultPanel = element.closest("details.python-cell-output");
+    const showChart = () => {
+      if (element.dataset.funnelRendered === "true") {
+        Plotly.Plots.resize(element);
+      } else {
+        element.dataset.funnelRendered = "true";
+        Plotly.newPlot(element, [trace], layout, config);
+      }
+    };
+
+    if (resultPanel instanceof HTMLDetailsElement) {
+      // Measure the chart only after its result panel has a visible width.
+      resultPanel.addEventListener("toggle", () => {
+        if (resultPanel.open) showChart();
+      });
+      if (resultPanel.open) showChart();
+    } else {
+      showChart();
+    }
   }
 </script>

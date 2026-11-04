@@ -1088,6 +1088,190 @@ signup_to_request_dropoff
 #
 # </details>
 # endregion
+# region Data Quality & EDA
+# %% [markdown]
+# ## Data quality & EDA: which blanks need investigation?
+#
+# **❓ Question:** Are the selected analytical inputs complete, and which
+# empty fields describe an unrecorded later event rather than a broken key?
+#
+# **📋 Source & Context:** Reuse the four tables already read above. Downloads
+# have one row per `app_download_key`, signups per `user_id`, requests per
+# `ride_id`, and transactions per `transaction_id`. This profiles 15 selected
+# fields, not every database column; reviews are checked later.
+#
+# **🎯 Goal & Approach:** Count missing values before deciding what they mean.
+# Each field uses its own table's row count as its denominator. Keep every
+# request: dropping rows with absent later timestamps would remove the very
+# non-completion evidence the funnel needs.
+
+# %%
+# Recombine the three request extracts at ride_id grain. Validated one-to-one
+# LEFT joins preserve the request population rather than keeping completed rides only.
+eda_ride_fields = ride_requests.merge(
+    ride_acceptance_fields, on="ride_id", how="left", validate="one_to_one"
+).merge(
+    ride_completion_fields, on="ride_id", how="left", validate="one_to_one"
+)
+assert len(eda_ride_fields) == total_ride_requests
+assert eda_ride_fields["ride_id"].is_unique
+
+# These are the existing analytical extracts, not a new combined row population.
+eda_input_tables = {
+    "app_downloads": app_download_platforms,
+    "signups": signup_identifiers,
+    "ride_requests": eda_ride_fields,
+    "transactions": transactions,
+}
+eda_field_rows = []
+for source_table, frame in eda_input_tables.items():
+    for column in frame.columns:
+        # isna() marks absent values; sum() counts them within this table only.
+        missing_count = int(frame[column].isna().sum())
+        eda_field_rows.append({
+            "source_table": source_table,
+            "field": column,
+            "row_count": len(frame),
+            "dtype": str(frame[column].dtype),
+            "present_count": len(frame) - missing_count,
+            "missing_count": missing_count,
+            "missing_percent": round(100 * missing_count / len(frame), 2),
+        })
+eda_field_profile = pd.DataFrame(eda_field_rows)
+
+# Absence in later-event fields is inspected separately from input completeness.
+later_event_fields = ["driver_id", "accept_ts", "pickup_ts", "dropoff_ts"]
+input_field_profile = eda_field_profile.loc[
+    ~((eda_field_profile["source_table"] == "ride_requests")
+      & eda_field_profile["field"].isin(later_event_fields))
+]
+assert int(input_field_profile["missing_count"].sum()) == 0
+eda_field_profile
+
+# %% [markdown]
+# **✅ Evidence, Answer & Limits:** The 11 selected fields outside the later-event
+# fields contain no missing values. This includes the selected keys, request
+# times, platform labels, amounts and transaction statuses. That establishes
+# completeness of these extracts; it does not prove every value is correct.
+#
+# The chart below keeps all **385,477 requests** in the denominator. Acceptance
+# is recorded for **64.43%**, while pickup and drop-off are each recorded for
+# **58.02%**. “Not recorded” describes the evidence available; it does not
+# establish a cancellation, tracking failure, or other cause.
+
+# %%
+# Use only the four timestamps so the visual answers one event-coverage question.
+event_coverage = eda_field_profile.loc[
+    (eda_field_profile["source_table"] == "ride_requests")
+    & eda_field_profile["field"].isin(
+        ["request_ts", "accept_ts", "pickup_ts", "dropoff_ts"]
+    ),
+    ["field", "present_count", "missing_count"],
+].copy()
+event_coverage = event_coverage.rename(columns={
+    "present_count": "Recorded", "missing_count": "Not recorded"
+}).melt(id_vars="field", var_name="recording_state", value_name="request_count")
+event_coverage["share_percent"] = (
+    100 * event_coverage["request_count"] / total_ride_requests
+).round(2)
+
+metrocar_event_coverage = px.bar(
+    event_coverage, x="share_percent", y="field", color="recording_state",
+    orientation="h", barmode="stack",
+    category_orders={"field": ["request_ts", "accept_ts", "pickup_ts", "dropoff_ts"]},
+    color_discrete_map={"Recorded": "#71c6b1", "Not recorded": "#f4bda5"},
+    custom_data=["request_count"],
+    title="Later events are not recorded for every request",
+    labels={"share_percent": "Share of all 385,477 requests (%)", "field": ""},
+)
+metrocar_event_coverage.update_xaxes(range=[0, 100])
+metrocar_event_coverage.update_traces(
+    hovertemplate="%{y}<br>%{customdata[0]:,} requests · %{x:.2f}%<extra></extra>"
+)
+metrocar_event_coverage
+
+# %% [markdown]
+# ## EDA: which ride events are recorded together?
+#
+# **❓ Question:** Do the absent timestamps form consistent recorded ride states,
+# or do partial pickup/drop-off records challenge our completion definition?
+#
+# **📋 Source & Context:** The same 385,477 requests, one row per `ride_id`.
+# Presence is evaluated on each individual request, before any user aggregation.
+#
+# **🎯 Goal & Approach:** Group the three timestamp-presence flags and count the
+# observed combinations. This compresses the full population into a readable
+# pattern summary without sampling rows or inventing events.
+
+# %%
+# notna() creates three Boolean flags per request; groupby().size() counts
+# requests sharing the exact same recorded-event pattern.
+recorded_event_state = eda_ride_fields[
+    ["accept_ts", "pickup_ts", "dropoff_ts"]
+].notna()
+event_pattern_summary = (
+    recorded_event_state.groupby(["accept_ts", "pickup_ts", "dropoff_ts"])
+    .size().reset_index(name="request_count")
+    .sort_values(["accept_ts", "pickup_ts", "dropoff_ts"], ascending=False)
+    .reset_index(drop=True)
+)
+pattern_labels = []
+for _, pattern in event_pattern_summary.iterrows():
+    recorded_labels = []
+    for field, label in [
+        ("accept_ts", "Accepted"), ("pickup_ts", "Pickup"), ("dropoff_ts", "Drop-off")
+    ]:
+        if pattern[field]:
+            recorded_labels.append(label)
+    pattern_labels.append(" + ".join(recorded_labels) or "No later events")
+event_pattern_summary["pattern"] = pattern_labels
+event_pattern_summary["share_percent"] = (
+    100 * event_pattern_summary["request_count"] / total_ride_requests
+).round(2)
+
+# The groups must partition every request and reproduce the earlier event counts.
+assert int(event_pattern_summary["request_count"].sum()) == total_ride_requests
+assert int(recorded_event_state["accept_ts"].sum()) == accepted_rides
+assert int((recorded_event_state["pickup_ts"] & recorded_event_state["dropoff_ts"]).sum()) == completed_rides
+assert int((recorded_event_state["pickup_ts"] != recorded_event_state["dropoff_ts"]).sum()) == 0
+event_pattern_summary
+
+# %%
+# Bars share a zero baseline and a single request-count scale; labels retain
+# the observed combinations rather than implying a cause for absent events.
+metrocar_event_patterns = px.bar(
+    event_pattern_summary, x="request_count", y="pattern", orientation="h",
+    text="request_count", custom_data=["share_percent"],
+    color_discrete_sequence=["#71c6b1"],
+    title="Pickup and drop-off are recorded together",
+    labels={"request_count": "Recorded ride requests", "pattern": ""},
+)
+metrocar_event_patterns.update_traces(
+    texttemplate="%{x:,}", textposition="outside",
+    hovertemplate="%{y}<br>%{x:,} requests · %{customdata[0]:.2f}%<extra></extra>",
+)
+metrocar_event_patterns.update_xaxes(rangemode="tozero")
+metrocar_event_patterns.update_yaxes(autorange="reversed")
+metrocar_event_patterns
+
+# %% [markdown]
+# **✅ Evidence & Answer:** Three patterns account for every request:
+# **223,652 (58.02%)** have acceptance, pickup and drop-off; **24,727 (6.41%)**
+# have acceptance only; **137,098 (35.57%)** have none of those later timestamps.
+# There are **0** partial pickup/drop-off pairs and **0** acceptance/driver-ID
+# disagreements in the existing checks.
+#
+# **🧠 What We Learned:** Timestamp absence is meaningful recorded state, not
+# an automatic instruction to delete a row or fill in an event. The pattern
+# check supports the recorded completion definition; it does not establish
+# whether the source captured every real-world event or why a ride stopped.
+# The customer funnel still needs a separate one-state-per-user reduction.
+#
+# **📚 Method references:** [Exploratory Data Analysis in Python](https://www.datacamp.com/courses/exploratory-data-analysis-in-python)
+# and [Dealing with Missing Data in Python](https://www.datacamp.com/courses/dealing-with-missing-data-in-python).
+# These are original Metrocar applications of completeness and pattern analysis.
+# No missing events were imputed and no input records were removed.
+# endregion
 # region Constructing the Customer Funnel — First Learning Slice
 # %% [markdown]
 # # Constructing the Customer Funnel
@@ -2260,6 +2444,43 @@ acceptance_diagnostic_validation = {
     ),
 }
 acceptance_diagnostic_validation
+
+# %% [markdown]
+# ### See the contrast at user-history grain
+#
+# Most non-completing requesters had some recorded acceptance. Compare the two
+# groups within the same **6,173-user** cohort; ride-request counts do not belong
+# in this chart. The contrast tests “most never received any acceptance,” while
+# leaving the cause of non-completion open.
+
+# %%
+# Reuse the validated user-history split; this chart adds no new membership rule.
+acceptance_history_plot = non_completer_acceptance_split.copy()
+acceptance_history_plot["history_group"] = [
+    "No acceptance in history", "At least one acceptance in history"
+]
+acceptance_history_plot["cohort"] = "6,173 non-completing requesters"
+metrocar_acceptance_history = px.bar(
+    acceptance_history_plot,
+    x="share_of_non_completing_requesters_pct", y="cohort",
+    color="history_group", orientation="h", barmode="stack",
+    category_orders={"history_group": [
+        "At least one acceptance in history", "No acceptance in history"
+    ]},
+    color_discrete_map={
+        "At least one acceptance in history": "#71c6b1",
+        "No acceptance in history": "#f4bda5",
+    },
+    custom_data=["user_count"],
+    title="6,045 of 6,173 non-completers had some recorded acceptance",
+    labels={"share_of_non_completing_requesters_pct": "Share of this user cohort (%)", "cohort": ""},
+)
+metrocar_acceptance_history.update_xaxes(range=[0, 100])
+metrocar_acceptance_history.update_traces(
+    hovertemplate="%{customdata[0]:,} users · %{x:.2f}%<extra></extra>"
+)
+assert int(acceptance_history_plot["user_count"].sum()) == non_completing_requester_count
+metrocar_acceptance_history
 
 # %% [markdown]
 # ### ✅ Result

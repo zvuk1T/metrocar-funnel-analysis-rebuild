@@ -4,120 +4,129 @@ import PageShell from "../layouts/PageShell.astro";
 import FunnelChart from "../components/FunnelChart.astro";
 import { customerFunnel, rideFunnel } from "../data/funnels.js";
 
-const githubUrl =
-  "https://github.com/zvuk1T/metrocar-funnel-analysis-rebuild";
+const requesters = customerFunnel.stages[2];
+const completers = customerFunnel.stages[3];
 ---
 
 <PageShell
-  title="Metrocar · Analytical Case Study"
-  description="A concise, evidence-led view of where the Metrocar customer journey loses momentum."
+  title="Metrocar — Where Do We Lose Momentum?"
+  description="A MasterSchool funnel study: where Metrocar loses customers, what the recorded evidence shows, and what it cannot explain."
 >
-  <main id="main-content" class="overview-main metrocar-project">
-    <section id="dashboard" class="metrocar-dashboard" aria-labelledby="page-title" tabindex="-1">
-    <section class="overview-hero" aria-labelledby="page-title">
-      <div class="hero-copy">
-        <p class="eyebrow">Metrocar · Analytical Case Study</p>
-        <h1 id="page-title">
-          Where does Metrocar lose <span>momentum?</span>
-        </h1>
-        <p class="hero-question">
-          Where does Metrocar lose customers on the path from app download to
-          a completed ride?
-        </p>
-        <p class="hero-project-intro">
-          Educational MasterSchool case study.
-        </p>
-      </div>
-
-      <aside class="hero-result" aria-label="Main customer-funnel result">
-        <p class="micro-label">Requesters who completed a ride</p>
-        <p class="hero-metric">50.24%</p>
-        <p class="transition-label">
-          <span>Requested ≥1</span>
-          <span aria-hidden="true">→</span>
-          <span>Completed ≥1</span>
-        </p>
-        <p class="hero-result-note">6,233 of 12,406 requesters</p>
-      </aside>
-    </section>
-
-    <ul class="trust-strip" aria-label="Project methods and validation">
-      <li>Python · Pandas · SQL · Plotly</li>
-      <li>Customer grain + <code>ride_id</code> grain</li>
-      <li>SQL ↔ Pandas reconciled — Q01–Q10 only</li>
-    </ul>
-
-    <section class="funnel-grid" aria-label="Metrocar funnel visualizations">
-      <article
-        class="funnel-panel funnel-panel--customer"
-        aria-labelledby="customer-panel-title"
-      >
-        <header class="panel-header">
-          <div>
-            <p class="panel-kicker">Customer progression</p>
-            <h2 id="customer-panel-title">Customer Funnel</h2>
-          </div>
-          <span class="grain-pill">Entrant / user stage</span>
+  <main id="main-content" class="overview-main metrocar-project" tabindex="-1">
+    <section id="introduction" class="project-introduction project-width" aria-labelledby="project-title" tabindex="-1">
+      <div class="project-intro-panel">
+        <header class="project-section-header">
+          <p class="eyebrow">MasterSchool · Educational ride-sharing funnel project</p>
+          <h1 id="project-title">Metrocar — Where Do We Lose Momentum?</h1>
         </header>
-
-        <FunnelChart
-          funnel={customerFunnel}
-          ariaLabel="Customer Funnel: Download 23,608; Signup 17,623; Requested at least one ride 12,406; Completed at least one ride 6,233."
-          tableCaption="Customer Funnel values"
-        />
-      </article>
-
-      <article
-        class="funnel-panel funnel-panel--ride"
-        aria-labelledby="ride-panel-title"
-      >
-        <header class="panel-header">
-          <div>
-            <p class="panel-kicker">Supporting ride path</p>
-            <h2 id="ride-panel-title">Ride Funnel</h2>
-          </div>
-          <span class="grain-pill">One <code>ride_id</code></span>
-        </header>
-
-        <FunnelChart
-          funnel={rideFunnel}
-          ariaLabel="Ride Funnel: Request 385,477; Finished 223,652; Paid 212,628; Reviewed 148,464."
-          tableCaption="Ride Funnel values"
-        />
-
-        <p class="panel-note">
-          Reviewed means reviewed rides inside the Approved-payment path.
-        </p>
-
-      </article>
-    </section>
-
-    <section class="overview-close" aria-labelledby="takeaway-title">
-      <div>
-        <h2 id="takeaway-title">The loss is clear. Its cause is not.</h2>
-        <p>
-          Requested → Completed is the weakest customer transition. Recorded
-          acceptance elsewhere in a customer's ride history does not establish
-          the cause.
-        </p>
-      </div>
-
-      <div class="overview-actions">
-        <a class="primary-button" href="#full-analysis">
-          Explore Full Analysis <span aria-hidden="true">↓</span>
-        </a>
-        <a
-          class="secondary-link"
-          href={githubUrl}
-          target="_blank"
-          rel="noreferrer"
-        >
-          View repository <span aria-hidden="true">↗</span>
-        </a>
+        <div class="project-intro-copy">
+          <p class="project-intro-lead">Where do users stop on the way to a completed ride? If a requesting user never completes one, does that mean they never received an acceptance?</p>
+          <p>Metrocar connects riders and drivers. In this educational MasterSchool case study, separate customer and ride funnels reveal the weakest transition. The analysis then tests one possible explanation and keeps the evidence limits visible.</p>
+          <nav class="project-sections" aria-label="Project sections">
+            <a href="#question">Question</a>
+            <a href="#dashboard">Business Dashboard</a>
+            <a href="#full-analysis">Full Analysis</a>
+            <a href="#what-we-learned">Wrap-up</a>
+          </nav>
+        </div>
       </div>
     </section>
+
+    <section id="question" class="project-question project-width" aria-labelledby="project-question-title" tabindex="-1">
+      <p class="eyebrow">The question</p>
+      <h2 id="project-question-title">Where does Metrocar lose customers on the path from app download to a completed ride?</h2>
+      <p>Which transition has the weakest conversion, and what can recorded ride history tell us about it?</p>
     </section>
+
+    <section id="dashboard" class="metrocar-dashboard project-width" aria-labelledby="dashboard-title" tabindex="-1">
+      <header class="project-section-header dashboard-hero">
+        <h2 id="dashboard-title">Business Dashboard</h2>
+        <p>Recorded funnels at two distinct grains: customer progression and individual rides.</p>
+      </header>
+
+      <section class="finding-panel" aria-labelledby="finding-title">
+        <h3 id="finding-title"><strong>{completers.percentOfPrevious}</strong><span>of requesters completed<br class="desktop-break" /> at least one ride.</span></h3>
+        <p><strong>{completers.count.toLocaleString("en-US")} of {requesters.count.toLocaleString("en-US")}</strong> requesting users<br />Requested ≥1 → Completed ≥1</p>
+      </section>
+
+      <div class="funnel-grid" aria-label="Metrocar funnel visualizations">
+        <article class="funnel-panel funnel-panel--customer" aria-labelledby="customer-panel-title">
+          <header class="panel-header">
+            <div><p class="panel-kicker">Primary customer evidence</p><h3 id="customer-panel-title">Customer Funnel</h3></div>
+            <span class="grain-pill">Entrant / user stage</span>
+          </header>
+          <FunnelChart
+            funnel={customerFunnel}
+            ariaLabel="Customer Funnel: Download 23,608; Signup 17,623; Requested at least one ride 12,406; Completed at least one ride 6,233."
+            tableCaption="Customer Funnel values"
+          />
+        </article>
+        <article class="funnel-panel funnel-panel--ride" aria-labelledby="ride-panel-title">
+          <header class="panel-header">
+            <div><p class="panel-kicker">Supporting ride path</p><h3 id="ride-panel-title">Ride Funnel</h3></div>
+            <span class="grain-pill">One <code>ride_id</code></span>
+          </header>
+          <FunnelChart
+            funnel={rideFunnel}
+            ariaLabel="Ride Funnel: Request 385,477; Finished 223,652; Paid 212,628; Reviewed 148,464."
+            tableCaption="Ride Funnel values"
+          />
+          <p class="panel-note">Reviewed means reviewed rides inside the Approved-payment path.</p>
+        </article>
+      </div>
+
+      <section class="overview-close" aria-labelledby="takeaway-title">
+        <div>
+          <h3 id="takeaway-title">The loss is clear. Its cause is not.</h3>
+          <p>Acceptance elsewhere in a user's ride history does not establish the cause of non-completion.</p>
+        </div>
+        <a class="primary-button" href="#full-analysis">Explore Full Analysis <span aria-hidden="true">↓</span></a>
+      </section>
+      <p class="dashboard-next-step"><strong>Next step:</strong> investigate same-ride operational or cancellation evidence.</p>
+      <ul class="trust-strip" aria-label="Project methods and validation">
+        <li>Python · pandas · SQL · Plotly</li>
+        <li>Customer grain + <code>ride_id</code> grain</li>
+        <li>SQL ↔ pandas reconciled — Q01–Q10 only</li>
+      </ul>
+    </section>
+
     <FullAnalysis />
-  </main>
 
+    <section id="what-we-learned" class="project-learning project-width" aria-labelledby="learning-title" tabindex="-1">
+      <div class="learning-panel">
+        <header class="project-section-header learning-header">
+          <p class="eyebrow">Return to the question</p>
+          <h2 id="learning-title">Wrap-up</h2>
+          <p>Data → Information → Knowledge → Wisdom: from recorded journeys to a responsible next investigation.</p>
+        </header>
+        <ol class="learning-takeaways">
+          <li>
+            <h3><span class="learning-number" aria-hidden="true">01</span>Data — What did we use?</h3>
+            <p>Recorded downloads, signups, ride requests, payments and reviews. The customer funnel starts with <strong>23,608 downloads</strong>; the ride funnel follows <strong>385,477 ride requests</strong>.</p>
+            <a href="#understand-the-app-downloads-table-grain">Source and grain ↑</a>
+          </li>
+          <li>
+            <h3><span class="learning-number" aria-hidden="true">02</span>Information — What did we find?</h3>
+            <p><strong>6,233 of 12,406 requesting users</strong> completed at least one ride: <strong>50.24%</strong>. Among the <strong>6,173</strong> who did not complete, <strong>6,045</strong> had a recorded acceptance somewhere in their ride history.</p>
+            <a href="#diagnostic-1-did-non-completing-requesters-ever-have-an-accepted-ride">Acceptance-history evidence ↑</a>
+          </li>
+          <li>
+            <h3><span class="learning-number" aria-hidden="true">03</span>Knowledge — What is the insight?</h3>
+            <p>The largest relative customer loss follows a request. Most non-completing requesters had a recorded acceptance somewhere in their ride history.</p>
+            <aside class="learning-insight" aria-label="Key insight">
+              <strong>Insight</strong>
+              <p>The idea that most affected users never received an acceptance does not fit their recorded histories. This still does not show what happened on the same unfinished ride or establish a cause.</p>
+            </aside>
+            <a href="#learning-slice-4-which-adjacent-transition-is-weakest">Weakest transition ↑</a>
+          </li>
+          <li>
+            <h3><span class="learning-number" aria-hidden="true">04</span>Wisdom — What is the next question?</h3>
+            <p>Which same-ride evidence would help investigate why requesting users did not complete a ride?</p>
+            <p>Keep customer and ride populations separate. Investigate same-ride operational or cancellation evidence before making causal claims or proposing operational changes.</p>
+            <a href="#visualization-2-how-many-rides-followed-the-strict-ride-path">Definitions and evidence limits ↑</a>
+          </li>
+        </ol>
+      </div>
+    </section>
+  </main>
 </PageShell>

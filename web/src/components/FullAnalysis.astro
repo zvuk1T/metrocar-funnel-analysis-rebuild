@@ -1,11 +1,15 @@
 ---
 import { readFile } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { resolve } from "node:path";
 import { Code } from "astro:components";
 import { Marked } from "marked";
 
 import CodeGuide from "./CodeGuide.astro";
 import FunnelChart from "./FunnelChart.astro";
+import AnalysisEvidence from "./AnalysisEvidence.astro";
+import analysisEvidence from "../data/analysisEvidence.json";
+import cellOutputs from "../data/cellOutputs.json";
 import { codeGuides } from "../data/codeGuides.js";
 import { customerFunnel, rideFunnel } from "../data/funnels.js";
 import { parsePercentCells } from "../lib/percentCells.js";
@@ -15,6 +19,36 @@ const githubUrl =
 const sourcePath = resolve(process.cwd(), "../metrocar_funnel_analysis.py");
 const source = await readFile(sourcePath, "utf8");
 const sourceCells = parsePercentCells(source);
+
+// Aggregate snapshots must correspond to this analytical source and figure cell.
+if (createHash("sha256").update(source).digest("hex") !== analysisEvidence.sourceSha256) {
+  throw new Error("Analytical source changed; revalidate the EDA evidence snapshot");
+}
+
+if (cellOutputs.sourceSha256 !== analysisEvidence.sourceSha256) {
+  throw new Error("Python output snapshot does not match the analytical source");
+}
+const outputsByCellIndex = new Map();
+for (const output of cellOutputs.cells) {
+  const cell = sourceCells[output.sourceCell - 1];
+  if (!cell || cell.type !== "code" || outputsByCellIndex.has(cell.index) ||
+      createHash("sha256").update(cell.content).digest("hex") !== output.sourceCellSha256) {
+    throw new Error(`Python output does not match source cell ${output.sourceCell}`);
+  }
+  outputsByCellIndex.set(cell.index, output);
+}
+
+const evidenceByCellIndex = new Map();
+for (const kind of ["eventCoverage", "eventPatterns", "acceptanceHistory"]) {
+  const evidence = analysisEvidence[kind];
+  const matches = sourceCells.filter(
+    (cell) => cell.type === "code" && cell.content.trim().endsWith(evidence.sourceVariable),
+  );
+  if (matches.length !== 1 || createHash("sha256").update(matches[0].content).digest("hex") !== evidence.sourceCellSha256) {
+    throw new Error(`Source cell does not match verified ${kind} evidence`);
+  }
+  evidenceByCellIndex.set(matches[0].index, kind);
+}
 
 const codeGuidesByCellIndex = new Map();
 
@@ -89,6 +123,8 @@ markdown.use({
       // Preserve authored heading depth as metadata while nesting it below Full Analysis.
       const displayDepth = Math.min(depth + 2, 6);
       if (depth > 2) {
+        // The output disclosure supplies this label; retain the source explanation below it.
+        if (depth === 3 && text === "✅ Result") return "";
         return `<h${displayDepth} data-source-depth="${depth}">${content}</h${displayDepth}>`;
       }
 
@@ -114,16 +150,35 @@ const renderedCells = sourceCells.map((cell) => {
     return {
       ...cell,
       displayedFigure,
+      additionalEvidence: evidenceByCellIndex.get(cell.index) ?? null,
       codeGuide: codeGuidesByCellIndex.get(cell.index) ?? null,
+      output: outputsByCellIndex.get(cell.index),
     };
   }
 
   currentSourceCell = cell.index + 1;
 
+  let html = markdown.parse(cell.content, { async: false });
+  const checkHeading = '<h5 data-source-depth="3">🧑‍💼 Recruiter Check</h5>';
+  const checkStart = html.indexOf(checkHeading);
+
+  if (checkStart !== -1) {
+    const answerStart = html.indexOf("<details>", checkStart);
+    if (answerStart === -1 || !html.trimEnd().endsWith("</details>")) {
+      throw new Error(`Question and answer are not grouped in source cell ${cell.index + 1}`);
+    }
+
+    // Apply the web label and grouping without changing the source question or answer.
+    const question = html.slice(checkStart + checkHeading.length, answerStart);
+    const answer = html.slice(answerStart);
+    const titleId = `question-yourself-${cell.index + 1}`;
+    html = `${html.slice(0, checkStart)}<section class="question-yourself" aria-labelledby="${titleId}" data-source-label="Recruiter Check"><div class="question-yourself-prompt"><h5 id="${titleId}" data-source-depth="3">❓ Question Yourself</h5>${question}</div>${answer}</section>`;
+  }
+
   return {
     ...cell,
     displayedFigure,
-    html: markdown.parse(cell.content, { async: false }),
+    html,
   };
 });
 
@@ -197,49 +252,45 @@ const markdownCellCount = sourceCells.filter(
   (cell) => cell.type === "markdown",
 ).length;
 const codeCellCount = sourceCells.length - markdownCellCount;
+if (outputsByCellIndex.size !== codeCellCount) {
+  throw new Error("Every Python cell must have an output snapshot entry");
+}
 
 ---
 
 <section id="full-analysis" class="analysis-page" aria-labelledby="full-analysis-title" tabindex="-1">
-    <header class="analysis-intro">
-      <a class="back-link" href="#dashboard">↑ Metrocar Dashboard</a>
-      <p class="eyebrow">Metrocar · Full Analysis</p>
-      <h2 id="full-analysis-title">Follow the reasoning behind the result.</h2>
-      <p class="analysis-intro-copy">
-        This long-form view is generated at build time from the real{" "}
-        <code>metrocar_funnel_analysis.py</code>. It preserves authored explanations
-        and Python in source order; no analytical code runs in the browser.
-      </p>
-      <div class="source-facts" aria-label="Source transformation summary">
-        <span>{sourceCells.length} source cells</span>
-        <span>{markdownCellCount} explanation cells</span>
-        <span>{codeCellCount} Python cells</span>
-      </div>
-      <p class="source-limit">
-        Runtime DataFrame outputs are not reconstructed. The two validated
-        funnel figures reuse approved precomputed presentation values; no
-        Python runs in the browser.
-      </p>
+    <header class="analysis-intro project-section-header">
+      <p class="eyebrow">Behind the dashboard</p>
+      <h2 id="full-analysis-title">Full Analysis</h2>
+      <p class="analysis-intro-copy">Follow the reasoning behind the result. These are the explanations and Python cells from the real analytical document, in their original order.</p>
     </header>
+    <nav class="project-sections analysis-source-links" aria-label="Analysis source and dashboard">
+      <a href="#dashboard">↑ Business Dashboard</a>
+      <a href={`${githubUrl}/blob/main/metrocar_funnel_analysis.py`} target="_blank" rel="noreferrer">Python source ↗</a>
+    </nav>
+    <div class="source-facts" aria-label="Source transformation summary">
+      <span>{sourceCells.length} source cells</span>
+      <span>{markdownCellCount} explanation cells</span>
+      <span>{codeCellCount} Python cells</span>
+    </div>
+    <p class="source-limit">Results are captured Python outputs, not a live session. LIMIT 5 and .head() outputs are labelled as previews. Longer outputs show a labelled excerpt with the full result available. Charts retain this site's presentation of the verified values; web code guides add supplementary explanations.</p>
 
     <details class="analysis-toc-mobile">
       <summary>On this page</summary>
-      <nav aria-label="Full Analysis table of contents">
+      <nav id="analysis-outline-mobile" class="analysis-outline" aria-label="Analysis chapters on mobile">
+        <p class="outline-label">Analysis chapters</p>
         <ol class="toc-chapters">
           {analysisChapters.map((chapter) => (
-            <li class="toc-chapter">
-              <div class="toc-chapter-heading">
-                <span>{chapter.number}</span>
-                <strong>{chapter.title}</strong>
+            <li class="toc-chapter" data-outline-group={chapter.number}>
+              <div class="outline-row">
+                <a href={`#${chapter.links[0].id}`}><span class="outline-number" aria-hidden="true">{chapter.number}</span>{chapter.title}</a>
+                <button type="button" class="outline-toggle" aria-expanded="true" aria-controls={`analysis-outline-mobile-${chapter.number}-sections`} aria-label={`Toggle sections for ${chapter.title}`} hidden>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l6 5-6 5z" /></svg>
+                </button>
               </div>
-              <ol class="toc-section-links">
-                {chapter.links.map((heading) => (
-                  <li
-                    class:list={{
-                      "toc-level-one": heading.depth === 1,
-                      "toc-level-two": heading.depth === 2,
-                    }}
-                  >
+              <ol id={`analysis-outline-mobile-${chapter.number}-sections`} class="toc-section-links">
+                {chapter.links.slice(1).map((heading) => (
+                  <li class:list={{ "toc-level-one": heading.depth === 1, "toc-level-two": heading.depth === 2 }}>
                     <a href={`#${heading.id}`}>{heading.title}</a>
                   </li>
                 ))}
@@ -252,23 +303,20 @@ const codeCellCount = sourceCells.length - markdownCellCount;
 
     <div class="analysis-layout">
       <aside class="analysis-toc-desktop">
-        <p class="toc-title">Full Analysis</p>
-        <nav aria-label="Full Analysis table of contents">
+        <nav id="analysis-outline-desktop" class="analysis-outline" aria-label="Analysis chapters">
+          <p class="outline-label">Analysis chapters</p>
           <ol class="toc-chapters">
             {analysisChapters.map((chapter) => (
-              <li class="toc-chapter">
-                <div class="toc-chapter-heading">
-                  <span>{chapter.number}</span>
-                  <strong>{chapter.title}</strong>
+              <li class="toc-chapter" data-outline-group={chapter.number}>
+                <div class="outline-row">
+                  <a href={`#${chapter.links[0].id}`}><span class="outline-number" aria-hidden="true">{chapter.number}</span>{chapter.title}</a>
+                  <button type="button" class="outline-toggle" aria-expanded="true" aria-controls={`analysis-outline-desktop-${chapter.number}-sections`} aria-label={`Toggle sections for ${chapter.title}`} hidden>
+                    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 3l6 5-6 5z" /></svg>
+                  </button>
                 </div>
-                <ol class="toc-section-links">
-                  {chapter.links.map((heading) => (
-                    <li
-                      class:list={{
-                        "toc-level-one": heading.depth === 1,
-                        "toc-level-two": heading.depth === 2,
-                      }}
-                    >
+                <ol id={`analysis-outline-desktop-${chapter.number}-sections`} class="toc-section-links">
+                  {chapter.links.slice(1).map((heading) => (
+                    <li class:list={{ "toc-level-one": heading.depth === 1, "toc-level-two": heading.depth === 2 }}>
                       <a href={`#${heading.id}`}>{heading.title}</a>
                     </li>
                   ))}
@@ -277,9 +325,6 @@ const codeCellCount = sourceCells.length - markdownCellCount;
             ))}
           </ol>
         </nav>
-        <a class="toc-github" href={githubUrl} target="_blank" rel="noreferrer">
-          Source on GitHub ↗
-        </a>
       </aside>
 
       <article class="analysis-stream" aria-label="Metrocar analytical source">
@@ -311,65 +356,59 @@ const codeCellCount = sourceCells.length - markdownCellCount;
                   tabindex="0"
                   aria-label={`Python source cell ${cell.index + 1}`}
                 />
+                {cell.output.kind !== "none" && (
+                  <details class:list={["python-cell-output", { "python-cell-output--figure": cell.output.kind === "figure" }]} id={`python-output-${cell.index + 1}`} data-output-kind={cell.output.kind}>
+                    <summary><span class="cell-disclosure-label"><span class="cell-disclosure-icon" aria-hidden="true">✅</span><span>Result</span></span></summary>
+                    <div class="python-output-content">
+                      {cell.output.stdout && <pre class="python-result-text" tabindex="0">{cell.output.stdout}</pre>}
+                      {cell.output.kind === "text" && <pre class="python-result-text" tabindex="0">{cell.output.text}</pre>}
+                      {cell.output.kind === "table" && <div class="python-result-table" role="region" aria-label={`Python table result for source cell ${cell.index + 1}`} tabindex="0" set:html={cell.output.html} />}
+                      {cell.output.note && <p class="python-output-note">{cell.output.note}</p>}
+                      {(cell.output.fullHtml || cell.output.fullText) && (
+                        <details class="python-full-output">
+                          <summary>{cell.output.fullLabel}</summary>
+                          {cell.output.fullHtml
+                            ? <div class="python-result-table" role="region" aria-label={`Full Python table result for source cell ${cell.index + 1}`} tabindex="0" set:html={cell.output.fullHtml} />
+                            : <pre class="python-result-text" tabindex="0">{cell.output.fullText}</pre>}
+                        </details>
+                      )}
+
+                      {cell.additionalEvidence && (
+                        <AnalysisEvidence kind={cell.additionalEvidence} evidence={analysisEvidence} />
+                      )}
+
+                      {cell.displayedFigure === "customer" && (
+                        <section class="analysis-funnel-evidence analysis-funnel-evidence--customer" aria-labelledby="analysis-customer-funnel-title">
+                          <header class="analysis-evidence-header">
+                            <p>Rendered evidence · Customer grain</p>
+                            <h3 id="analysis-customer-funnel-title">Metrocar Customer Funnel</h3>
+                          </header>
+                          <FunnelChart funnel={customerFunnel} id="analysis-customer-funnel-chart" ariaLabel="Customer Funnel: Download 23,608; Signup 17,623; Requested at least one ride 12,406; Completed at least one ride 6,233." tableCaption="Full Analysis Customer Funnel values" />
+                        </section>
+                      )}
+
+                      {cell.displayedFigure === "ride" && (
+                        <section class="analysis-funnel-evidence analysis-funnel-evidence--ride" aria-labelledby="analysis-ride-funnel-title">
+                          <header class="analysis-evidence-header">
+                            <p>Rendered evidence · One ride_id</p>
+                            <h3 id="analysis-ride-funnel-title">Metrocar Ride Funnel</h3>
+                          </header>
+                          <FunnelChart funnel={rideFunnel} id="analysis-ride-funnel-chart" ariaLabel="Ride Funnel: Request 385,477; Finished 223,652; Paid 212,628; Reviewed 148,464 within the Approved-payment path." tableCaption="Full Analysis Ride Funnel values" />
+                          <p class="analysis-evidence-note">Reviewed represents reviewed rides inside the Approved-payment path; the following result keeps the 7,747 additional reviewed rides visible outside that strict path.</p>
+                        </section>
+                      )}
+                    </div>
+                  </details>
+                )}
                 {cell.explanation
                   ? <CodeGuide explanation={cell.explanation} />
                   : cell.codeGuide && <CodeGuide guide={cell.codeGuide} />}
               </section>
             )}
 
-            {cell.displayedFigure === "customer" && (
-              <section
-                class="analysis-funnel-evidence analysis-funnel-evidence--customer"
-                aria-labelledby="analysis-customer-funnel-title"
-              >
-                <header class="analysis-evidence-header">
-                  <p>Rendered evidence · Customer grain</p>
-                  <h3 id="analysis-customer-funnel-title">
-                    Metrocar Customer Funnel
-                  </h3>
-                </header>
-                <FunnelChart
-                  funnel={customerFunnel}
-                  id="analysis-customer-funnel-chart"
-                  ariaLabel="Customer Funnel: Download 23,608; Signup 17,623; Requested at least one ride 12,406; Completed at least one ride 6,233."
-                  tableCaption="Full Analysis Customer Funnel values"
-                />
-              </section>
-            )}
-
-            {cell.displayedFigure === "ride" && (
-              <section
-                class="analysis-funnel-evidence analysis-funnel-evidence--ride"
-                aria-labelledby="analysis-ride-funnel-title"
-              >
-                <header class="analysis-evidence-header">
-                  <p>Rendered evidence · One ride_id</p>
-                  <h3 id="analysis-ride-funnel-title">
-                    Metrocar Ride Funnel
-                  </h3>
-                </header>
-                <FunnelChart
-                  funnel={rideFunnel}
-                  id="analysis-ride-funnel-chart"
-                  ariaLabel="Ride Funnel: Request 385,477; Finished 223,652; Paid 212,628; Reviewed 148,464 within the Approved-payment path."
-                  tableCaption="Full Analysis Ride Funnel values"
-                />
-                <p class="analysis-evidence-note">
-                  Reviewed represents reviewed rides inside the
-                  Approved-payment path; the following result keeps the 7,747
-                  additional reviewed rides visible outside that strict path.
-                </p>
-              </section>
-            )}
           </>
         ))}
       </article>
     </div>
 
-    <nav class="analysis-end" aria-label="End of Full Analysis">
-      <a class="primary-button" href="#dashboard">↑ Return to Metrocar Dashboard</a>
-      <a class="secondary-link" href={githubUrl} target="_blank" rel="noreferrer">
-        View repository <span aria-hidden="true">↗</span>
-      </a>
-    </nav>
 </section>

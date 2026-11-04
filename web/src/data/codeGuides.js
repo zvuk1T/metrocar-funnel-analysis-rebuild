@@ -1,8 +1,13 @@
-// Remaining frontend-only explanations; the preview pilot is owned by Python.
+// Supplementary web reading guides; the preview pilot is owned by Python.
+// Excerpts are maintenance references; the full source cell is displayed above each guide.
 // Each source matcher identifies exactly one code cell at build time.
 export const codeGuides = [
   {
     id: "open-database-connection",
+    overview:
+      "Before exploring Metrocar, open the connection that the later SQL queries will share.",
+    why:
+      "Reaching the database enables inspection; it does not establish that its records, relationships or metric definitions are reliable.",
     sourceMatcher: 'metrocar_url = os.environ["METROCAR_DATABASE_URL"]',
     steps: [
       {
@@ -24,6 +29,10 @@ export const codeGuides = [
   },
   {
     id: "list-source-tables",
+    overview:
+      "Find the available tables before deciding which part of the customer journey each can describe.",
+    why:
+      "A table name is a starting point. Its fields, row meaning and relationships still need inspection.",
     sourceMatcher: "inspector = sa.inspect(engine)",
     steps: [
       {
@@ -35,6 +44,10 @@ export const codeGuides = [
   },
   {
     id: "list-download-columns",
+    overview:
+      "Locate the fields that could identify a download before choosing the customer funnel’s starting population.",
+    why:
+      "Seeing `app_download_key` in a column list does not prove uniqueness; that requires checking the full table.",
     sourceMatcher: "app_downloads_column_names = app_downloads_preview.columns.tolist()",
     steps: [
       {
@@ -46,6 +59,10 @@ export const codeGuides = [
   },
   {
     id: "display-download-preview",
+    overview:
+      "Look again at the download preview already held in memory, keeping the visible example beside the grain discussion.",
+    why:
+      "A preview helps us understand structure. Five visible rows cannot establish properties of the complete download population.",
     sourceMatcher: "app_downloads_preview",
     exactMatch: true,
     steps: [
@@ -58,6 +75,10 @@ export const codeGuides = [
   },
   {
     id: "validate-download-key",
+    overview:
+      "Before counting downloads or joining other tables, test whether every download row has its own recorded key.",
+    why:
+      "Later joins depend on this grain. Repeated or missing keys would undermine both the base population and its stage counts.",
     sourceMatcher:
       'duplicate_app_download_keys_exist = app_download_keys[',
     steps: [
@@ -75,6 +96,10 @@ export const codeGuides = [
   },
   {
     id: "record-download-count",
+    overview:
+      "Carry the checked download total forward under a name that makes its role in the analysis clear.",
+    why:
+      "The number represents recorded downloads, not necessarily distinct people. Renaming it does not change its population.",
     sourceMatcher: "recorded_app_downloads = total_app_download_rows",
     steps: [
       {
@@ -86,6 +111,10 @@ export const codeGuides = [
   },
   {
     id: "preview-signup-rows",
+    overview:
+      "Inspect a small signup example so we can see which fields describe registration and which may link back to downloads.",
+    why:
+      "This reveals the table’s structure; it does not yet prove one row per user or a valid download relationship.",
     sourceMatcher: "signups_preview = pd.read_sql(",
     steps: [
       {
@@ -97,6 +126,10 @@ export const codeGuides = [
   },
   {
     id: "list-signup-columns",
+    overview:
+      "Identify the two keys needed next: one for registered-user grain and another for the signup-to-download relationship.",
+    why:
+      "A candidate key’s name does not establish its role. Uniqueness and link coverage must be checked separately.",
     sourceMatcher: "signups_column_names = signups_preview.columns.tolist()",
     steps: [
       {
@@ -108,6 +141,10 @@ export const codeGuides = [
   },
   {
     id: "check-signup-identifiers",
+    overview:
+      "Decide whether signup rows can represent registered identifiers without multiplying them when downloads are joined later.",
+    why:
+      "Unique keys protect join cardinality. They do not prove that every signup session exists among the recorded downloads.",
     sourceMatcher: "signup_identifiers = pd.read_sql(",
     steps: [
       {
@@ -129,6 +166,10 @@ export const codeGuides = [
   },
   {
     id: "record-registered-user-count",
+    overview:
+      "Keep the distinct signup-identifier count available as the registered-user population for later comparisons.",
+    why:
+      "Registered IDs and ride requests answer different questions. An identifier count also does not establish a count of physical people.",
     sourceMatcher: "registered_users = distinct_signup_user_ids",
     steps: [
       {
@@ -140,6 +181,10 @@ export const codeGuides = [
   },
   {
     id: "load-ride-request-fields",
+    overview:
+      "Move from registration to ride activity, retaining the identifiers and request times needed to understand each request row.",
+    why:
+      "Several request rows may belong to one user. Loading them together does not turn ride volume into a customer count.",
     sourceMatcher: "ride_requests = pd.read_sql(",
     steps: [
       {
@@ -151,6 +196,10 @@ export const codeGuides = [
   },
   {
     id: "list-ride-request-columns",
+    overview:
+      "Confirm which request fields are available before using them as keys, user links or evidence of recorded request events.",
+    why:
+      "The field list confirms what was loaded; the next checks must establish whether those fields support the intended grain.",
     sourceMatcher: "ride_request_column_names = ride_requests.columns.tolist()",
     steps: [
       {
@@ -162,6 +211,10 @@ export const codeGuides = [
   },
   {
     id: "check-ride-request-grain",
+    overview:
+      "Test whether a request row can be counted as one keyed ride request with a recorded request time.",
+    why:
+      "A plausible row total is insufficient. Key and timestamp checks determine whether the request-count interpretation is supported.",
     sourceMatcher: "total_ride_request_rows = len(ride_requests)",
     steps: [
       {
@@ -183,6 +236,10 @@ export const codeGuides = [
   },
   {
     id: "record-request-count",
+    overview:
+      "Name the checked request total so later comparisons can reuse the same ride-level population.",
+    why:
+      "This is a count of request records. It should not be read as the number of distinct requesting users.",
     sourceMatcher: "total_ride_requests = total_ride_request_rows",
     steps: [
       {
@@ -194,6 +251,10 @@ export const codeGuides = [
   },
   {
     id: "load-completion-timestamps",
+    overview:
+      "Bring pickup and drop-off evidence beside each ride key before deciding which requests meet the completion definition.",
+    why:
+      "Keeping both markers at ride grain lets the next step test completion on the same ride rather than across a user’s history.",
     sourceMatcher: "ride_completion_fields = pd.read_sql(",
     steps: [
       {
@@ -205,6 +266,10 @@ export const codeGuides = [
   },
   {
     id: "completed-ride-mask",
+    overview:
+      "Turn the accepted completion definition into a decision for every request: both pickup and drop-off timestamps must be present.",
+    why:
+      "The count describes completion under this recorded-marker rule. It does not explain non-completion or establish valid timestamp order.",
     sourceMatcher:
       "completed_ride_mask = pickup_timestamp_present & dropoff_timestamp_present",
     steps: [
@@ -227,6 +292,10 @@ export const codeGuides = [
   },
   {
     id: "count-distinct-requesters",
+    overview:
+      "Separate the volume of ride requests from the number of requester IDs behind them.",
+    why:
+      "This counts recorded IDs, not necessarily distinct people. Missing IDs remain visible rather than silently becoming known requesters.",
     sourceMatcher: 'distinct_requesting_users = ride_requests["user_id"].nunique()',
     steps: [
       {
@@ -244,6 +313,10 @@ export const codeGuides = [
   },
   {
     id: "calculate-valid-ride-duration",
+    overview:
+      "Measure elapsed minutes only for completed rides whose recorded timestamps are in a sensible order.",
+    why:
+      "The average describes that valid completed-ride subset. It is neither waiting time nor an average across all ride requests.",
     sourceMatcher: 'valid_duration_rides["duration_minutes"] = (',
     steps: [
       {
@@ -267,6 +340,10 @@ export const codeGuides = [
   },
   {
     id: "load-acceptance-fields",
+    overview:
+      "Bring the acceptance timestamp and driver assignment together so their meanings can be compared on each ride.",
+    why:
+      "These are candidate acceptance signals. Their presence does not by itself establish that the ride was completed.",
     sourceMatcher: "ride_acceptance_fields = pd.read_sql(",
     steps: [
       {
@@ -278,6 +355,10 @@ export const codeGuides = [
   },
   {
     id: "check-acceptance-signals",
+    overview:
+      "Check whether the two recorded acceptance signals agree before relying on the timestamp to count accepted rides.",
+    why:
+      "Agreement supports a consistent recorded definition. Acceptance remains a separate stage from completion and does not explain its outcome.",
     sourceMatcher: 'acceptance_timestamp_present = ride_acceptance_fields["accept_ts"].notna()',
     steps: [
       {
@@ -295,6 +376,10 @@ export const codeGuides = [
   },
   {
     id: "load-transactions",
+    overview:
+      "Bring payment records into the investigation before defining which outcomes count as successful collection.",
+    why:
+      "A transaction row is not automatically a paid ride. Keys and payment status must first support that interpretation.",
     sourceMatcher: "transactions = pd.read_sql(",
     steps: [
       {
@@ -311,6 +396,10 @@ export const codeGuides = [
   },
   {
     id: "list-transaction-columns",
+    overview:
+      "Locate the transaction identifiers, recorded amounts and outcome field needed to define successful payments.",
+    why:
+      "Having an amount column does not make every amount collected revenue; the status filter determines which rows qualify.",
     sourceMatcher: "transaction_column_names = transactions.columns.tolist()",
     steps: [
       {
@@ -322,6 +411,10 @@ export const codeGuides = [
   },
   {
     id: "check-transaction-grain",
+    overview:
+      "Check how transaction rows relate to transaction IDs and ride IDs before comparing payments with the ride funnel.",
+    why:
+      "One transaction per ride is an observed relationship to verify here, not a rule to assume for every payment system.",
     sourceMatcher: "total_transaction_rows = len(transactions)",
     steps: [
       {
@@ -343,6 +436,10 @@ export const codeGuides = [
   },
   {
     id: "inspect-transaction-statuses",
+    overview:
+      "Inspect the recorded payment outcomes before choosing the success condition used in the revenue calculation.",
+    why:
+      "Keeping missing statuses visible prevents incomplete outcome data from disappearing before the definition is assessed.",
     sourceMatcher: 'transaction_status_counts = transactions["charge_status"].value_counts(',
     steps: [
       {
@@ -354,6 +451,10 @@ export const codeGuides = [
   },
   {
     id: "summarize-approved-payments",
+    overview:
+      "Restrict the payment calculation to Approved records, then count them and add their recorded amounts.",
+    why:
+      "An amount on a declined transaction is not evidence of collection. Missing Approved amounts would also weaken the total.",
     sourceMatcher: "successful_payments = transactions.loc[",
     steps: [
       {
@@ -375,6 +476,10 @@ export const codeGuides = [
   },
   {
     id: "load-download-platforms",
+    overview:
+      "Prepare the download-platform lookup needed to trace each request through its linked signup.",
+    why:
+      "The platform belongs to the linked download record. It is not a measurement of the device used for a particular request.",
     sourceMatcher: "app_download_platforms = pd.read_sql(",
     steps: [
       {
@@ -386,6 +491,10 @@ export const codeGuides = [
   },
   {
     id: "many-to-one-platform-joins",
+    overview:
+      "Trace each request through its signup to the corresponding download platform while preserving the full request population.",
+    why:
+      "Join checks protect request counts, but the attribution still describes the signup-linked download platform rather than a request-time device.",
     sourceMatcher:
       'ride_requests_with_signup = ride_requests[["ride_id", "user_id"]].merge(',
     steps: [
@@ -410,6 +519,10 @@ export const codeGuides = [
   },
   {
     id: "summarize-requests-by-platform",
+    overview:
+      "Translate the request-level platform links into one count and share for each recorded platform label.",
+    why:
+      "The denominator is all requests. These shares describe request volume, not platform-specific user counts or conversion rates.",
     sourceMatcher: "ride_requests_by_platform = (",
     steps: [
       {
@@ -432,6 +545,10 @@ export const codeGuides = [
   },
   {
     id: "requesting-user-membership",
+    overview:
+      "Ask which registered users requested at least one ride without allowing frequent riders to count as several signups.",
+    why:
+      "Preserving every signup makes the later drop-off denominator meaningful. Missing requester-to-signup links remain an integrity question.",
     sourceMatcher:
       'requesting_users = ride_requests[["user_id"]].drop_duplicates()',
     steps: [
@@ -456,6 +573,10 @@ export const codeGuides = [
   },
   {
     id: "calculate-signup-request-dropoff",
+    overview:
+      "Compare the full signup population with those who reached Request to describe the loss between those two customer stages.",
+    why:
+      "The percentage describes recorded stage participation. It cannot explain why a registered user did not request a ride.",
     sourceMatcher: "signup_dropoff_denominator = len(signup_request_status)",
     steps: [
       {
@@ -477,6 +598,10 @@ export const codeGuides = [
   },
   {
     id: "check-signup-download-links",
+    overview:
+      "Before anchoring the funnel on downloads, check whether each signup can be traced back to a recorded download key.",
+    why:
+      "An unmatched source link is an integrity issue to investigate; it should not silently be interpreted as customer drop-off.",
     sourceMatcher: 'signup_has_download_match = signup_identifiers["session_id"].isin(',
     steps: [
       {
@@ -498,6 +623,10 @@ export const codeGuides = [
   },
   {
     id: "join-ride-completion-state",
+    overview:
+      "Attach completion evidence to each requested ride so later user-level summaries begin from correctly matched ride states.",
+    why:
+      "Match by `ride_id`, not row position. Both timestamps must belong to that same ride before it is marked completed.",
     sourceMatcher: 'ride_activity = ride_requests[["ride_id", "user_id"]].merge(',
     steps: [
       {
@@ -520,6 +649,10 @@ export const codeGuides = [
   },
   {
     id: "reduce-rides-to-user-state",
+    overview:
+      "The customer funnel needs one state per requester, even when that user has made many ride requests.",
+    why:
+      "Reducing ride histories prevents repeat riders from inflating the customer funnel. An at-least-one completion flag is not a completed-ride count.",
     sourceMatcher: "requesting_user_ride_state = (",
     steps: [
       {
@@ -538,6 +671,10 @@ export const codeGuides = [
   },
   {
     id: "validate-requesting-user-state",
+    overview:
+      "Check that reducing ride activity produced one coherent state row per requester before attaching it to signups.",
+    why:
+      "A smaller output is not enough: keys, population totals and stage relationships must support the new user-level grain.",
     sourceMatcher: "completed_without_request = int(",
     steps: [
       {
@@ -559,6 +696,10 @@ export const codeGuides = [
   },
   {
     id: "fill-absent-ride-state",
+    overview:
+      "Bring requesting-user states back to the full signup population, including users with no recorded ride request.",
+    why:
+      "Here, missing joined state means no match in the requester subset. That specific meaning justifies `False`; missing values are not universally false.",
     sourceMatcher: "signup_funnel_state[ride_stage_columns] = (",
     steps: [
       {
@@ -582,6 +723,10 @@ export const codeGuides = [
   },
   {
     id: "build-download-anchored-base",
+    overview:
+      "Start from every recorded download and attach the downstream signup, request and completion states needed for the customer funnel.",
+    why:
+      "Downloads must remain on the left so early losses stay visible. The base represents download-derived entrants, not individual rides.",
     sourceMatcher: 'downloads_with_signup_state = app_download_keys[["app_download_key"]].merge(',
     steps: [
       {
@@ -604,6 +749,10 @@ export const codeGuides = [
   },
   {
     id: "validate-download-anchored-base",
+    overview:
+      "Check that the assembled base still contains one row per download and reproduces the previously established stage populations.",
+    why:
+      "Matching totals alone cannot rule out multiplied rows. Key, row-count and flag checks also protect the interpretation of the base.",
     sourceMatcher: "downloaded_count = int(",
     steps: [
       {
@@ -625,6 +774,10 @@ export const codeGuides = [
   },
   {
     id: "validate-funnel-nesting",
+    overview:
+      "Test whether each downstream customer state belongs inside its required preceding stage on the same base row.",
+    why:
+      "Decreasing aggregate counts do not prove nested membership. Row-level violations would undermine the proposed funnel even if the bars looked correct.",
     sourceMatcher: "funnel_nesting_validation = {",
     steps: [
       {
@@ -641,6 +794,10 @@ export const codeGuides = [
   },
   {
     id: "summarize-customer-stage-flags",
+    overview:
+      "Compress the download-level stage states into four ordered rows that can be compared and plotted.",
+    why:
+      "The summary changes grain from entrants to stages. Its counts must still describe the same customer-funnel base, not ride activity.",
     sourceMatcher: "stage_counts_by_flag = (",
     steps: [
       {
@@ -658,6 +815,10 @@ export const codeGuides = [
   },
   {
     id: "derive-funnel-percentages",
+    overview:
+      "Give each stage two reference populations: the stage immediately before it and the original Download population.",
+    why:
+      "The denominator changes the question. Download has no previous stage, so inventing its adjacent conversion would give a nonexistent comparison.",
     sourceMatcher:
       'core_funnel_summary["previous_stage_count"] = core_funnel_summary[',
     steps: [
@@ -682,6 +843,10 @@ export const codeGuides = [
   },
   {
     id: "validate-customer-funnel-summary",
+    overview:
+      "Check that the compact summary preserves the accepted counts, stage order and meanings of both percentage views.",
+    why:
+      "A tidy four-row table can still pair a count with the wrong denominator. These checks protect meaning, not just appearance.",
     sourceMatcher: "core_funnel_summary_validation = {",
     steps: [
       {
@@ -703,6 +868,10 @@ export const codeGuides = [
   },
   {
     id: "add-absolute-customer-dropoff",
+    overview:
+      "Add the number of entrants who did not continue at each transition beside the existing relative loss percentages.",
+    why:
+      "Absolute and percentage losses emphasize different things. The first stage has no preceding population from which to calculate a loss.",
     sourceMatcher: "core_funnel_metrics_before_dropoff_count = core_funnel_summary.copy()",
     steps: [
       {
@@ -719,6 +888,10 @@ export const codeGuides = [
   },
   {
     id: "find-weakest-transition",
+    overview:
+      "Use the calculated percentages to identify the weakest adjacent customer transition rather than choosing it from the chart by eye.",
+    why:
+      "Lowest conversion identifies the largest relative loss, not necessarily the largest absolute loss. Neither ranking establishes a cause.",
     sourceMatcher: "lowest_conversion_index = adjacent_stage_rows[",
     steps: [
       {
@@ -742,6 +915,10 @@ export const codeGuides = [
   },
   {
     id: "validate-customer-dropoff",
+    overview:
+      "Reconcile the new loss counts and selected transition while checking that the existing funnel metrics remain intact.",
+    why:
+      "This validates the consistency of the added summary. It does not supply an explanation for the observed customer loss.",
     sourceMatcher: "core_funnel_dropoff_validation = {",
     steps: [
       {
@@ -763,6 +940,10 @@ export const codeGuides = [
   },
   {
     id: "plot-customer-funnel",
+    overview:
+      "Turn the validated four-stage customer summary into a visual comparison, keeping its two percentage meanings available on hover.",
+    why:
+      "The chart presents existing membership and counts. Formatting labels or tooltips must not create a different funnel definition.",
     sourceMatcher: "metrocar_customer_funnel = px.funnel(",
     steps: [
       {
@@ -784,6 +965,10 @@ export const codeGuides = [
   },
   {
     id: "join-acceptance-to-ride-activity",
+    overview:
+      "Add recorded acceptance to the ride-level activity table before asking what acceptance appears anywhere in each requester’s history.",
+    why:
+      "Correct same-ride matching is needed before reducing histories. The later user-level conclusion will still have a different grain.",
     sourceMatcher: "ride_activity_with_acceptance = ride_activity.merge(",
     steps: [
       {
@@ -806,6 +991,10 @@ export const codeGuides = [
   },
   {
     id: "reduce-acceptance-and-completion-to-users",
+    overview:
+      "Summarize each requester’s ride history with two separate answers: whether any ride was accepted and whether any ride was completed.",
+    why:
+      "The two positive flags may come from different rides. They cannot establish an accepted-then-completed sequence on one particular ride.",
     sourceMatcher: "requesting_user_acceptance_completion_state = (",
     steps: [
       {
@@ -823,6 +1012,10 @@ export const codeGuides = [
   },
   {
     id: "split-non-completing-requesters",
+    overview:
+      "Focus on requesters who never completed a ride, then describe whether acceptance appears anywhere in those users’ recorded histories.",
+    why:
+      "The shares describe this non-completing-user cohort. Acceptance elsewhere in a history does not explain a particular unfinished ride.",
     sourceMatcher: "non_completer_acceptance_split = pd.DataFrame(",
     steps: [
       {
@@ -845,6 +1038,10 @@ export const codeGuides = [
   },
   {
     id: "validate-acceptance-history-diagnostic",
+    overview:
+      "Check that the acceptance-history split describes the same requester population and customer loss already established by the funnel.",
+    why:
+      "Reconciliation supports the descriptive split. It does not turn user-history flags into same-ride evidence or a causal explanation.",
     sourceMatcher: "acceptance_diagnostic_validation = {",
     steps: [
       {
@@ -861,6 +1058,10 @@ export const codeGuides = [
   },
   {
     id: "load-review-ride-links",
+    overview:
+      "Load the identifiers needed to ask which ride requests have review evidence, without bringing rating content into the funnel.",
+    why:
+      "A review record and a reviewed ride are different units. The link must be checked before reviews become ride-stage membership.",
     sourceMatcher: "reviews = pd.read_sql(",
     steps: [
       {
@@ -873,6 +1074,10 @@ export const codeGuides = [
   },
   {
     id: "validate-review-ride-links",
+    overview:
+      "Check whether review records can be linked reliably to known ride requests, then prepare one lookup key per reviewed ride.",
+    why:
+      "Unique review IDs alone do not ensure unique ride matches. A review lookup must not multiply the requested-ride population.",
     sourceMatcher: "review_relationship_validation = {",
     steps: [
       {
@@ -894,6 +1099,10 @@ export const codeGuides = [
   },
   {
     id: "build-strict-ride-path",
+    overview:
+      "Attach payment and review states to every requested ride, keeping all reviewed rides distinct from the strict Reviewed stage.",
+    why:
+      "Strict Reviewed requires both review and Approved payment on the same ride. Reviews outside that path remain evidence, not automatic errors.",
     sourceMatcher:
       'ride_level_stage_state["reviewed_in_approved_payment_path"] = (',
     steps: [
@@ -918,6 +1127,10 @@ export const codeGuides = [
   },
   {
     id: "summarize-strict-ride-funnel",
+    overview:
+      "Summarize the requested rides along the strict path, while accounting separately for reviews outside Approved payment.",
+    why:
+      "Reviewed / Paid must use the reviewed-and-paid intersection. Using every reviewed ride would describe a different, non-nested path.",
     sourceMatcher: "ride_funnel_summary = pd.DataFrame(",
     steps: [
       {
@@ -940,6 +1153,10 @@ export const codeGuides = [
   },
   {
     id: "validate-strict-ride-funnel",
+    overview:
+      "Check that the ride summary preserves unique rides, established totals and required stage relationships without losing outside-path review evidence.",
+    why:
+      "Nested counts must reflect the same rides. Reconciliation also keeps the strict Reviewed definition from erasing other recorded reviews.",
     sourceMatcher: "ride_funnel_validation = {",
     steps: [
       {
@@ -961,6 +1178,10 @@ export const codeGuides = [
   },
   {
     id: "plot-and-check-ride-funnel",
+    overview:
+      "Present the strict ride-stage summary as a funnel, then compare the figure’s labels and counts with its analytical input.",
+    why:
+      "A rendering check protects presentation fidelity. It does not independently validate the source data or change strict Reviewed membership.",
     sourceMatcher: "ride_funnel_chart_validation = {",
     steps: [
       {
@@ -982,6 +1203,10 @@ export const codeGuides = [
   },
   {
     id: "display-ride-funnel",
+    overview:
+      "Show the ride funnel that the preceding cell already constructed and checked.",
+    why:
+      "Displaying the stored figure adds no new calculation or validation; its meaning comes from the earlier definitions and checks.",
     sourceMatcher: "metrocar_ride_funnel",
     exactMatch: true,
     steps: [
@@ -989,6 +1214,108 @@ export const codeGuides = [
         code: "metrocar_ride_funnel",
         explanation:
           "Displays the figure created and checked in the previous cell. This cell performs no new calculation.",
+      },
+    ],
+  },
+  {
+    id: "profile-analytical-inputs",
+    overview:
+      "Before reading a blank as a customer drop-off, inspect the selected fields and keep each table's own row population visible.",
+    why:
+      "Complete fields can still contain incorrect values. An absent later event needs a different interpretation from a missing key, and this profile covers selected extracts rather than the entire database.",
+    sourceMatcher: "eda_input_tables = {",
+    steps: [
+      {
+        code: 'ride_requests.merge(ride_acceptance_fields, on="ride_id", how="left", validate="one_to_one")',
+        explanation:
+          "The two left joins put request, acceptance and completion fields back on the same `ride_id` row. One-to-one validation and the row-count assertion prevent the profile from gaining extra requests or losing unfinished ones.",
+      },
+      {
+        code: 'missing_count = int(frame[column].isna().sum())',
+        explanation:
+          "The outer loop selects one existing table extract; the inner loop examines one of its fields. `isna()` marks absence and `sum()` counts it. Dividing by that table's `len(frame)` keeps download, signup, request and transaction denominators separate.",
+      },
+      {
+        code: 'input_field_profile["missing_count"].sum()',
+        explanation:
+          "The final check excludes the four later-event fields before requiring zero missing inputs. Those event fields remain in the profile; excluding them from this completeness assertion does not delete their records or invent events.",
+      },
+    ],
+    after: "Four analytical extracts → 15 field-level summaries, each retaining its source table and denominator.",
+  },
+  {
+    id: "plot-recorded-event-coverage",
+    overview:
+      "Compare how often each timestamp is recorded across the same complete request population.",
+    why:
+      "The 0–100% scale makes coverage comparable. “Not recorded” is an evidence label; it does not identify why an event is absent.",
+    sourceMatcher: "metrocar_event_coverage = px.bar(",
+    steps: [
+      {
+        code: '.melt(id_vars="field", var_name="recording_state", value_name="request_count")',
+        explanation:
+          "`melt()` turns each timestamp's recorded and unrecorded counts into two labeled rows. Both shares divide by all 385,477 requests, so the paired segments account for the same population.",
+      },
+      {
+        code: 'px.bar(event_coverage, x="share_percent", y="field", color="recording_state")',
+        explanation:
+          "A stacked bar shows each field against a common percentage scale. Teal marks recorded timestamps, peach marks absence, and hover preserves the underlying request counts.",
+      },
+    ],
+  },
+  {
+    id: "count-recorded-event-patterns",
+    overview:
+      "Check which acceptance, pickup and drop-off records occur together on the same requested ride.",
+    why:
+      "These are same-request recording patterns. They support checking the completion definition, while leaving data-capture completeness and the causes of absent events unresolved.",
+    sourceMatcher: "recorded_event_state = eda_ride_fields[",
+    steps: [
+      {
+        code: '["accept_ts", "pickup_ts", "dropoff_ts"]',
+        explanation:
+          "`notna()` makes three presence flags per request without filling any timestamps. Grouping by all three flags and calling `.size()` counts each observed combination once.",
+      },
+      {
+        code: 'event_pattern_summary["pattern"] = pattern_labels',
+        explanation:
+          "The small label loop spells out the events recorded in each group. Shares use all requests; the assertions reconnect the groups to the earlier acceptance and completion totals and expose partial pickup/drop-off pairs.",
+      },
+    ],
+    after: "One row per request → one count per observed timestamp-presence pattern.",
+  },
+  {
+    id: "plot-recorded-event-patterns",
+    overview:
+      "Make the three observed request patterns easy to compare without drawing hundreds of thousands of individual rows.",
+    why:
+      "Counts describe the recorded population. The Accepted-only group is not a cancellation diagnosis, and request counts cannot be substituted for lost-user counts.",
+    sourceMatcher: "metrocar_event_patterns = px.bar(",
+    steps: [
+      {
+        code: 'px.bar(event_pattern_summary, x="request_count", y="pattern", orientation="h")',
+        explanation:
+          "Each bar takes one verified pattern count from the summary. A shared zero baseline preserves relative size; direct count labels and percentage context make the comparison readable without inferring events between timestamps.",
+      },
+    ],
+  },
+  {
+    id: "plot-non-completer-acceptance-history",
+    overview:
+      "Show the contrast that tests whether most non-completing users never received any recorded acceptance.",
+    why:
+      "Both shares describe the same 6,173 users. Acceptance somewhere in a user's history does not establish what happened on a particular unfinished ride or explain non-completion.",
+    sourceMatcher: "metrocar_acceptance_history = px.bar(",
+    steps: [
+      {
+        code: "acceptance_history_plot = non_completer_acceptance_split.copy()",
+        explanation:
+          "The copy reuses the validated two-group user-history split. Short labels clarify the comparison while the original user counts and membership rules stay intact.",
+      },
+      {
+        code: 'orientation="h", barmode="stack"',
+        explanation:
+          "The two segments partition one 100% user cohort. Their 6,045 and 128 users reconcile to all non-completers; the visual emphasizes that “never accepted” describes a small minority of this group.",
       },
     ],
   },

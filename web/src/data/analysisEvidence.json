@@ -1,0 +1,259 @@
+{
+  "sourceFile": "metrocar_funnel_analysis.py",
+  "sourceSha256": "1253a33b593e439ca090b93726f01d5901411cee91f1b607fd0bf863d237bddd",
+  "baseCommit": "70516ee2468d50b6ffc1cefb0fce1d698f9b7f00",
+  "validatedAtUTC": "2026-11-04T08:19:57.226907+00:00",
+  "validationMethod": "Top-to-bottom Python execution; PostgreSQL transaction read only; aggregate outputs only.",
+  "profile": [
+    {
+      "source_table": "app_downloads",
+      "field": "app_download_key",
+      "row_count": 23608,
+      "dtype": "str",
+      "present_count": 23608,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "app_downloads",
+      "field": "platform",
+      "row_count": 23608,
+      "dtype": "str",
+      "present_count": 23608,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "signups",
+      "field": "user_id",
+      "row_count": 17623,
+      "dtype": "int64",
+      "present_count": 17623,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "signups",
+      "field": "session_id",
+      "row_count": 17623,
+      "dtype": "str",
+      "present_count": 17623,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "ride_requests",
+      "field": "ride_id",
+      "row_count": 385477,
+      "dtype": "int64",
+      "present_count": 385477,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "ride_requests",
+      "field": "user_id",
+      "row_count": 385477,
+      "dtype": "int64",
+      "present_count": 385477,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "ride_requests",
+      "field": "request_ts",
+      "row_count": 385477,
+      "dtype": "datetime64[us]",
+      "present_count": 385477,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "ride_requests",
+      "field": "driver_id",
+      "row_count": 385477,
+      "dtype": "float64",
+      "present_count": 248379,
+      "missing_count": 137098,
+      "missing_percent": 35.57
+    },
+    {
+      "source_table": "ride_requests",
+      "field": "accept_ts",
+      "row_count": 385477,
+      "dtype": "datetime64[us]",
+      "present_count": 248379,
+      "missing_count": 137098,
+      "missing_percent": 35.57
+    },
+    {
+      "source_table": "ride_requests",
+      "field": "pickup_ts",
+      "row_count": 385477,
+      "dtype": "datetime64[us]",
+      "present_count": 223652,
+      "missing_count": 161825,
+      "missing_percent": 41.98
+    },
+    {
+      "source_table": "ride_requests",
+      "field": "dropoff_ts",
+      "row_count": 385477,
+      "dtype": "datetime64[us]",
+      "present_count": 223652,
+      "missing_count": 161825,
+      "missing_percent": 41.98
+    },
+    {
+      "source_table": "transactions",
+      "field": "transaction_id",
+      "row_count": 223652,
+      "dtype": "int64",
+      "present_count": 223652,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "transactions",
+      "field": "ride_id",
+      "row_count": 223652,
+      "dtype": "int64",
+      "present_count": 223652,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "transactions",
+      "field": "purchase_amount_usd",
+      "row_count": 223652,
+      "dtype": "float64",
+      "present_count": 223652,
+      "missing_count": 0,
+      "missing_percent": 0
+    },
+    {
+      "source_table": "transactions",
+      "field": "charge_status",
+      "row_count": 223652,
+      "dtype": "str",
+      "present_count": 223652,
+      "missing_count": 0,
+      "missing_percent": 0
+    }
+  ],
+  "eventCoverage": {
+    "sourceVariable": "metrocar_event_coverage",
+    "denominator": 385477,
+    "rows": [
+      {
+        "source_table": "ride_requests",
+        "field": "request_ts",
+        "row_count": 385477,
+        "dtype": "datetime64[us]",
+        "present_count": 385477,
+        "missing_count": 0,
+        "missing_percent": 0,
+        "present_percent": 100
+      },
+      {
+        "source_table": "ride_requests",
+        "field": "accept_ts",
+        "row_count": 385477,
+        "dtype": "datetime64[us]",
+        "present_count": 248379,
+        "missing_count": 137098,
+        "missing_percent": 35.57,
+        "present_percent": 64.43
+      },
+      {
+        "source_table": "ride_requests",
+        "field": "pickup_ts",
+        "row_count": 385477,
+        "dtype": "datetime64[us]",
+        "present_count": 223652,
+        "missing_count": 161825,
+        "missing_percent": 41.98,
+        "present_percent": 58.02
+      },
+      {
+        "source_table": "ride_requests",
+        "field": "dropoff_ts",
+        "row_count": 385477,
+        "dtype": "datetime64[us]",
+        "present_count": 223652,
+        "missing_count": 161825,
+        "missing_percent": 41.98,
+        "present_percent": 58.02
+      }
+    ],
+    "sourceCellSha256": "ebf38685c581f7861fed4193aa5f810f623125b98bd93286115c04a74a37dc69",
+    "sourceCell": 66,
+    "sourceLine": 1162
+  },
+  "eventPatterns": {
+    "sourceVariable": "metrocar_event_patterns",
+    "denominator": 385477,
+    "rows": [
+      {
+        "accept_ts": true,
+        "pickup_ts": true,
+        "dropoff_ts": true,
+        "request_count": 223652,
+        "pattern": "Accepted + Pickup + Drop-off",
+        "share_percent": 58.02
+      },
+      {
+        "accept_ts": true,
+        "pickup_ts": false,
+        "dropoff_ts": false,
+        "request_count": 24727,
+        "pattern": "Accepted",
+        "share_percent": 6.41
+      },
+      {
+        "accept_ts": false,
+        "pickup_ts": false,
+        "dropoff_ts": false,
+        "request_count": 137098,
+        "pattern": "No later events",
+        "share_percent": 35.57
+      }
+    ],
+    "partialPickupDropoffPairs": 0,
+    "acceptanceDriverMismatches": 0,
+    "sourceCellSha256": "12f17f95638f8a1c87c9ad8545166ff49b6b72851ff5afb348998a9de461d53e",
+    "sourceCell": 69,
+    "sourceLine": 1239
+  },
+  "acceptanceHistory": {
+    "sourceVariable": "metrocar_acceptance_history",
+    "denominator": 6173,
+    "rows": [
+      {
+        "acceptance_state": "Never had an accepted ride",
+        "user_count": 128,
+        "share_of_non_completing_requesters_pct": 2.07,
+        "history_group": "No acceptance in history",
+        "cohort": "6,173 non-completing requesters"
+      },
+      {
+        "acceptance_state": "Had at least one accepted ride but never completed",
+        "user_count": 6045,
+        "share_of_non_completing_requesters_pct": 97.93,
+        "history_group": "At least one acceptance in history",
+        "cohort": "6,173 non-completing requesters"
+      }
+    ],
+    "sourceCellSha256": "8a62056a89b86964ce416e8e270a788c9e6a55958de7d805c0eb027246088ba6",
+    "sourceCell": 104,
+    "sourceLine": 2456
+  },
+  "checks": {
+    "inputFieldsComplete": true,
+    "originalFactsUnchanged": true,
+    "originalFunnelsUnchanged": true,
+    "requestPatternPartition": true,
+    "userHistoryPartition": true,
+    "databaseReadOnly": true
+  }
+}

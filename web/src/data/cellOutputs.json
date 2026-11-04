@@ -1,0 +1,585 @@
+{
+  "sourceFile": "metrocar_funnel_analysis.py",
+  "sourceSha256": "1253a33b593e439ca090b93726f01d5901411cee91f1b607fd0bf863d237bddd",
+  "capturedAtUTC": "2026-11-04T12:04:25.460276+00:00",
+  "environment": {
+    "python": "3.12.11",
+    "ipython": "9.17.1",
+    "pandas": "3.0.5"
+  },
+  "method": "Source cells executed top to bottom in a read-only database transaction. Final expressions formatted by the installed IPython display formatter. School-dataset row previews included. Longer table or text representations are explicitly labelled excerpts with full results retained.",
+  "cells": [
+    {
+      "sourceCell": 3,
+      "sourceLine": 37,
+      "sourceCellSha256": "420ff91bb76288e7e814925096b34601576c6d982174f8013e97d1b9cfb758f9",
+      "expression": "connection = engine.connect()",
+      "kind": "none"
+    },
+    {
+      "sourceCell": 6,
+      "sourceLine": 75,
+      "sourceCellSha256": "3448bd2da3b2da24c4d41ec7155fd17a9ed946646cd8c684cca20e6dc259d00a",
+      "expression": "table_names",
+      "kind": "text",
+      "text": "['transactions', 'signups', 'ride_requests', 'reviews', 'app_downloads']"
+    },
+    {
+      "sourceCell": 8,
+      "sourceLine": 88,
+      "sourceCellSha256": "3a4594b63028b4415bf07d171d4635c26d789bab6b0981bd447d79bbdecef662",
+      "expression": "app_downloads_preview",
+      "kind": "table",
+      "text": "                   app_download_key platform         download_ts\n0  06f49bcc6895f888eba41043f95348ba  android 2021-05-13 13:12:06\n1  60d79d5ac63159a5dffc13e42d87e070  android 2021-01-17 17:40:24\n2  a3e52e50d379c3da808c4d8864f0d996  android 2021-01-11 04:02:52\n3  2f7551cdd9a0a658350394e51bc74de3  android 2021-07-22 21:00:34\n4  81adc238826a8dce8a706c083abc095e      web 2021-04-24 01:43:54",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>app_download_key</th>\n      <th>platform</th>\n      <th>download_ts</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>06f49bcc6895f888eba41043f95348ba</td>\n      <td>android</td>\n      <td>2021-05-13 13:12:06</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>60d79d5ac63159a5dffc13e42d87e070</td>\n      <td>android</td>\n      <td>2021-01-17 17:40:24</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>a3e52e50d379c3da808c4d8864f0d996</td>\n      <td>android</td>\n      <td>2021-01-11 04:02:52</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>2f7551cdd9a0a658350394e51bc74de3</td>\n      <td>android</td>\n      <td>2021-07-22 21:00:34</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>81adc238826a8dce8a706c083abc095e</td>\n      <td>web</td>\n      <td>2021-04-24 01:43:54</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: 5 rows returned by SQL LIMIT 5; the full source table has 23,608 rows.",
+      "sourceRows": 23608
+    },
+    {
+      "sourceCell": 11,
+      "sourceLine": 149,
+      "sourceCellSha256": "01614e900bbf51da19c78e46ffc3694b46c0482188b01bbdfa8b28c74788c7f9",
+      "expression": "app_downloads_column_names",
+      "kind": "text",
+      "text": "['app_download_key', 'platform', 'download_ts']"
+    },
+    {
+      "sourceCell": 13,
+      "sourceLine": 171,
+      "sourceCellSha256": "2ebd4530c1197a5d95bdf7dc3dace5682d6f93057b52b16f2a8e58810c66547e",
+      "expression": "app_downloads_preview",
+      "kind": "table",
+      "text": "                   app_download_key platform         download_ts\n0  06f49bcc6895f888eba41043f95348ba  android 2021-05-13 13:12:06\n1  60d79d5ac63159a5dffc13e42d87e070  android 2021-01-17 17:40:24\n2  a3e52e50d379c3da808c4d8864f0d996  android 2021-01-11 04:02:52\n3  2f7551cdd9a0a658350394e51bc74de3  android 2021-07-22 21:00:34\n4  81adc238826a8dce8a706c083abc095e      web 2021-04-24 01:43:54",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>app_download_key</th>\n      <th>platform</th>\n      <th>download_ts</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>06f49bcc6895f888eba41043f95348ba</td>\n      <td>android</td>\n      <td>2021-05-13 13:12:06</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>60d79d5ac63159a5dffc13e42d87e070</td>\n      <td>android</td>\n      <td>2021-01-17 17:40:24</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>a3e52e50d379c3da808c4d8864f0d996</td>\n      <td>android</td>\n      <td>2021-01-11 04:02:52</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>2f7551cdd9a0a658350394e51bc74de3</td>\n      <td>android</td>\n      <td>2021-07-22 21:00:34</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>81adc238826a8dce8a706c083abc095e</td>\n      <td>web</td>\n      <td>2021-04-24 01:43:54</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: 5 rows returned by SQL LIMIT 5; the full source table has 23,608 rows.",
+      "sourceRows": 23608
+    },
+    {
+      "sourceCell": 14,
+      "sourceLine": 174,
+      "sourceCellSha256": "125dd58b85a6696c80c7a1c84318878fad325c7504b1a6f5d82b9ba4647f9050",
+      "expression": "app_download_key_check",
+      "kind": "text",
+      "text": "{'total_rows': 23608,\n 'distinct_app_download_keys': 23608,\n 'duplicates_exist': np.False_}"
+    },
+    {
+      "sourceCell": 17,
+      "sourceLine": 240,
+      "sourceCellSha256": "75008e41e6bf7f703c9979b3aa821ecf7a397e5fd7d81175cd358b24f9b44913",
+      "expression": "recorded_app_downloads",
+      "kind": "text",
+      "text": "23608"
+    },
+    {
+      "sourceCell": 20,
+      "sourceLine": 290,
+      "sourceCellSha256": "2ce31595a6d7968fb140ba9f8106f54f18b20acac83030c3fe19b898f18f082d",
+      "expression": "signups_preview",
+      "kind": "table",
+      "text": "   user_id                        session_id           signup_ts age_range\n0   100001  58bec37ab818df39219ee36c124a1de9 2021-01-01 19:14:44     25-34\n1   100002  c320ac72fe5e8cbfcf58458c36213ba5 2021-01-01 11:49:58     35-44\n2   100003  ea11fb90284aa1c06933805f43c3e87a 2021-01-01 18:34:14     25-34\n3   100004  d5d1b4f516ab497c1d93ca211007f78d 2021-01-01 12:30:52     35-44\n4   100005  93eccad090caf11c1ce7eda4ec57b547 2021-01-01 23:33:15     35-44",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>user_id</th>\n      <th>session_id</th>\n      <th>signup_ts</th>\n      <th>age_range</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>100001</td>\n      <td>58bec37ab818df39219ee36c124a1de9</td>\n      <td>2021-01-01 19:14:44</td>\n      <td>25-34</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>100002</td>\n      <td>c320ac72fe5e8cbfcf58458c36213ba5</td>\n      <td>2021-01-01 11:49:58</td>\n      <td>35-44</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>100003</td>\n      <td>ea11fb90284aa1c06933805f43c3e87a</td>\n      <td>2021-01-01 18:34:14</td>\n      <td>25-34</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>100004</td>\n      <td>d5d1b4f516ab497c1d93ca211007f78d</td>\n      <td>2021-01-01 12:30:52</td>\n      <td>35-44</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>100005</td>\n      <td>93eccad090caf11c1ce7eda4ec57b547</td>\n      <td>2021-01-01 23:33:15</td>\n      <td>35-44</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: 5 rows returned by SQL LIMIT 5; the full source table has 17,623 rows.",
+      "sourceRows": 17623
+    },
+    {
+      "sourceCell": 21,
+      "sourceLine": 297,
+      "sourceCellSha256": "dfe4b5c993d9f416baf98809d08688944a2e1d33b8f2cfb9937f403bc643da85",
+      "expression": "signups_column_names",
+      "kind": "text",
+      "text": "['user_id', 'session_id', 'signup_ts', 'age_range']"
+    },
+    {
+      "sourceCell": 22,
+      "sourceLine": 301,
+      "sourceCellSha256": "c28c13c65e7f278de41df4ea35a3352f95e9b28b8eec17def28997ac88b7f65d",
+      "expression": "signups_grain_check",
+      "kind": "text",
+      "text": "{'total_rows': 17623,\n 'distinct_user_ids': 17623,\n 'duplicate_user_ids_exist': np.False_,\n 'distinct_session_ids': 17623,\n 'duplicate_session_ids_exist': np.False_}"
+    },
+    {
+      "sourceCell": 25,
+      "sourceLine": 348,
+      "sourceCellSha256": "4f004f46656a5a8193b94753a31037b2b7e9d09b6781c576d6ac3c28d7294778",
+      "expression": "registered_users",
+      "kind": "text",
+      "text": "17623"
+    },
+    {
+      "sourceCell": 28,
+      "sourceLine": 399,
+      "sourceCellSha256": "9368e27fef148a4be67e236065106263e98f559b91c12699b6b7e3af0dccdd62",
+      "expression": "ride_requests.head()",
+      "kind": "table",
+      "text": "   ride_id  user_id          request_ts\n0  3000023   106891 2021-05-27 19:38:00\n1  3000024   116375 2021-12-05 00:02:00\n2  3000025   104571 2021-07-09 09:06:00\n3  3000026   109497 2021-07-19 17:03:00\n4  3000288   116687 2021-12-12 08:57:00",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>ride_id</th>\n      <th>user_id</th>\n      <th>request_ts</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>3000023</td>\n      <td>106891</td>\n      <td>2021-05-27 19:38:00</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>3000024</td>\n      <td>116375</td>\n      <td>2021-12-05 00:02:00</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>3000025</td>\n      <td>104571</td>\n      <td>2021-07-09 09:06:00</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>3000026</td>\n      <td>109497</td>\n      <td>2021-07-19 17:03:00</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>3000288</td>\n      <td>116687</td>\n      <td>2021-12-12 08:57:00</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 385,477 DataFrame rows (.head()).",
+      "sourceRows": 385477
+    },
+    {
+      "sourceCell": 29,
+      "sourceLine": 409,
+      "sourceCellSha256": "a47c4084e5c6d0fbc977b4c0d9d8526aed59e6c4f53a97a3578daed9b2912046",
+      "expression": "ride_request_column_names",
+      "kind": "text",
+      "text": "['ride_id', 'user_id', 'request_ts']"
+    },
+    {
+      "sourceCell": 30,
+      "sourceLine": 413,
+      "sourceCellSha256": "d0401d4d013f3e9b1f6b32955c9defc35714450f25d430f66e10e66c4c60911e",
+      "expression": "ride_request_grain_check",
+      "kind": "text",
+      "text": "{'total_rows': 385477,\n 'distinct_ride_ids': 385477,\n 'duplicate_ride_ids_exist': np.False_,\n 'missing_request_timestamps': 0}"
+    },
+    {
+      "sourceCell": 31,
+      "sourceLine": 432,
+      "sourceCellSha256": "48e88ae0b7d5ffbe24d9782bb3aa79ef84d32ee70b937186512961e914e6d5bf",
+      "expression": "total_ride_requests",
+      "kind": "text",
+      "text": "385477"
+    },
+    {
+      "sourceCell": 34,
+      "sourceLine": 483,
+      "sourceCellSha256": "d48c513e4145996097e7b7c5eb59bcc1ed43588fcf30a37a6d0086f718d1f651",
+      "expression": "ride_completion_fields.head()",
+      "kind": "table",
+      "text": "   ride_id           pickup_ts          dropoff_ts\n0  3000023 2021-05-27 19:48:00 2021-05-27 21:10:00\n1  3000024                 NaT                 NaT\n2  3000025 2021-07-09 09:28:00 2021-07-09 09:55:00\n3  3000026                 NaT                 NaT\n4  3000288                 NaT                 NaT",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>ride_id</th>\n      <th>pickup_ts</th>\n      <th>dropoff_ts</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>3000023</td>\n      <td>2021-05-27 19:48:00</td>\n      <td>2021-05-27 21:10:00</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>3000024</td>\n      <td>NaT</td>\n      <td>NaT</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>3000025</td>\n      <td>2021-07-09 09:28:00</td>\n      <td>2021-07-09 09:55:00</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>3000026</td>\n      <td>NaT</td>\n      <td>NaT</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>3000288</td>\n      <td>NaT</td>\n      <td>NaT</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 385,477 DataFrame rows (.head()).",
+      "sourceRows": 385477
+    },
+    {
+      "sourceCell": 35,
+      "sourceLine": 493,
+      "sourceCellSha256": "b6298eb13175dbf2efa9b97d6788cef735d30c3938ec6721c562c75976910c53",
+      "expression": "requested_vs_completed",
+      "kind": "text",
+      "text": "{'requested_rides': 385477,\n 'completed_rides': 223652,\n 'pickup_without_dropoff': 0,\n 'dropoff_without_pickup': 0}"
+    },
+    {
+      "sourceCell": 38,
+      "sourceLine": 560,
+      "sourceCellSha256": "b2e05b704edd190044e62acec363b20efe4c870cdcf79a0736b66dd584d2086b",
+      "expression": "ride_requests_vs_users",
+      "kind": "text",
+      "text": "{'ride_requests': 385477,\n 'distinct_requesting_users': 12406,\n 'missing_user_ids': 0}"
+    },
+    {
+      "sourceCell": 41,
+      "sourceLine": 613,
+      "sourceCellSha256": "11f6d3ca54ddee29ca9f107e6fca45aaed0198fa63e2382ec049b889f1648ccb",
+      "expression": "ride_duration_summary",
+      "kind": "text",
+      "text": "{'valid_duration_rides': 223652,\n 'invalid_time_order': 0,\n 'average_duration_minutes': 52.61}"
+    },
+    {
+      "sourceCell": 44,
+      "sourceLine": 700,
+      "sourceCellSha256": "02a35053f1482062a3cbca0b0e1178524929d0d5f7e18fbe1ef39423ed51cb49",
+      "expression": "ride_acceptance_fields.head()",
+      "kind": "table",
+      "text": "   ride_id  driver_id           accept_ts\n0  3000023   105286.0 2021-05-27 19:40:00\n1  3000024        NaN                 NaT\n2  3000025   109087.0 2021-07-09 09:16:00\n3  3000026        NaN                 NaT\n4  3000288        NaN                 NaT",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>ride_id</th>\n      <th>driver_id</th>\n      <th>accept_ts</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>3000023</td>\n      <td>105286.0</td>\n      <td>2021-05-27 19:40:00</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>3000024</td>\n      <td>NaN</td>\n      <td>NaT</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>3000025</td>\n      <td>109087.0</td>\n      <td>2021-07-09 09:16:00</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>3000026</td>\n      <td>NaN</td>\n      <td>NaT</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>3000288</td>\n      <td>NaN</td>\n      <td>NaT</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 385,477 DataFrame rows (.head()).",
+      "sourceRows": 385477
+    },
+    {
+      "sourceCell": 45,
+      "sourceLine": 710,
+      "sourceCellSha256": "6560416888d3ee07c2c2470704dae538c7e5cab4ceedc5585d2976b2a3154529",
+      "expression": "ride_acceptance_summary",
+      "kind": "text",
+      "text": "{'accepted_rides': 248379, 'acceptance_driver_mismatches': 0}"
+    },
+    {
+      "sourceCell": 48,
+      "sourceLine": 764,
+      "sourceCellSha256": "196f69f439f8b6452275a052c3762007dcfd3e8d2d482a017a2f50e1736ed84e",
+      "expression": "transactions.head()",
+      "kind": "table",
+      "text": "   transaction_id  ride_id  purchase_amount_usd charge_status\n0        10000000  3000000                13.55      Approved\n1        10000001  3000001                27.77      Approved\n2        10000002  3000002                21.84      Approved\n3        10000003  3000004                26.86      Approved\n4        10000004  3000005                21.72      Approved",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>transaction_id</th>\n      <th>ride_id</th>\n      <th>purchase_amount_usd</th>\n      <th>charge_status</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>10000000</td>\n      <td>3000000</td>\n      <td>13.55</td>\n      <td>Approved</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>10000001</td>\n      <td>3000001</td>\n      <td>27.77</td>\n      <td>Approved</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>10000002</td>\n      <td>3000002</td>\n      <td>21.84</td>\n      <td>Approved</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>10000003</td>\n      <td>3000004</td>\n      <td>26.86</td>\n      <td>Approved</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>10000004</td>\n      <td>3000005</td>\n      <td>21.72</td>\n      <td>Approved</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 223,652 DataFrame rows (.head()).",
+      "sourceRows": 223652
+    },
+    {
+      "sourceCell": 49,
+      "sourceLine": 774,
+      "sourceCellSha256": "69b6ef448c91e0a498f8a55c67e7a38e89324c30a03088247ea294c08cd52b8a",
+      "expression": "transaction_column_names",
+      "kind": "text",
+      "text": "['transaction_id', 'ride_id', 'purchase_amount_usd', 'charge_status']"
+    },
+    {
+      "sourceCell": 50,
+      "sourceLine": 778,
+      "sourceCellSha256": "258393305df691a848967ba282916839503d4809b6326faf0b0ff849f4a20905",
+      "expression": "transaction_grain_check",
+      "kind": "text",
+      "text": "{'total_rows': 223652,\n 'distinct_transaction_ids': 223652,\n 'duplicate_transaction_ids_exist': np.False_,\n 'distinct_ride_ids': 223652,\n 'duplicate_ride_ids_exist': np.False_}"
+    },
+    {
+      "sourceCell": 51,
+      "sourceLine": 799,
+      "sourceCellSha256": "8fe302015772c0dedcbaf2a51ef57d9fec5658f9170e863f1ef134967e157380",
+      "expression": "transaction_status_counts",
+      "kind": "text",
+      "text": "charge_status\nApproved    212628\nDecline      11024\nName: count, dtype: int64"
+    },
+    {
+      "sourceCell": 52,
+      "sourceLine": 807,
+      "sourceCellSha256": "29421c973a23f9721c12b40a6e14da4ed1520699886b781fe734c949c3daf073",
+      "expression": "successful_payment_summary",
+      "kind": "text",
+      "text": "{'successful_payments': 212628,\n 'missing_successful_amounts': 0,\n 'total_collected_usd': 4251667.61}"
+    },
+    {
+      "sourceCell": 55,
+      "sourceLine": 887,
+      "sourceCellSha256": "d6a9afa7d9ebf6e1909defcc4c4187d7a7932eaf31fbb868612ecf64d2d0d3db",
+      "expression": "app_download_platforms.head()",
+      "kind": "table",
+      "text": "                   app_download_key platform\n0  06f49bcc6895f888eba41043f95348ba  android\n1  60d79d5ac63159a5dffc13e42d87e070  android\n2  a3e52e50d379c3da808c4d8864f0d996  android\n3  2f7551cdd9a0a658350394e51bc74de3  android\n4  81adc238826a8dce8a706c083abc095e      web",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>app_download_key</th>\n      <th>platform</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>06f49bcc6895f888eba41043f95348ba</td>\n      <td>android</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>60d79d5ac63159a5dffc13e42d87e070</td>\n      <td>android</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>a3e52e50d379c3da808c4d8864f0d996</td>\n      <td>android</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>2f7551cdd9a0a658350394e51bc74de3</td>\n      <td>android</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>81adc238826a8dce8a706c083abc095e</td>\n      <td>web</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 23,608 DataFrame rows (.head()).",
+      "sourceRows": 23608
+    },
+    {
+      "sourceCell": 56,
+      "sourceLine": 894,
+      "sourceCellSha256": "b79d5daacc290cbc71246c024305833d70e797d0715b995d59e2cfdb8309bf80",
+      "expression": "platform_join_check",
+      "kind": "text",
+      "text": "{'input_ride_requests': 385477,\n 'after_signup_join': 385477,\n 'after_download_join': 385477,\n 'distinct_output_ride_ids': 385477,\n 'missing_signup_links': 0,\n 'missing_download_links': 0,\n 'missing_platforms': 0}"
+    },
+    {
+      "sourceCell": 57,
+      "sourceLine": 937,
+      "sourceCellSha256": "7134b7a700bf2e72ef468dcbbdee4e38185ce8b11982df25dbd516f340cee2c4",
+      "expression": "ride_requests_by_platform",
+      "kind": "table",
+      "text": "  platform  ride_requests  share_percent\n0      ios         234693          60.88\n1  android         112317          29.14\n2      web          38467           9.98",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>platform</th>\n      <th>ride_requests</th>\n      <th>share_percent</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>ios</td>\n      <td>234693</td>\n      <td>60.88</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>android</td>\n      <td>112317</td>\n      <td>29.14</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>web</td>\n      <td>38467</td>\n      <td>9.98</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 3
+    },
+    {
+      "sourceCell": 60,
+      "sourceLine": 1003,
+      "sourceCellSha256": "94d005e22969881114a4ccbe581bc31c9dded7425edbf628ccefc2aac9dd1119",
+      "expression": "signup_to_request_join_check",
+      "kind": "text",
+      "text": "{'input_signup_rows': 17623,\n 'output_signup_rows': 17623,\n 'distinct_output_users': 17623,\n 'requesting_users_without_signup': 0}"
+    },
+    {
+      "sourceCell": 61,
+      "sourceLine": 1038,
+      "sourceCellSha256": "0df3f241e519a517f3042fc0f5c49070724f08e920568c331d2bdbcb56fe5608",
+      "expression": "signup_to_request_dropoff",
+      "kind": "text",
+      "text": "{'denominator_signed_up_users': 17623,\n 'users_requesting_at_least_one_ride': 12406,\n 'dropoff_users': 5217,\n 'dropoff_percent': 29.6}"
+    },
+    {
+      "sourceCell": 64,
+      "sourceLine": 1108,
+      "sourceCellSha256": "9e7b09071ca801f294be6a588797b792a4931f795eb03b2b7501f76962c6a398",
+      "expression": "eda_field_profile",
+      "kind": "table",
+      "text": "     source_table                field  ...  missing_count missing_percent\n0   app_downloads     app_download_key  ...              0            0.00\n1   app_downloads             platform  ...              0            0.00\n2         signups              user_id  ...              0            0.00\n3         signups           session_id  ...              0            0.00\n4   ride_requests              ride_id  ...              0            0.00\n5   ride_requests              user_id  ...              0            0.00\n6   ride_requests           request_ts  ...              0            0.00\n7   ride_requests            driver_id  ...         137098           35.57\n8   ride_requests            accept_ts  ...         137098           35.57\n9   ride_requests            pickup_ts  ...         161825           41.98\n10  ride_requests           dropoff_ts  ...         161825           41.98\n11   transactions       transaction_id  ...              0            0.00\n12   transactions              ride_id  ...              0            0.00\n13   transactions  purchase_amount_usd  ...              0            0.00\n14   transactions        charge_status  ...              0            0.00\n\n[15 rows x 7 columns]",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>source_table</th>\n      <th>field</th>\n      <th>row_count</th>\n      <th>dtype</th>\n      <th>present_count</th>\n      <th>missing_count</th>\n      <th>missing_percent</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>app_downloads</td>\n      <td>app_download_key</td>\n      <td>23608</td>\n      <td>str</td>\n      <td>23608</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>app_downloads</td>\n      <td>platform</td>\n      <td>23608</td>\n      <td>str</td>\n      <td>23608</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>signups</td>\n      <td>user_id</td>\n      <td>17623</td>\n      <td>int64</td>\n      <td>17623</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>signups</td>\n      <td>session_id</td>\n      <td>17623</td>\n      <td>str</td>\n      <td>17623</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>ride_requests</td>\n      <td>ride_id</td>\n      <td>385477</td>\n      <td>int64</td>\n      <td>385477</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>...</th>\n      <td>...</td>\n      <td>...</td>\n      <td>...</td>\n      <td>...</td>\n      <td>...</td>\n      <td>...</td>\n      <td>...</td>\n    </tr>\n    <tr>\n      <th>10</th>\n      <td>ride_requests</td>\n      <td>dropoff_ts</td>\n      <td>385477</td>\n      <td>datetime64[us]</td>\n      <td>223652</td>\n      <td>161825</td>\n      <td>41.98</td>\n    </tr>\n    <tr>\n      <th>11</th>\n      <td>transactions</td>\n      <td>transaction_id</td>\n      <td>223652</td>\n      <td>int64</td>\n      <td>223652</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>12</th>\n      <td>transactions</td>\n      <td>ride_id</td>\n      <td>223652</td>\n      <td>int64</td>\n      <td>223652</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>13</th>\n      <td>transactions</td>\n      <td>purchase_amount_usd</td>\n      <td>223652</td>\n      <td>float64</td>\n      <td>223652</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>14</th>\n      <td>transactions</td>\n      <td>charge_status</td>\n      <td>223652</td>\n      <td>str</td>\n      <td>223652</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n  </tbody>\n</table>\n<p>15 rows × 7 columns</p>\n</div>",
+      "resultRows": 15,
+      "fullHtml": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>source_table</th>\n      <th>field</th>\n      <th>row_count</th>\n      <th>dtype</th>\n      <th>present_count</th>\n      <th>missing_count</th>\n      <th>missing_percent</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>app_downloads</td>\n      <td>app_download_key</td>\n      <td>23608</td>\n      <td>str</td>\n      <td>23608</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>app_downloads</td>\n      <td>platform</td>\n      <td>23608</td>\n      <td>str</td>\n      <td>23608</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>signups</td>\n      <td>user_id</td>\n      <td>17623</td>\n      <td>int64</td>\n      <td>17623</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>signups</td>\n      <td>session_id</td>\n      <td>17623</td>\n      <td>str</td>\n      <td>17623</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>ride_requests</td>\n      <td>ride_id</td>\n      <td>385477</td>\n      <td>int64</td>\n      <td>385477</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>5</th>\n      <td>ride_requests</td>\n      <td>user_id</td>\n      <td>385477</td>\n      <td>int64</td>\n      <td>385477</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>6</th>\n      <td>ride_requests</td>\n      <td>request_ts</td>\n      <td>385477</td>\n      <td>datetime64[us]</td>\n      <td>385477</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>7</th>\n      <td>ride_requests</td>\n      <td>driver_id</td>\n      <td>385477</td>\n      <td>float64</td>\n      <td>248379</td>\n      <td>137098</td>\n      <td>35.57</td>\n    </tr>\n    <tr>\n      <th>8</th>\n      <td>ride_requests</td>\n      <td>accept_ts</td>\n      <td>385477</td>\n      <td>datetime64[us]</td>\n      <td>248379</td>\n      <td>137098</td>\n      <td>35.57</td>\n    </tr>\n    <tr>\n      <th>9</th>\n      <td>ride_requests</td>\n      <td>pickup_ts</td>\n      <td>385477</td>\n      <td>datetime64[us]</td>\n      <td>223652</td>\n      <td>161825</td>\n      <td>41.98</td>\n    </tr>\n    <tr>\n      <th>10</th>\n      <td>ride_requests</td>\n      <td>dropoff_ts</td>\n      <td>385477</td>\n      <td>datetime64[us]</td>\n      <td>223652</td>\n      <td>161825</td>\n      <td>41.98</td>\n    </tr>\n    <tr>\n      <th>11</th>\n      <td>transactions</td>\n      <td>transaction_id</td>\n      <td>223652</td>\n      <td>int64</td>\n      <td>223652</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>12</th>\n      <td>transactions</td>\n      <td>ride_id</td>\n      <td>223652</td>\n      <td>int64</td>\n      <td>223652</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>13</th>\n      <td>transactions</td>\n      <td>purchase_amount_usd</td>\n      <td>223652</td>\n      <td>float64</td>\n      <td>223652</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n    <tr>\n      <th>14</th>\n      <td>transactions</td>\n      <td>charge_status</td>\n      <td>223652</td>\n      <td>str</td>\n      <td>223652</td>\n      <td>0</td>\n      <td>0.00</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "shownRows": 10,
+      "note": "Showing 10 of 15 result rows (first 5 and last 5). Open the full result for all rows.",
+      "fullLabel": "Show full result (15 rows)"
+    },
+    {
+      "sourceCell": 66,
+      "sourceLine": 1162,
+      "sourceCellSha256": "ebf38685c581f7861fed4193aa5f810f623125b98bd93286115c04a74a37dc69",
+      "expression": "metrocar_event_coverage",
+      "kind": "figure",
+      "figure": "eventCoverage"
+    },
+    {
+      "sourceCell": 68,
+      "sourceLine": 1206,
+      "sourceCellSha256": "6cff8a7e0fe521f55e30e3ef9034c877ba22ba704918235f9db572e8ef4ab5fa",
+      "expression": "event_pattern_summary",
+      "kind": "table",
+      "text": "   accept_ts  pickup_ts  ...                       pattern  share_percent\n0       True       True  ...  Accepted + Pickup + Drop-off          58.02\n1       True      False  ...                      Accepted           6.41\n2      False      False  ...               No later events          35.57\n\n[3 rows x 6 columns]",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>accept_ts</th>\n      <th>pickup_ts</th>\n      <th>dropoff_ts</th>\n      <th>request_count</th>\n      <th>pattern</th>\n      <th>share_percent</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>True</td>\n      <td>True</td>\n      <td>True</td>\n      <td>223652</td>\n      <td>Accepted + Pickup + Drop-off</td>\n      <td>58.02</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>True</td>\n      <td>False</td>\n      <td>False</td>\n      <td>24727</td>\n      <td>Accepted</td>\n      <td>6.41</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>False</td>\n      <td>False</td>\n      <td>False</td>\n      <td>137098</td>\n      <td>No later events</td>\n      <td>35.57</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 3
+    },
+    {
+      "sourceCell": 69,
+      "sourceLine": 1239,
+      "sourceCellSha256": "12f17f95638f8a1c87c9ad8545166ff49b6b72851ff5afb348998a9de461d53e",
+      "expression": "metrocar_event_patterns",
+      "kind": "figure",
+      "figure": "eventPatterns"
+    },
+    {
+      "sourceCell": 72,
+      "sourceLine": 1301,
+      "sourceCellSha256": "58de056eefbcc8631dd41fd8897d961539a59e1e11645434ac21d172b0887412",
+      "expression": "signup_download_integrity",
+      "kind": "table",
+      "text": "   total_signup_records  matched_signup_records  unmatched_signup_records\n0                 17623                   17623                         0",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>total_signup_records</th>\n      <th>matched_signup_records</th>\n      <th>unmatched_signup_records</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>17623</td>\n      <td>17623</td>\n      <td>0</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 1
+    },
+    {
+      "sourceCell": 75,
+      "sourceLine": 1380,
+      "sourceCellSha256": "30a1c7f71bc2e5881baa0adefc3d484dbe5bb4418859d38a13bc17f4c23c3db5",
+      "expression": "ride_activity_validation",
+      "kind": "text",
+      "text": "{'input_ride_request_rows': 385477,\n 'output_ride_activity_rows': 385477,\n 'distinct_output_ride_ids': 385477,\n 'unmatched_completion_rows': 0,\n 'completed_ride_records': 223652,\n 'matches_q04_completed_rides': True}"
+    },
+    {
+      "sourceCell": 76,
+      "sourceLine": 1421,
+      "sourceCellSha256": "ff1c58400b1c3a89aef4bd3d28a2d9bbaf1bff7d62e32b6faf1dc5ff49611a41",
+      "expression": "requesting_user_ride_state.head()",
+      "kind": "table",
+      "text": "   user_id  requested_at_least_one_ride  completed_at_least_one_ride\n0   100000                         True                        False\n1   100001                         True                        False\n2   100002                         True                         True\n3   100004                         True                         True\n4   100006                         True                        False",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>user_id</th>\n      <th>requested_at_least_one_ride</th>\n      <th>completed_at_least_one_ride</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>100000</td>\n      <td>True</td>\n      <td>False</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>100001</td>\n      <td>True</td>\n      <td>False</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>100002</td>\n      <td>True</td>\n      <td>True</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>100004</td>\n      <td>True</td>\n      <td>True</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>100006</td>\n      <td>True</td>\n      <td>False</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 12,406 DataFrame rows (.head()).",
+      "sourceRows": 12406
+    },
+    {
+      "sourceCell": 77,
+      "sourceLine": 1433,
+      "sourceCellSha256": "62644e1a81ddc29815a106247f0e3589f4b8d3da81ecbb24aeb81293b1047600",
+      "expression": "requesting_user_state_validation",
+      "kind": "text",
+      "text": "{'ride_rows_with_missing_user_id': 0,\n 'distinct_requesting_user_ids': 12406,\n 'user_state_rows': 12406,\n 'rows_match_distinct_requesting_users': True,\n 'user_id_is_unique': True,\n 'all_requested_flags_are_true': True,\n 'completed_without_request': 0,\n 'users_completed_at_least_one_ride': 6233}"
+    },
+    {
+      "sourceCell": 80,
+      "sourceLine": 1541,
+      "sourceCellSha256": "2f025b1f6f42c87199c6e1997c71d683060399121ffc6c40f097f22b48045ef8",
+      "expression": "signup_ride_state_join_validation",
+      "kind": "text",
+      "text": "{'input_signup_rows': 17623,\n 'output_signup_rows': 17623,\n 'signup_rows_added_by_join': 0,\n 'distinct_output_user_ids': 17623,\n 'user_id_is_unique': True,\n 'absent_requested_flags_are_false': True,\n 'absent_completed_flags_are_false': True}"
+    },
+    {
+      "sourceCell": 81,
+      "sourceLine": 1604,
+      "sourceCellSha256": "f6afcdcbace36b10b12fc3957029fde8b3ba051be244c2f8e4d2595aeca2900b",
+      "expression": "download_anchored_funnel_base.head()",
+      "kind": "table",
+      "text": "                   app_download_key  ...  completed_at_least_one_ride\n0  06f49bcc6895f888eba41043f95348ba  ...                        False\n1  60d79d5ac63159a5dffc13e42d87e070  ...                        False\n2  a3e52e50d379c3da808c4d8864f0d996  ...                         True\n3  2f7551cdd9a0a658350394e51bc74de3  ...                         True\n4  81adc238826a8dce8a706c083abc095e  ...                        False\n\n[5 rows x 6 columns]",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>app_download_key</th>\n      <th>user_id</th>\n      <th>downloaded</th>\n      <th>signed_up</th>\n      <th>requested_at_least_one_ride</th>\n      <th>completed_at_least_one_ride</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>06f49bcc6895f888eba41043f95348ba</td>\n      <td>106328.0</td>\n      <td>True</td>\n      <td>True</td>\n      <td>False</td>\n      <td>False</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>60d79d5ac63159a5dffc13e42d87e070</td>\n      <td>NaN</td>\n      <td>True</td>\n      <td>False</td>\n      <td>False</td>\n      <td>False</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>a3e52e50d379c3da808c4d8864f0d996</td>\n      <td>100497.0</td>\n      <td>True</td>\n      <td>True</td>\n      <td>True</td>\n      <td>True</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>2f7551cdd9a0a658350394e51bc74de3</td>\n      <td>109802.0</td>\n      <td>True</td>\n      <td>True</td>\n      <td>True</td>\n      <td>True</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>81adc238826a8dce8a706c083abc095e</td>\n      <td>105441.0</td>\n      <td>True</td>\n      <td>True</td>\n      <td>False</td>\n      <td>False</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 23,608 DataFrame rows (.head()).",
+      "sourceRows": 23608
+    },
+    {
+      "sourceCell": 82,
+      "sourceLine": 1655,
+      "sourceCellSha256": "1cb52ec1864efb82ce971a11a107d26845a30c6fba7baf63d373f836ff3ff68b",
+      "expression": "download_anchored_base_validation",
+      "kind": "text",
+      "text": "{'input_download_rows': 23608,\n 'output_base_rows': 23608,\n 'download_rows_added_by_join': 0,\n 'distinct_app_download_keys': 23608,\n 'app_download_key_is_unique': True,\n 'columns_match_required_order': True,\n 'missing_stage_flags': 0,\n 'all_downloaded_flags_are_true': True,\n 'downloaded': 23608,\n 'signed_up': 17623,\n 'requested_at_least_one_ride': 12406,\n 'completed_at_least_one_ride': 6233,\n 'stage_counts_match_accepted_results': True}"
+    },
+    {
+      "sourceCell": 83,
+      "sourceLine": 1723,
+      "sourceCellSha256": "12932efe0168a5ff0c7dc18c1332f7c76f9fa8ad0f5c06046198f9ea96d8c1e4",
+      "expression": "funnel_nesting_validation",
+      "kind": "text",
+      "text": "{'completed_true_requested_false': 0,\n 'requested_true_signed_up_false': 0,\n 'signed_up_true_downloaded_false': 0}"
+    },
+    {
+      "sourceCell": 86,
+      "sourceLine": 1826,
+      "sourceCellSha256": "25727b5ffe216f483e2350ef4b0cd8350f85c28faf90935f0265ce3f73b10b6d",
+      "expression": "core_funnel_summary",
+      "kind": "table",
+      "text": "                         stage  stage_count\n0                     Download        23608\n1                       Signup        17623\n2  Requested at least one ride        12406\n3  Completed at least one ride         6233",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>stage</th>\n      <th>stage_count</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>Download</td>\n      <td>23608</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>Signup</td>\n      <td>17623</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>Requested at least one ride</td>\n      <td>12406</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>Completed at least one ride</td>\n      <td>6233</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 4
+    },
+    {
+      "sourceCell": 87,
+      "sourceLine": 1869,
+      "sourceCellSha256": "e9389aca5d955bfaeb2293aa6638945fce5e85b0eb669047837b817fcb076663",
+      "expression": "core_funnel_summary",
+      "kind": "table",
+      "text": "                         stage  ...  percent_of_top\n0                     Download  ...          100.00\n1                       Signup  ...           74.65\n2  Requested at least one ride  ...           52.55\n3  Completed at least one ride  ...           26.40\n\n[4 rows x 6 columns]",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>stage</th>\n      <th>stage_count</th>\n      <th>previous_stage_count</th>\n      <th>percent_of_previous</th>\n      <th>dropoff_from_previous</th>\n      <th>percent_of_top</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>Download</td>\n      <td>23608</td>\n      <td>NaN</td>\n      <td>NaN</td>\n      <td>NaN</td>\n      <td>100.00</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>Signup</td>\n      <td>17623</td>\n      <td>23608.0</td>\n      <td>74.65</td>\n      <td>25.35</td>\n      <td>74.65</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>Requested at least one ride</td>\n      <td>12406</td>\n      <td>17623.0</td>\n      <td>70.40</td>\n      <td>29.60</td>\n      <td>52.55</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>Completed at least one ride</td>\n      <td>6233</td>\n      <td>12406.0</td>\n      <td>50.24</td>\n      <td>49.76</td>\n      <td>26.40</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 4
+    },
+    {
+      "sourceCell": 88,
+      "sourceLine": 1906,
+      "sourceCellSha256": "a51fbdd32d82b545ca3b8463ccd15df55ecd83f6323ab62ef6b24ddf6c88988a",
+      "expression": "core_funnel_summary_validation",
+      "kind": "text",
+      "text": "{'has_exactly_four_stage_rows': True,\n 'stage_order_matches_expected': True,\n 'columns_match_expected_order': True,\n 'stage_counts_reconcile_to_base': True,\n 'stage_counts_are_non_increasing': True,\n 'previous_stage_counts_align': True,\n 'first_stage_previous_metrics_are_missing': True,\n 'first_stage_percent_of_top_is_100': np.True_,\n 'downstream_percentages_sum_to_100': True,\n 'percent_of_previous_matches_expected': True,\n 'dropoff_from_previous_matches_expected': True,\n 'percent_of_top_matches_expected': True}"
+    },
+    {
+      "sourceCell": 91,
+      "sourceLine": 2042,
+      "sourceCellSha256": "0d647d16fc4cc9df233b146b879858fc7cff0c9cbbcafc970cecf0a09420e43e",
+      "expression": "core_funnel_summary",
+      "kind": "table",
+      "text": "                         stage  ...  dropoff_count_from_previous\n0                     Download  ...                          NaN\n1                       Signup  ...                       5985.0\n2  Requested at least one ride  ...                       5217.0\n3  Completed at least one ride  ...                       6173.0\n\n[4 rows x 7 columns]",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>stage</th>\n      <th>stage_count</th>\n      <th>previous_stage_count</th>\n      <th>percent_of_previous</th>\n      <th>dropoff_from_previous</th>\n      <th>percent_of_top</th>\n      <th>dropoff_count_from_previous</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>Download</td>\n      <td>23608</td>\n      <td>NaN</td>\n      <td>NaN</td>\n      <td>NaN</td>\n      <td>100.00</td>\n      <td>NaN</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>Signup</td>\n      <td>17623</td>\n      <td>23608.0</td>\n      <td>74.65</td>\n      <td>25.35</td>\n      <td>74.65</td>\n      <td>5985.0</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>Requested at least one ride</td>\n      <td>12406</td>\n      <td>17623.0</td>\n      <td>70.40</td>\n      <td>29.60</td>\n      <td>52.55</td>\n      <td>5217.0</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>Completed at least one ride</td>\n      <td>6233</td>\n      <td>12406.0</td>\n      <td>50.24</td>\n      <td>49.76</td>\n      <td>26.40</td>\n      <td>6173.0</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 4
+    },
+    {
+      "sourceCell": 92,
+      "sourceLine": 2055,
+      "sourceCellSha256": "7722b9eb2411ff7648f3eeda053db4339285cff57de638d6ed7bc99acf4aa9d8",
+      "expression": "weakest_transition_result",
+      "kind": "text",
+      "text": "{'transition': 'Requested at least one ride → Completed at least one ride',\n 'percent_of_previous': np.float64(50.24),\n 'dropoff_from_previous': np.float64(49.76),\n 'dropoff_count_from_previous': 6173}"
+    },
+    {
+      "sourceCell": 93,
+      "sourceLine": 2097,
+      "sourceCellSha256": "122be5fda0de1989e361ee15842e3984db6a3ad075263c6f5c5def9a331c0a64",
+      "expression": "core_funnel_dropoff_validation",
+      "kind": "text",
+      "text": "{'download_dropoff_count_is_missing': True,\n 'downstream_dropoff_counts_match_expected': True,\n 'lowest_conversion_and_highest_dropoff_match': True,\n 'weakest_transition_matches_expected': True,\n 'weakest_transition_values_match_expected': True,\n 'existing_stage_counts_and_percentages_are_unchanged': True}"
+    },
+    {
+      "sourceCell": 96,
+      "sourceLine": 2171,
+      "sourceCellSha256": "a0a0037c034f2d3f6fe55d3509fee5f1435807b245afb43e50d125f1522c5e12",
+      "expression": "metrocar_customer_funnel",
+      "kind": "figure",
+      "figure": "customer"
+    },
+    {
+      "sourceCell": 99,
+      "sourceLine": 2255,
+      "sourceCellSha256": "e3bd8b9adf886c1ec55a874acee048273836505291509404edd068452b34112a",
+      "expression": "ride_acceptance_join_validation",
+      "kind": "text",
+      "text": "{'input_ride_rows': 385477,\n 'output_ride_rows': 385477,\n 'distinct_output_ride_ids': 385477,\n 'unmatched_acceptance_rows': 0,\n 'accepted_ride_records': 248379,\n 'accepted_rides_match_q07': True}"
+    },
+    {
+      "sourceCell": 100,
+      "sourceLine": 2299,
+      "sourceCellSha256": "b57284e60c34bd3e3410518d73e50d8d9decd4c867ad85b0a326e5a9481428e7",
+      "expression": "requesting_user_acceptance_completion_state.head()",
+      "kind": "table",
+      "text": "   user_id  accepted_at_least_one_ride  completed_at_least_one_ride\n0   100000                        True                        False\n1   100001                        True                        False\n2   100002                        True                         True\n3   100004                        True                         True\n4   100006                        True                        False",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>user_id</th>\n      <th>accepted_at_least_one_ride</th>\n      <th>completed_at_least_one_ride</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>100000</td>\n      <td>True</td>\n      <td>False</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>100001</td>\n      <td>True</td>\n      <td>False</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>100002</td>\n      <td>True</td>\n      <td>True</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>100004</td>\n      <td>True</td>\n      <td>True</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>100006</td>\n      <td>True</td>\n      <td>False</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 12,406 DataFrame rows (.head()).",
+      "sourceRows": 12406
+    },
+    {
+      "sourceCell": 101,
+      "sourceLine": 2311,
+      "sourceCellSha256": "8875b301e2da5577b249bc05a0754da4220abfffe3257673d22dc29d7d5d412d",
+      "expression": "non_completer_acceptance_split",
+      "kind": "table",
+      "text": "                                    acceptance_state  ...  share_of_non_completing_requesters_pct\n0                         Never had an accepted ride  ...                                    2.07\n1  Had at least one accepted ride but never compl...  ...                                   97.93\n\n[2 rows x 3 columns]",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>acceptance_state</th>\n      <th>user_count</th>\n      <th>share_of_non_completing_requesters_pct</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>Never had an accepted ride</td>\n      <td>128</td>\n      <td>2.07</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>Had at least one accepted ride but never compl...</td>\n      <td>6045</td>\n      <td>97.93</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 2
+    },
+    {
+      "sourceCell": 102,
+      "sourceLine": 2378,
+      "sourceCellSha256": "168cf2d525ed658b48e5eedd2f5d0ba53a186313cca531d9201512057fe46760",
+      "expression": "acceptance_diagnostic_validation",
+      "kind": "text",
+      "text": "{'user_state_rows': 12406,\n 'user_state_rows_match_requesting_users': True,\n 'user_id_is_unique': True,\n 'accepted_at_least_one_users': 12278,\n 'completed_at_least_one_users': 6233,\n 'completed_users_match_existing_state': True,\n 'non_completing_requesters': 6173,\n 'non_completers_match_core_dropoff': True,\n 'split_reconciles_to_non_completers': np.True_,\n 'split_shares_sum_to_100': True,\n 'completed_without_acceptance_users': 0,\n 'completed_without_acceptance_is_zero': True}"
+    },
+    {
+      "sourceCell": 104,
+      "sourceLine": 2456,
+      "sourceCellSha256": "8a62056a89b86964ce416e8e270a788c9e6a55958de7d805c0eb027246088ba6",
+      "expression": "metrocar_acceptance_history",
+      "kind": "figure",
+      "figure": "acceptanceHistory"
+    },
+    {
+      "sourceCell": 107,
+      "sourceLine": 2521,
+      "sourceCellSha256": "999388ab1b9bd55269a34b089a34d9dada9d531b21f19fec8887a03667dcb4b2",
+      "expression": "reviews.head()",
+      "kind": "table",
+      "text": "   review_id  ride_id\n0      50000  3000002\n1      50001  3000004\n2      50002  3000005\n3      50003  3000006\n4      50004  3000010",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>review_id</th>\n      <th>ride_id</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>50000</td>\n      <td>3000002</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>50001</td>\n      <td>3000004</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>50002</td>\n      <td>3000005</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>50003</td>\n      <td>3000006</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>50004</td>\n      <td>3000010</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 156,211 DataFrame rows (.head()).",
+      "sourceRows": 156211
+    },
+    {
+      "sourceCell": 108,
+      "sourceLine": 2533,
+      "sourceCellSha256": "e48c2556146af706dcbd4f787a1a669239b2df7d075b7c7c25a4aef2d99049de",
+      "expression": "review_relationship_validation",
+      "kind": "text",
+      "text": "{'review_rows': 156211,\n 'distinct_review_ids': 156211,\n 'missing_review_ids': 0,\n 'review_id_is_unique': True,\n 'distinct_reviewed_ride_ids': 156211,\n 'missing_reviewed_ride_ids': 0,\n 'repeated_reviewed_ride_ids': 0,\n 'unknown_reviewed_ride_ids': 0}"
+    },
+    {
+      "sourceCell": 109,
+      "sourceLine": 2570,
+      "sourceCellSha256": "cec67c46ed5a7c995389dc5a97d908c11700addb0ccbd8fb3fcf081f90e922b4",
+      "expression": "ride_level_stage_state.head()",
+      "kind": "table",
+      "text": "   ride_id  requested  ...  reviewed  reviewed_in_approved_payment_path\n0  3000023       True  ...      True                               True\n1  3000024       True  ...     False                              False\n2  3000025       True  ...     False                              False\n3  3000026       True  ...     False                              False\n4  3000288       True  ...     False                              False\n\n[5 rows x 6 columns]",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>ride_id</th>\n      <th>requested</th>\n      <th>finished</th>\n      <th>approved_payment</th>\n      <th>reviewed</th>\n      <th>reviewed_in_approved_payment_path</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>3000023</td>\n      <td>True</td>\n      <td>True</td>\n      <td>True</td>\n      <td>True</td>\n      <td>True</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>3000024</td>\n      <td>True</td>\n      <td>False</td>\n      <td>False</td>\n      <td>False</td>\n      <td>False</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>3000025</td>\n      <td>True</td>\n      <td>True</td>\n      <td>True</td>\n      <td>False</td>\n      <td>False</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>3000026</td>\n      <td>True</td>\n      <td>False</td>\n      <td>False</td>\n      <td>False</td>\n      <td>False</td>\n    </tr>\n    <tr>\n      <th>4</th>\n      <td>3000288</td>\n      <td>True</td>\n      <td>False</td>\n      <td>False</td>\n      <td>False</td>\n      <td>False</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 5,
+      "note": "Preview: first 5 of 385,477 DataFrame rows (.head()).",
+      "sourceRows": 385477
+    },
+    {
+      "sourceCell": 110,
+      "sourceLine": 2640,
+      "sourceCellSha256": "65e10c26b1b5a0917924f1fae2d5a0dc0c2ff4744581bfceb89af791e201e793",
+      "expression": "ride_funnel_summary",
+      "kind": "table",
+      "text": "      stage  stage_count  ...  percent_of_previous  percent_of_top\n0   Request       385477  ...                  NaN          100.00\n1  Finished       223652  ...                58.02           58.02\n2      Paid       212628  ...                95.07           55.16\n3  Reviewed       148464  ...                69.82           38.51\n\n[4 rows x 5 columns]",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th></th>\n      <th>stage</th>\n      <th>stage_count</th>\n      <th>previous_stage_count</th>\n      <th>percent_of_previous</th>\n      <th>percent_of_top</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>0</th>\n      <td>Request</td>\n      <td>385477</td>\n      <td>NaN</td>\n      <td>NaN</td>\n      <td>100.00</td>\n    </tr>\n    <tr>\n      <th>1</th>\n      <td>Finished</td>\n      <td>223652</td>\n      <td>385477.0</td>\n      <td>58.02</td>\n      <td>58.02</td>\n    </tr>\n    <tr>\n      <th>2</th>\n      <td>Paid</td>\n      <td>212628</td>\n      <td>223652.0</td>\n      <td>95.07</td>\n      <td>55.16</td>\n    </tr>\n    <tr>\n      <th>3</th>\n      <td>Reviewed</td>\n      <td>148464</td>\n      <td>212628.0</td>\n      <td>69.82</td>\n      <td>38.51</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 4
+    },
+    {
+      "sourceCell": 111,
+      "sourceLine": 2730,
+      "sourceCellSha256": "44edc87dd023b3ba756b1d5320476d95001f4da07b3e9513889dbd4d9e9cf695",
+      "expression": "ride_funnel_validation",
+      "kind": "text",
+      "text": "{'ride_level_rows': 385477,\n 'distinct_ride_ids': 385477,\n 'ride_id_is_unique': True,\n 'approved_ride_ids_without_request': 0,\n 'requested_reconciles': np.True_,\n 'finished_reconciles': np.True_,\n 'approved_payment_reconciles': np.True_,\n 'strict_reviewed_reconciles': np.True_,\n 'stage_counts_are_non_increasing': True,\n 'first_stage_previous_metrics_are_missing': True,\n 'percent_of_previous_matches_expected': True,\n 'first_stage_percent_of_top_is_100': np.True_,\n...",
+      "fullText": "{'ride_level_rows': 385477,\n 'distinct_ride_ids': 385477,\n 'ride_id_is_unique': True,\n 'approved_ride_ids_without_request': 0,\n 'requested_reconciles': np.True_,\n 'finished_reconciles': np.True_,\n 'approved_payment_reconciles': np.True_,\n 'strict_reviewed_reconciles': np.True_,\n 'stage_counts_are_non_increasing': True,\n 'first_stage_previous_metrics_are_missing': True,\n 'percent_of_previous_matches_expected': True,\n 'first_stage_percent_of_top_is_100': np.True_,\n 'percent_of_top_matches_expected': True,\n 'finished_outside_requested': 0,\n 'paid_outside_finished': 0,\n 'strict_reviewed_outside_finished': 0,\n 'strict_reviewed_outside_paid': 0,\n 'strict_stage_sets_are_nested': True,\n 'all_reviewed_rides': 156211,\n 'all_reviewed_outside_finished': 0,\n 'all_reviewed_outside_paid': 7747,\n 'all_reviewed_with_approved_payment': 148464,\n 'all_reviews_reconcile': True}",
+      "note": "Excerpt: first 12 of 23 output lines. Open the full result for all fields.",
+      "fullLabel": "Show full result (23 lines)"
+    },
+    {
+      "sourceCell": 112,
+      "sourceLine": 2807,
+      "sourceCellSha256": "b6b8a12392cc27ff472eb1794bf0d7ae02cb18cffda6c638f5dc2493bbe23288",
+      "expression": "ride_funnel_chart_validation",
+      "kind": "text",
+      "text": "{'has_one_funnel_trace': True,\n 'title_matches_expected': True,\n 'plotted_labels_match_summary': True,\n 'plotted_counts_match_summary': True}"
+    },
+    {
+      "sourceCell": 113,
+      "sourceLine": 2874,
+      "sourceCellSha256": "a978b8c294807f9013ed3c8f52fc157f168ce6493de61551fb303d82f4e56f91",
+      "expression": "metrocar_ride_funnel",
+      "kind": "figure",
+      "figure": "ride"
+    }
+  ]
+}

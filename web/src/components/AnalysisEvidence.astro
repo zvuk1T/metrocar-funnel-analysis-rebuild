@@ -1,0 +1,134 @@
+---
+const { kind, evidence } = Astro.props;
+const data = evidence[kind];
+const titles = {
+  eventCoverage: "Later events are not recorded for every request",
+  eventPatterns: "Pickup and drop-off are recorded together",
+  acceptanceHistory: "Most non-completers had some recorded acceptance",
+};
+const titleId = `evidence-${kind}-title`;
+const number = (value) => value.toLocaleString("en-US");
+const percent = (value) => `${value.toFixed(2)}%`;
+const historyRows = kind === "acceptanceHistory"
+  ? [...data.rows].sort((a, b) => b.user_count - a.user_count)
+  : [];
+---
+
+<figure class="analysis-eda-evidence" id={`evidence-${kind}`} data-evidence-kind={kind} aria-labelledby={titleId}>
+  <figcaption>
+    <p class="evidence-kicker">Rendered evidence · {kind === "acceptanceHistory" ? "User history" : "One ride_id"}</p>
+    <h3 id={titleId}>{titles[kind]}</h3>
+    <p class="evidence-context">{number(data.denominator)} {kind === "acceptanceHistory" ? "requesting users with no completed ride" : "ride requests; the full population is the denominator"}.</p>
+  </figcaption>
+
+  {kind === "eventCoverage" && <>
+    <p class="evidence-legend"><span><i class="recorded-swatch" aria-hidden="true" />Recorded</span><span><i class="absent-swatch" aria-hidden="true" />Not recorded</span></p>
+    <p class="evidence-scale">Share of all requests · 0–100%</p>
+    <ol class="evidence-rows">
+      {data.rows.map((row) => <li>
+        <div class="evidence-row-heading"><code>{row.field}</code><strong>{percent(row.present_percent)} recorded</strong></div>
+        <div class="evidence-bar" aria-hidden="true"><span class="recorded-segment" style={`width: ${row.present_percent}%`} /><span class="absent-segment" style={`width: ${row.missing_percent}%`} /></div>
+        <p class="evidence-row-counts"><span>{number(row.present_count)} recorded</span><span>{number(row.missing_count)} not recorded</span></p>
+      </li>)}
+    </ol>
+    <p class="evidence-answer">A request record can be complete while later events are absent. Absence is retained as evidence; no timestamps were filled in.</p>
+    <details>
+      <summary>View quality profile · 15 selected fields, four source tables</summary>
+      <p>Each percentage uses its own source table's row count. Reviews and unselected database fields are outside this profile.</p>
+      <div class="evidence-table-scroll" role="region" aria-label="Selected input quality profile" tabindex="0">
+        <table>
+          <caption>Selected analytical extracts; missingness is measured before filling event flags.</caption>
+          <thead><tr><th>Source table / field</th><th>Type</th><th>Rows</th><th>Missing</th><th>Missing %</th></tr></thead>
+          <tbody>{evidence.profile.map((row) => <tr><th scope="row"><span>{row.source_table}</span><code>{row.field}</code></th><td>{row.dtype}</td><td>{number(row.row_count)}</td><td>{number(row.missing_count)}</td><td>{percent(row.missing_percent)}</td></tr>)}</tbody>
+        </table>
+      </div>
+    </details>
+  </>}
+
+  {kind === "eventPatterns" && <>
+    <p class="evidence-scale">Request counts · each bar uses the same 0–385,477 scale</p>
+    <ol class="evidence-rows">
+      {data.rows.map((row) => <li>
+        <div class="evidence-row-heading"><strong>{row.pattern}</strong><span>{number(row.request_count)} · {percent(row.share_percent)}</span></div>
+        <div class="evidence-event-flags">
+          {[["Accepted", row.accept_ts], ["Pickup", row.pickup_ts], ["Drop-off", row.dropoff_ts]].map(([label, present]) => <span class:list={{ "event-recorded": present }}><b aria-hidden="true">{present ? "✓" : "—"}</b>{label}<span class="visually-hidden">: {present ? "recorded" : "not recorded"}</span></span>)}
+        </div>
+        <div class="evidence-bar" aria-hidden="true"><span class="recorded-segment" style={`width: ${row.share_percent}%`} /></div>
+      </li>)}
+    </ol>
+    <p class="evidence-answer"><strong>{data.partialPickupDropoffPairs} partial pickup/drop-off pairs.</strong> These groups account for every request. They describe recorded events and do not identify cancellation or tracking causes.</p>
+    <details>
+      <summary>View pattern counts and checks</summary>
+      <div class="evidence-table-scroll" role="region" aria-label="Recorded request pattern counts" tabindex="0">
+        <table><caption>Same-request timestamp presence; no user-history aggregation.</caption><thead><tr><th>Recorded events</th><th>Requests</th><th>Share</th></tr></thead><tbody>{data.rows.map((row) => <tr><th scope="row">{row.pattern}</th><td>{number(row.request_count)}</td><td>{percent(row.share_percent)}</td></tr>)}</tbody></table>
+      </div>
+      <p>Pattern counts reconcile to {number(data.denominator)} requests. The existing checks also found {data.acceptanceDriverMismatches} disagreements between acceptance-time and driver-ID presence.</p>
+    </details>
+  </>}
+
+  {kind === "acceptanceHistory" && <>
+    <div class="evidence-bar history-bar" aria-hidden="true">
+      {historyRows.map((row, index) => <span class={index === 0 ? "recorded-segment" : "absent-segment"} style={`width: ${row.share_of_non_completing_requesters_pct}%`} />)}
+    </div>
+    <dl class="history-statistics">
+      {historyRows.map((row, index) => <div><dt><i class={index === 0 ? "recorded-swatch" : "absent-swatch"} aria-hidden="true" />{row.history_group}</dt><dd><strong>{percent(row.share_of_non_completing_requesters_pct)}</strong><span>{number(row.user_count)} of {number(data.denominator)} users</span></dd></div>)}
+    </dl>
+    <p class="evidence-answer">“Most never received any acceptance” does not fit this user-history evidence. Acceptance somewhere in that history does not explain what happened on a particular unfinished ride.</p>
+    <details>
+      <summary>View cohort counts</summary>
+      <table><caption>Two exclusive groups partition all non-completing requesters.</caption><thead><tr><th>Acceptance history</th><th>Users</th><th>Share</th></tr></thead><tbody>{historyRows.map((row) => <tr><th scope="row">{row.history_group}</th><td>{number(row.user_count)}</td><td>{percent(row.share_of_non_completing_requesters_pct)}</td></tr>)}</tbody></table>
+    </details>
+  </>}
+</figure>
+
+<style>
+  .analysis-eda-evidence { margin: 28px 0 36px; padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); min-width: 0; scroll-margin-top: calc(var(--project-header-height) + 24px); }
+  .evidence-kicker { margin: 0 0 8px; color: var(--text-soft); font-size: 14px; }
+  h3 { margin: 0 0 12px; font-size: 22px; font-weight: 600; line-height: 1.3; letter-spacing: -.02em; }
+  .evidence-context { margin: 0 0 24px; color: var(--text-soft); font-size: 16px; }
+  .evidence-legend { display: flex; flex-wrap: wrap; gap: 12px 24px; margin: 0 0 14px; font-size: 16px; }
+  .evidence-legend span, dt { display: flex; align-items: center; gap: 8px; }
+  .recorded-swatch, .absent-swatch { display: inline-block; flex: 0 0 12px; width: 12px; height: 12px; border-radius: 2px; }
+  .recorded-swatch, .recorded-segment { background: #71c6b1; }
+  .absent-swatch, .absent-segment { background: #f4bda5; }
+  .evidence-scale { margin: 0 0 12px; color: var(--text-soft); font-size: 14px; }
+  .evidence-rows { display: grid; gap: 24px; margin: 0; padding: 0; list-style: none; }
+  .evidence-row-heading { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; margin-bottom: 8px; font-size: 16px; line-height: 1.5; }
+  .evidence-row-heading code { color: var(--text); font-size: 15px; }
+  .evidence-bar { display: flex; height: 20px; overflow: hidden; border-radius: 4px; background: #edf0eb; }
+  .evidence-bar > span { display: block; height: 100%; flex-shrink: 0; }
+  .evidence-row-counts { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; margin: 6px 0 0; color: var(--text-soft); font-size: 14px; }
+  .evidence-event-flags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+  .evidence-event-flags > span { display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 4px; color: var(--text-soft); font-size: 14px; }
+  .evidence-event-flags > .event-recorded { background: var(--background-soft); color: var(--text); }
+  .evidence-answer { margin: 24px 0 0; padding-left: 16px; border-left: 3px solid var(--secondary-accent); font-size: 16px; line-height: 1.6; }
+  .history-bar { height: 32px; }
+  .history-statistics { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 24px 0 0; }
+  dt { align-items: flex-start; color: var(--text-soft); font-size: 16px; line-height: 1.5; }
+  dt i { margin-top: 6px; }
+  dd { display: grid; gap: 4px; margin: 10px 0 0; }
+  dd strong { font-size: 32px; font-weight: 600; line-height: 1.2; }
+  dd span { font-size: 16px; }
+  details { margin-top: 24px; border-top: 1px solid var(--line); font-size: 15px; }
+  summary { min-height: 44px; padding-block: 12px; color: var(--text); cursor: pointer; }
+  details p { margin: 0 0 16px; line-height: 1.6; }
+  .evidence-table-scroll { max-width: 100%; overflow-x: auto; }
+  table { width: 100%; margin-block: 0 12px; border-collapse: collapse; font-size: 14px; line-height: 1.5; }
+  caption { text-align: left; margin-bottom: 12px; color: var(--text-soft); }
+  th, td { padding: 10px 8px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+  td { font-variant-numeric: tabular-nums; }
+  th span, th code { display: block; }
+  th span { color: var(--text-soft); font-size: 12px; font-weight: 400; }
+  th code { color: var(--text); overflow-wrap: anywhere; font-size: 13px; }
+  @media (max-width: 600px) {
+    .analysis-eda-evidence { padding: 18px 16px; }
+    h3 { font-size: 21px; }
+    .history-statistics { grid-template-columns: 1fr; }
+    .evidence-row-heading { display: grid; }
+    .evidence-row-counts { display: grid; }
+    .evidence-rows { gap: 22px; }
+  }
+  @media (max-width: 999px) {
+    .analysis-eda-evidence { scroll-margin-top: calc(var(--project-header-height) + 84px); }
+  }
+</style>

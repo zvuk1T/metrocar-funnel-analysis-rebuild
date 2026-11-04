@@ -1,6 +1,10 @@
 ---
 const { guide, explanation } = Astro.props;
 
+if (guide && (!guide.overview || !guide.why)) {
+  throw new Error(`Code Guide "${guide.id}" needs its purpose and interpretation limits`);
+}
+
 const inlineCodeParts = (text) =>
   text.split(/(`[^`]+`)/g).filter(Boolean).map((part) => ({
     isCode: part.startsWith("`") && part.endsWith("`"),
@@ -10,35 +14,47 @@ const inlineCodeParts = (text) =>
   }));
 ---
 
-<details class="code-guide" data-explanation-source={explanation ? "python" : undefined}>
-  <summary>Explain this code</summary>
+<details class="code-guide" id={guide ? `explain-${guide.id}` : undefined} data-explanation-source={explanation ? "python" : "web"}>
+  <summary><span class="cell-disclosure-label"><span class="cell-disclosure-icon" aria-hidden="true">💡</span><span>Explain this code</span></span></summary>
   <div class="code-guide-content">
     {explanation ? (
-      <div class="code-guide-step">
+      <div class="code-guide-section">
         <p>{inlineCodeParts(explanation).map((part) =>
           part.isCode ? <code>{part.text}</code> : part.text
         )}</p>
       </div>
     ) : (<>
-    <ol class="code-guide-steps">
-      {guide.steps.map((step) => (
-        <li class="code-guide-step">
-          <pre><code>{step.code}</code></pre>
-          <p>{inlineCodeParts(step.explanation).map((part) =>
-            part.isCode ? <code>{part.text}</code> : part.text
-          )}</p>
-        </li>
-      ))}
-    </ol>
-
-    {guide.after && (
-      <div class="code-guide-after">
-        <span>After this cell</span>
-        <p>{inlineCodeParts(guide.after).map((part) =>
+    <section class="code-guide-section">
+      <h5>📖 Overview — WHAT</h5>
+      <p>{inlineCodeParts(guide.overview).map((part) =>
+        part.isCode ? <code>{part.text}</code> : part.text
+      )}</p>
+      {guide.after && <p class="code-guide-result">{inlineCodeParts(guide.after).map((part) =>
+        part.isCode ? <code>{part.text}</code> : part.text
+      )}</p>}
+    </section>
+    <section class="code-guide-section">
+      <h5>🔢 Step-by-step breakdown — HOW</h5>
+      {guide.steps.length > 1 ? (
+        <ol class="code-guide-steps">
+          {guide.steps.map((step) => (
+            <li><p>{inlineCodeParts(step.explanation).map((part) =>
+              part.isCode ? <code>{part.text}</code> : part.text
+            )}</p></li>
+          ))}
+        </ol>
+      ) : (
+        <p>{inlineCodeParts(guide.steps[0].explanation).map((part) =>
           part.isCode ? <code>{part.text}</code> : part.text
         )}</p>
-      </div>
-    )}
+      )}
+    </section>
+    <section class="code-guide-section">
+      <h5>💡 Why this matters — WHY &amp; LIMITS</h5>
+      <p>{inlineCodeParts(guide.why).map((part) =>
+        part.isCode ? <code>{part.text}</code> : part.text
+      )}</p>
+    </section>
     </>)}
   </div>
 </details>
