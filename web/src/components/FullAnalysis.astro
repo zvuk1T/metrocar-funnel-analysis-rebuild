@@ -7,6 +7,7 @@ import { Marked } from "marked";
 
 import CodeGuide from "./CodeGuide.astro";
 import FunnelChart from "./FunnelChart.astro";
+import SegmentedFunnelChart from "./SegmentedFunnelChart.astro";
 import AnalysisEvidence from "./AnalysisEvidence.astro";
 import analysisEvidence from "../data/analysisEvidence.json";
 import cellOutputs from "../data/cellOutputs.json";
@@ -36,6 +37,22 @@ for (const output of cellOutputs.cells) {
     throw new Error(`Python output does not match source cell ${output.sourceCell}`);
   }
   outputsByCellIndex.set(cell.index, output);
+}
+
+const segmentedFigures = ["platform", "age", "ride-platform", "ride-age"];
+for (const output of cellOutputs.cells.filter((item) => segmentedFigures.includes(item.figure))) {
+  const table = outputsByCellIndex.get(output.tableSourceCell - 1);
+  const traces = output.plotlyData;
+  const funnel = output.figure.startsWith("ride-") ? rideFunnel : customerFunnel;
+  if (!table || table.kind !== "table" || table.sourceCellSha256 !== output.tableSourceCellSha256 ||
+      !Array.isArray(traces) || traces.length === 0 || traces.some((trace) =>
+        trace.type !== "funnel" || trace.x.length !== 4 || trace.y.length !== 4 ||
+        trace.y.join("|") !== traces[0].y.join("|") ||
+        trace.x.some((value) => !Number.isInteger(value) || value < 0)) ||
+      funnel.stages.some((stage, index) =>
+        traces.reduce((total, trace) => total + trace.x[index], 0) !== stage.count)) {
+    throw new Error(`Segmented ${output.figure} funnel does not match its verified evidence`);
+  }
 }
 
 const evidenceByCellIndex = new Map();
@@ -357,7 +374,7 @@ if (outputsByCellIndex.size !== codeCellCount) {
                   aria-label={`Python source cell ${cell.index + 1}`}
                 />
                 {cell.output.kind !== "none" && (
-                  <details class:list={["python-cell-output", { "python-cell-output--figure": cell.output.kind === "figure" }]} id={`python-output-${cell.index + 1}`} data-output-kind={cell.output.kind}>
+                  <details class:list={["python-cell-output", { "python-cell-output--figure": cell.output.kind === "figure" }]} id={`python-output-${cell.index + 1}`} data-output-kind={cell.output.kind} open={segmentedFigures.includes(cell.output.figure)}>
                     <summary><span class="cell-disclosure-label"><span class="cell-disclosure-icon" aria-hidden="true">✅</span><span>Result</span></span></summary>
                     <div class="python-output-content">
                       {cell.output.stdout && <pre class="python-result-text" tabindex="0">{cell.output.stdout}</pre>}
@@ -396,6 +413,10 @@ if (outputsByCellIndex.size !== codeCellCount) {
                           <FunnelChart funnel={rideFunnel} id="analysis-ride-funnel-chart" ariaLabel="Ride Funnel: Request 385,477; Finished 223,652; Paid 212,628; Reviewed 148,464 within the Approved-payment path." tableCaption="Full Analysis Ride Funnel values" />
                           <p class="analysis-evidence-note">Reviewed represents reviewed rides inside the Approved-payment path; the following result keeps the 7,747 additional reviewed rides visible outside that strict path.</p>
                         </section>
+                      )}
+
+                      {segmentedFigures.includes(cell.output.figure) && (
+                        <SegmentedFunnelChart output={cell.output} />
                       )}
                     </div>
                   </details>

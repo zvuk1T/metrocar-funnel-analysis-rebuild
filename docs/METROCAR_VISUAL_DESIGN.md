@@ -46,7 +46,9 @@ The Overview is a compact, dashboard-like reading surface for approximately 3–
 
 The acceptance-history result may appear as a brief summary, but its full reasoning and caveats should not be reproduced here.
 
-No filters, comparison engine, admin interface, KPI wall, or old Funnel Explorer behavior belongs in the Overview.
+Both funnels have three approved views: **Overall / By platform / By age**, with **By platform** selected initially. Each panel's choice is independent. The segmented views reuse captured Python results and retain missing ages as Unknown. Customer percentages use each group's Download count; ride percentages use each group's Request count. Ride stages retain one `ride_id` per row and require Approved payment for Reviewed. Platform means the signup-linked download platform, and age is recorded at signup. The headline **50.24%** remains the overall customer finding across all platforms and ages.
+
+No cross-panel filters, comparison engine, admin interface, KPI wall, or old Funnel Explorer behavior belongs in the Overview.
 
 ### Full Analysis / Deep Dive
 

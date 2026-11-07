@@ -1,8 +1,9 @@
 ---
 import FullAnalysis from "../components/FullAnalysis.astro";
 import PageShell from "../layouts/PageShell.astro";
-import FunnelChart from "../components/FunnelChart.astro";
-import { customerFunnel, rideFunnel } from "../data/funnels.js";
+import CustomerFunnel from "../components/CustomerFunnel.astro";
+import RideFunnel from "../components/RideFunnel.astro";
+import { customerFunnel } from "../data/funnels.js";
 
 const requesters = customerFunnel.stages[2];
 const completers = customerFunnel.stages[3];
@@ -46,7 +47,7 @@ const completers = customerFunnel.stages[3];
 
       <section class="finding-panel" aria-labelledby="finding-title">
         <h3 id="finding-title"><strong>{completers.percentOfPrevious}</strong><span>of requesters completed<br class="desktop-break" /> at least one ride.</span></h3>
-        <p><strong>{completers.count.toLocaleString("en-US")} of {requesters.count.toLocaleString("en-US")}</strong> requesting users<br />Requested ≥1 → Completed ≥1</p>
+        <p><span class="finding-scope">Overall · all platforms and ages</span><strong>{completers.count.toLocaleString("en-US")} of {requesters.count.toLocaleString("en-US")}</strong> requesting users<br />Requested ≥1 → Completed ≥1</p>
       </section>
 
       <div class="funnel-grid" aria-label="Metrocar funnel visualizations">
@@ -55,22 +56,14 @@ const completers = customerFunnel.stages[3];
             <div><p class="panel-kicker">Primary customer evidence</p><h3 id="customer-panel-title">Customer Funnel</h3></div>
             <span class="grain-pill">Entrant / user stage</span>
           </header>
-          <FunnelChart
-            funnel={customerFunnel}
-            ariaLabel="Customer Funnel: Download 23,608; Signup 17,623; Requested at least one ride 12,406; Completed at least one ride 6,233."
-            tableCaption="Customer Funnel values"
-          />
+          <CustomerFunnel />
         </article>
         <article class="funnel-panel funnel-panel--ride" aria-labelledby="ride-panel-title">
           <header class="panel-header">
             <div><p class="panel-kicker">Supporting ride path</p><h3 id="ride-panel-title">Ride Funnel</h3></div>
             <span class="grain-pill">One <code>ride_id</code></span>
           </header>
-          <FunnelChart
-            funnel={rideFunnel}
-            ariaLabel="Ride Funnel: Request 385,477; Finished 223,652; Paid 212,628; Reviewed 148,464."
-            tableCaption="Ride Funnel values"
-          />
+          <RideFunnel />
           <p class="panel-note">Reviewed means reviewed rides inside the Approved-payment path.</p>
         </article>
       </div>
@@ -97,31 +90,31 @@ const completers = customerFunnel.stages[3];
         <header class="project-section-header learning-header">
           <p class="eyebrow">Return to the question</p>
           <h2 id="learning-title">Wrap-up</h2>
-          <p>The funnel showed where to look. Ride histories helped us test one explanation and frame the next question.</p>
+          <p>The funnel revealed the weakest step. Ride histories helped test an explanation.</p>
         </header>
         <ol class="learning-takeaways" role="list" aria-label="From recorded journeys to the question we carry forward">
           <li>
             <h3><span class="learning-number" aria-hidden="true">01</span>Data — What did we use?</h3>
-            <p>We began with Metrocar’s recorded downloads, signups and ride histories, asking where users stopped on the way to a completed ride. Before following that journey, we had to separate a user’s progress from the path of an individual ride. Reaching a stage at least once tells us something different from what happened on any one ride.</p>
+            <p>Recorded downloads, signups, ride events, payments and reviews let us trace customer progress separately from individual rides.</p>
             <a href="#understand-the-app-downloads-table-grain">Source and grain ↑</a>
           </li>
           <li>
             <h3><span class="learning-number" aria-hidden="true">02</span>Information — What did we find?</h3>
-            <p>The customer funnel pointed to the transition from requesting to completing a ride as the weakest step. That led us to ask whether users who never completed a ride had ever received an acceptance. Looking across their recorded ride histories, we found that most had.</p>
+            <p>The largest relative customer loss was from requesting to completing a ride. Yet most non-completing requesters had a recorded acceptance somewhere in their ride history.</p>
             <a href="#diagnostic-1-did-non-completing-requesters-ever-have-an-accepted-ride">Acceptance-history evidence ↑</a>
           </li>
           <li>
             <h3><span class="learning-number" aria-hidden="true">03</span>Knowledge — What is the insight?</h3>
-            <p>That finding changed how we read the drop-off. The idea that most affected users never received an acceptance did not fit their histories. Explaining why they did not complete a ride would require evidence connecting acceptance and outcome on the same ride.</p>
+            <p>This challenges “never received an acceptance” as an explanation for most non-completing users.</p>
             <aside class="learning-insight" aria-label="Key insight">
               <strong>Insight</strong>
-              <p>A user’s recorded history can challenge an explanation without establishing the cause of an unfinished ride.</p>
+              <p>An acceptance somewhere in a user’s history does not establish why a particular ride remained unfinished.</p>
             </aside>
             <a href="#learning-slice-4-which-adjacent-transition-is-weakest">Weakest transition ↑</a>
           </li>
           <li>
             <h3><span class="learning-number" aria-hidden="true">04</span>Wisdom — What is the next question?</h3>
-            <p>The next investigation would follow individual unfinished rides, linking each request, any recorded acceptance and its outcome. Operational or cancellation evidence could help test possible explanations before proposing a change.</p>
+            <p>Link each unfinished ride’s request, any recorded acceptance and outcome. Examine operational or cancellation evidence before proposing changes.</p>
             <p class="carry-forward-question"><span>The question we carry forward</span>Which same-ride evidence would help investigate why requesting users did not complete a ride?</p>
             <a href="#visualization-2-how-many-rides-followed-the-strict-ride-path">Definitions and evidence limits ↑</a>
           </li>

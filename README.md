@@ -4,6 +4,8 @@
 
 An educational MasterSchool ride-sharing case study.
 
+**[Active analysis — rebuild](metrocar_funnel_analysis.py)** · [Original school work and what changed](docs/original-vs-rebuild.md)
+
 <table width="100%">
   <tr>
     <td width="32%" align="center" valign="middle">
@@ -59,7 +61,7 @@ User history does not establish the cause of non-completion on a particular ride
 <details>
 <summary>Reproduce and review validation</summary>
 
-**Python 3.12 + authorized PostgreSQL access.** Data and credentials are not included.
+**Rebuild: Python 3.12 + authorized PostgreSQL access.** Connection details are supplied through the untracked local environment.
 
 In a virtual environment:
 
@@ -69,6 +71,12 @@ python -m pip install -r requirements.txt
 
 Set `METROCAR_DATABASE_URL` locally; never commit credentials.
 Run the [Python source](metrocar_funnel_analysis.py) cells top-to-bottom in VS Code/Jupyter and inspect the validation outputs.
+
+The active analysis restores the school's customer funnels by platform and recorded age, and adds the same breakdowns for the Ride Funnel. The dashboard and Full Analysis display exported Python Plotly traces. Each segment uses its Download count for customer percentages and its Request count for ride percentages.
+
+**Original school notebook:** `metrocar_original.ipynb` is preserved byte-for-byte in the local working folder. It contains historical connection details and saved outputs, is excluded from Git, and is not included in this GitHub repository or web build.
+
+The later Python version from the older repository is preserved in [archive/metrocar_legacy.py](archive/metrocar_legacy.py), with its own [requirements](archive/requirements-legacy.txt).
 
 Recorded validation: **20 October 2026**, checkpoint [986e278](https://github.com/zvuk1T/metrocar-funnel-analysis-rebuild/commit/986e27853d30f736137fcec64154032f79f0d929).
 Checked keys, joins, preserved populations, nesting, denominators and chart values.

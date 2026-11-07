@@ -2886,3 +2886,366 @@ metrocar_ride_funnel
 # outside that path. Those additional reviews are not treated as errors or
 # discarded. All strict adjacent-stage violation counts are zero.
 # endregion
+
+# region Customer Segmentation — Platform
+# %% [markdown]
+# ## How does the customer funnel differ by platform?
+#
+# Restore the platform breakdown from the original school notebook, using the
+# rebuild's validated customer-stage flags. The input remains one row per
+# download; grouping produces one count per stage and platform.
+#
+# Platform belongs to the app download linked to signup, not necessarily the
+# device used for each ride request. This differs from Q09, which counts rides.
+
+# %%
+# region Explain this code
+# Attach platform without changing the download-level population. Sum the same
+# four Boolean stage flags as the overall funnel, then transpose so each
+# platform becomes a column, as in the school notebook.
+# endregion
+import plotly.graph_objects as go
+
+platform_funnel_base = download_anchored_funnel_base.merge(
+    app_download_platforms,
+    on="app_download_key",
+    how="left",
+    validate="one_to_one",
+)
+platform_funnel_base["platform"] = platform_funnel_base["platform"].fillna("Unknown")
+
+full_funnel_by_platform = (
+    platform_funnel_base.groupby("platform")[funnel_stage_columns].sum().T
+)
+full_funnel_by_platform.index = ordered_funnel_stage_labels
+full_funnel_by_platform
+
+# %%
+# region Explain this code
+# Check that the join kept every download and that adding the platform columns
+# gives the overall customer count at each of the four stages.
+# endregion
+platform_funnel_validation = {
+    "download_rows_preserved": (
+        len(platform_funnel_base) == len(download_anchored_funnel_base)
+    ),
+    "segment_counts_match_customer_funnel": (
+        full_funnel_by_platform.sum(axis=1).tolist()
+        == core_funnel_summary["stage_count"].tolist()
+    ),
+}
+platform_funnel_validation
+
+# %%
+# region Explain this code
+# Build one Plotly Funnel trace per platform with the same simple loop used in
+# the original notebook. Percent initial uses that platform's downloads as the
+# denominator; it is not conversion from the immediately preceding stage.
+# endregion
+platform_traces = []
+for platform in full_funnel_by_platform.columns:
+    platform_traces.append(
+        go.Funnel(
+            x=full_funnel_by_platform[platform].values,
+            y=full_funnel_by_platform.index,
+            textinfo="value+percent initial",
+            name=platform,
+        )
+    )
+
+metrocar_customer_funnel_by_platform = go.Figure(data=platform_traces)
+metrocar_customer_funnel_by_platform.update_layout(
+    title="Metrocar Customer Funnel by Platform",
+    legend_title_text="Download platform",
+)
+metrocar_customer_funnel_by_platform
+
+# %% [markdown]
+# ### ✅ Evidence, Answer & Limits
+#
+# In the recorded dataset, iOS has the largest population at every stage.
+# The platform counts reproduce the school notebook and add back to the
+# overall customer funnel. A larger population does not by itself establish
+# better conversion, a platform effect, or where to spend a marketing budget.
+# endregion
+
+# region Customer Segmentation — Age Range
+# %% [markdown]
+# ## How does the customer funnel differ by recorded age range?
+#
+# Restore the school notebook's age breakdown. Age comes from `signups`, so
+# attach it to the existing download-level base through `user_id`.
+#
+# Keep missing ages as `Unknown`, including downloads without a signup. Known
+# age groups therefore enter this analysis only after signup: equal Download
+# and Signup counts do not demonstrate 100% signup conversion for those ages.
+
+# %%
+# region Explain this code
+# Read only the signup identifier and age range. A many-to-one left merge keeps
+# downloads without signup; fill their missing age, and any missing signup age,
+# with Unknown before grouping. Sum the existing flags, as for platform.
+# endregion
+signup_age_ranges = pd.read_sql(
+    "SELECT user_id, age_range FROM signups",
+    connection,
+)
+age_funnel_base = download_anchored_funnel_base.merge(
+    signup_age_ranges,
+    on="user_id",
+    how="left",
+    validate="many_to_one",
+)
+age_funnel_base["age_range"] = age_funnel_base["age_range"].fillna("Unknown")
+
+full_funnel_by_age = (
+    age_funnel_base.groupby("age_range")[funnel_stage_columns].sum().T
+)
+full_funnel_by_age.index = ordered_funnel_stage_labels
+full_funnel_by_age
+
+# %%
+# region Explain this code
+# Verify that adding age did not multiply or remove downloads and that the age
+# groups, including Unknown, account for every stage in the customer funnel.
+# endregion
+age_funnel_validation = {
+    "download_rows_preserved": (
+        len(age_funnel_base) == len(download_anchored_funnel_base)
+    ),
+    "segment_counts_match_customer_funnel": (
+        full_funnel_by_age.sum(axis=1).tolist()
+        == core_funnel_summary["stage_count"].tolist()
+    ),
+}
+age_funnel_validation
+
+# %%
+# region Explain this code
+# Repeat the original notebook's loop, with one trace per age range. Percent
+# initial is relative to each recorded age group's Download count. Unknown is
+# a missing-information category, not an age group or a marketing segment.
+# endregion
+age_traces = []
+for age in full_funnel_by_age.columns:
+    age_traces.append(
+        go.Funnel(
+            x=full_funnel_by_age[age].values,
+            y=full_funnel_by_age.index,
+            textinfo="value+percent initial",
+            name=age,
+        )
+    )
+
+metrocar_customer_funnel_by_age = go.Figure(data=age_traces)
+metrocar_customer_funnel_by_age.update_layout(
+    title="Metrocar Customer Funnel by Recorded Age Range",
+    legend_title_text="Recorded age range",
+)
+metrocar_customer_funnel_by_age
+
+# %% [markdown]
+# ### ✅ Evidence, Answer & Limits
+#
+# Among known ages, 35–44 has the largest population at each stage. The counts
+# reproduce the school notebook; Unknown keeps the total population intact.
+# In the recorded data it includes 5,985 downloads without signup and 5,304
+# signups without an age. We cannot infer the ages of people who did not sign up
+# or conclude which age group converts best from download to signup.
+# endregion
+
+# region Ride Segmentation — Platform
+# %% [markdown]
+# ## How does the ride funnel differ by platform?
+#
+# Extend Q09 from request counts to the full ride path. The input is one row
+# per `ride_id`, with the existing Request, Finished, Paid and strict Reviewed
+# flags. Attach the platform already linked in Q09, then sum those flags.
+#
+# Platform describes the signup-linked download, not the device used on each
+# ride. Reviewed still requires an Approved payment on the same ride.
+
+# %%
+# region Explain this code
+# Keep one row per ride when attaching platform. Reuse the four validated
+# ride-stage flags; grouping and transposing gives one column per platform.
+# Missing platform labels stay in the population as Unknown.
+# endregion
+ride_funnel_stage_columns = [
+    "requested",
+    "finished",
+    "approved_payment",
+    "reviewed_in_approved_payment_path",
+]
+ordered_ride_stage_labels = ride_funnel_summary["stage"].tolist()
+
+ride_platform_funnel_base = ride_level_stage_state.merge(
+    ride_requests_with_platform[["ride_id", "platform"]],
+    on="ride_id",
+    how="left",
+    validate="one_to_one",
+    indicator="_platform_match",
+)
+ride_platform_funnel_base["platform"] = (
+    ride_platform_funnel_base["platform"].fillna("Unknown")
+)
+
+ride_funnel_by_platform = (
+    ride_platform_funnel_base.groupby("platform")[ride_funnel_stage_columns].sum().T
+)
+ride_funnel_by_platform.index = ordered_ride_stage_labels
+ride_funnel_by_platform
+
+# %%
+# region Explain this code
+# Check the ride grain, lookup coverage and totals. Request counts must also
+# reproduce Q09; adding any stage across platforms must give its overall total.
+# endregion
+ride_platform_funnel_validation = {
+    "ride_rows_preserved": (
+        len(ride_platform_funnel_base) == len(ride_level_stage_state)
+    ),
+    "ride_id_is_unique": ride_platform_funnel_base["ride_id"].is_unique,
+    "all_rides_matched": bool(
+        (ride_platform_funnel_base["_platform_match"] == "both").all()
+    ),
+    "request_counts_match_q09": (
+        ride_funnel_by_platform.loc["Request"].to_dict()
+        == ride_requests_by_platform.set_index("platform")["ride_requests"].to_dict()
+    ),
+    "segment_counts_match_ride_funnel": (
+        ride_funnel_by_platform.sum(axis=1).tolist()
+        == ride_funnel_summary["stage_count"].tolist()
+    ),
+    "stage_counts_are_non_increasing": bool(
+        (ride_funnel_by_platform.diff().iloc[1:] <= 0).all().all()
+    ),
+}
+ride_platform_funnel_validation
+
+# %%
+# region Explain this code
+# Use the same simple Plotly loop as the customer breakdown. Percent initial
+# now divides by each platform's Request count because these are ride stages.
+# endregion
+ride_platform_traces = []
+for platform in ride_funnel_by_platform.columns:
+    ride_platform_traces.append(
+        go.Funnel(
+            x=ride_funnel_by_platform[platform].values,
+            y=ride_funnel_by_platform.index,
+            textinfo="value+percent initial",
+            name=platform,
+        )
+    )
+
+metrocar_ride_funnel_by_platform = go.Figure(data=ride_platform_traces)
+metrocar_ride_funnel_by_platform.update_layout(
+    title="Metrocar Ride Funnel by Platform",
+    legend_title_text="Download platform",
+)
+metrocar_ride_funnel_by_platform
+
+# %% [markdown]
+# ### ✅ Evidence, Answer & Limits
+#
+# iOS has the largest ride count at every stage, starting with 234,693 requests.
+# The platform columns account for all 385,477 requested rides and reproduce
+# the overall Finished, Paid and Reviewed counts. A user can request many
+# rides, so these counts cannot be read as numbers of customers. Differences
+# between platforms do not establish a platform effect or a cause of loss.
+# endregion
+
+# region Ride Segmentation — Age Range
+# %% [markdown]
+# ## How does the ride funnel differ by recorded age range?
+#
+# Attach each ride's user, then the age range recorded at signup. Keep one row
+# per `ride_id` throughout; repeated rides by the same user remain separate.
+# Missing recorded ages stay as `Unknown` rather than removing those rides.
+
+# %%
+# region Explain this code
+# A one-to-one merge adds the requesting user to each ride. A many-to-one
+# merge adds that user's signup age without multiplying rides. Sum the same
+# four stage flags by age, as in the platform and customer breakdowns.
+# endregion
+ride_age_funnel_base = ride_level_stage_state.merge(
+    ride_requests[["ride_id", "user_id"]],
+    on="ride_id",
+    how="left",
+    validate="one_to_one",
+)
+ride_age_funnel_base = ride_age_funnel_base.merge(
+    signup_age_ranges,
+    on="user_id",
+    how="left",
+    validate="many_to_one",
+    indicator="_age_match",
+)
+ride_age_funnel_base["age_range"] = (
+    ride_age_funnel_base["age_range"].fillna("Unknown")
+)
+
+ride_funnel_by_age = (
+    ride_age_funnel_base.groupby("age_range")[ride_funnel_stage_columns].sum().T
+)
+ride_funnel_by_age.index = ordered_ride_stage_labels
+ride_funnel_by_age
+
+# %%
+# region Explain this code
+# Check that every ride still has one row and matches a signup. A matched
+# signup can have no recorded age; Unknown keeps those rides in stage totals.
+# endregion
+ride_age_funnel_validation = {
+    "ride_rows_preserved": (
+        len(ride_age_funnel_base) == len(ride_level_stage_state)
+    ),
+    "ride_id_is_unique": ride_age_funnel_base["ride_id"].is_unique,
+    "all_rides_have_a_user": bool(ride_age_funnel_base["user_id"].notna().all()),
+    "all_rides_match_a_signup": bool(
+        (ride_age_funnel_base["_age_match"] == "both").all()
+    ),
+    "segment_counts_match_ride_funnel": (
+        ride_funnel_by_age.sum(axis=1).tolist()
+        == ride_funnel_summary["stage_count"].tolist()
+    ),
+    "stage_counts_are_non_increasing": bool(
+        (ride_funnel_by_age.diff().iloc[1:] <= 0).all().all()
+    ),
+}
+ride_age_funnel_validation
+
+# %%
+# region Explain this code
+# Draw one trace per recorded age range. Percent initial is relative to that
+# group's Request count, not its number of users or the previous ride stage.
+# endregion
+ride_age_traces = []
+for age in ride_funnel_by_age.columns:
+    ride_age_traces.append(
+        go.Funnel(
+            x=ride_funnel_by_age[age].values,
+            y=ride_funnel_by_age.index,
+            textinfo="value+percent initial",
+            name=age,
+        )
+    )
+
+metrocar_ride_funnel_by_age = go.Figure(data=ride_age_traces)
+metrocar_ride_funnel_by_age.update_layout(
+    title="Metrocar Ride Funnel by Recorded Age Range",
+    legend_title_text="Recorded age range",
+)
+metrocar_ride_funnel_by_age
+
+# %% [markdown]
+# ### ✅ Evidence, Answer & Limits
+#
+# Among known ages, 35–44 has the most requests (114,209). Another 115,729
+# requests have Unknown age. All age columns add back to each overall stage.
+# Unknown means rides whose requesting user has no recorded signup age; it
+# does not include downloads without signup. These are ride activity counts,
+# not distinct-user conversion rates or evidence that age causes a difference.
+# endregion

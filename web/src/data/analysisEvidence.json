@@ -1,8 +1,8 @@
 {
   "sourceFile": "metrocar_funnel_analysis.py",
-  "sourceSha256": "1253a33b593e439ca090b93726f01d5901411cee91f1b607fd0bf863d237bddd",
+  "sourceSha256": "0d34b217d5d3258d65e3f3d049e142dc2e3701cef854fcf4ee2a2200f5e3dbd6",
   "baseCommit": "70516ee2468d50b6ffc1cefb0fce1d698f9b7f00",
-  "validatedAtUTC": "2026-11-04T08:19:57.226907+00:00",
+  "validatedAtUTC": "2026-11-07T21:26:42.739804+00:00",
   "validationMethod": "Top-to-bottom Python execution; PostgreSQL transaction read only; aggregate outputs only.",
   "profile": [
     {
@@ -254,6 +254,12 @@
     "originalFunnelsUnchanged": true,
     "requestPatternPartition": true,
     "userHistoryPartition": true,
-    "databaseReadOnly": true
+    "databaseReadOnly": true,
+    "platformSegmentsMatchSchoolNotebook": true,
+    "ageSegmentsMatchSchoolNotebook": true,
+    "segmentTotalsMatchCustomerFunnel": true,
+    "rideSegmentTotalsMatchRideFunnel": true,
+    "ridePlatformRequestsMatchQ09": true,
+    "rideSegmentJoinsPreserveGrain": true
   }
 }

@@ -1,0 +1,133 @@
+---
+const { output, id = `analysis-${output.figure}-funnel`, compact = false } = Astro.props;
+const traces = output.plotlyData;
+const stages = traces[0].y;
+const isRide = output.figure.startsWith("ride-");
+const firstStage = isRide ? "Request" : "Download";
+const population = isRide ? "requested rides" : "downloads";
+const tickLabels = isRide ? stages : ["Download", "Signup", "Requested ≥1", "Completed ≥1"];
+const colors = ["#244e44", "#427d6c", "#75b59f", "#aed3c1", "#dbe3de"];
+const number = (value) => value.toLocaleString("en-US");
+const percent = (value, first) => first > 0 ? `${(100 * value / first).toFixed(2)}%` : "N/A";
+---
+
+<figure class:list={["segmented-funnel", { "analysis-funnel-evidence": !compact, "segmented-funnel--compact": compact }]} id={id} aria-labelledby={`${id}-title`}>
+  {compact ? <figcaption id={`${id}-title`} class="visually-hidden">{output.plotlyTitle}</figcaption> : <figcaption class="analysis-evidence-header">
+    <p>{isRide ? "Ride" : "Customer"} stages · {output.legendTitle}</p>
+    <h3 id={`${id}-title`}>{output.plotlyTitle}</h3>
+  </figcaption>}
+  <p class="segment-context">{compact ? `Percentages use each group’s ${firstStage} count.` : `Counts and percentages of each segment’s ${population}. Percentages compare with ${firstStage}, not with the previous stage.`}</p>
+  <div
+    id={`${id}-chart`}
+    class="plotly-funnel"
+    data-segmented-funnel-chart={JSON.stringify({ traces, colors, compact, population, tickLabels })}
+    role="img"
+    aria-label={`${output.plotlyTitle}. Four ${isRide ? "ride" : "customer"} stages for ${traces.map((trace) => trace.name).join(", ")}.`}
+  ></div>
+  {!compact && <p class="segment-help">Select a legend label to hide or show a segment.</p>}
+  <p class="analysis-evidence-note">
+    {isRide
+      ? output.figure === "ride-age"
+        ? "Age is recorded at signup. Unknown means the requesting user has no recorded age. Counts represent rides, including repeat requests by the same user."
+        : "Platform comes from the signup-linked download, not the ride-time device. Counts represent rides, including repeat requests by the same user."
+      : output.figure === "age"
+      ? compact
+        ? "Age is recorded at signup, so signup conversion by age cannot be inferred. Unknown includes missing ages and downloads without signup."
+        : "Unknown includes downloads without signup and signups with no recorded age. Known-age Download and Signup counts are equal because age is recorded at signup; this does not establish 100% signup conversion for those ages."
+      : compact ? "Platform is recorded on the app download." : "Platform is recorded on the app download. These are customer-stage counts, not the number of individual ride requests or evidence of a platform’s causal effect."}
+  </p>
+  {isRide && !compact && <p class="analysis-evidence-note">Reviewed requires an Approved payment on the same ride.</p>}
+  <div class="visually-hidden">
+    <table>
+      <caption>{output.plotlyTitle}: count and percentage of each segment’s {firstStage} count.</caption>
+      <thead>
+        <tr><th scope="col">Stage</th>{traces.map((trace) => <th scope="col">{trace.name}</th>)}</tr>
+      </thead>
+      <tbody>
+        {stages.map((stage, index) => (
+          <tr>
+            <th scope="row">{stage}</th>
+            {traces.map((trace) => <td>{number(trace.x[index])} ({percent(trace.x[index], trace.x[0])})</td>)}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</figure>
+
+<style>
+  .segmented-funnel { min-width: 0; scroll-margin-top: calc(var(--project-header-height) + 24px); }
+  .segment-context, .segment-help { margin: 0.75rem clamp(0.8rem, 2vw, 1.25rem); color: var(--text-soft); font-size: 0.875rem; line-height: 1.6; }
+  .segmented-funnel .plotly-funnel { height: 27rem; }
+  .segmented-funnel--compact { width: 100%; margin: 0; padding: 0; }
+  .segmented-funnel--compact .plotly-funnel { height: 256px; margin-top: 0; }
+  .segmented-funnel--compact .segment-context { margin: 8px 0 0; }
+  .segmented-funnel--compact .analysis-evidence-note { margin: 8px 0 0; padding-left: 8px; line-height: 1.4; }
+  @media (max-width: 999px) {
+    .segmented-funnel { scroll-margin-top: calc(var(--project-header-height) + 84px); }
+  }
+  @media (max-width: 600px) {
+    .segmented-funnel .plotly-funnel { height: 28rem; }
+    .segmented-funnel--compact .plotly-funnel { height: 288px; }
+  }
+</style>
+
+<script>
+  import Plotly from "plotly.js-finance-dist-min";
+
+  for (const element of document.querySelectorAll("[data-segmented-funnel-chart]")) {
+    if (!(element instanceof HTMLElement) || !element.dataset.segmentedFunnelChart) continue;
+    const chart = JSON.parse(element.dataset.segmentedFunnelChart);
+    // Preserve the exported Python traces; only presentation settings differ.
+    const traces = chart.traces.map((trace, index) => ({
+      ...trace,
+      orientation: "h",
+      marker: { color: chart.colors[index], line: { color: "#ffffff", width: 1 } },
+      connector: { line: { color: "#b3cabe", width: 1 } },
+      textposition: "inside",
+      texttemplate: chart.compact ? "%{value:,.0f}" : "%{value:,.0f}<br>%{percentInitial:.1%}",
+      textfont: { color: index < 2 ? "#ffffff" : "#10382e", size: 14 },
+      hovertemplate: `<b>%{fullData.name}</b><br>%{y}<br>Count: %{x:,.0f}<br>Share of segment ${chart.population}: %{percentInitial:.2%}<extra></extra>`,
+    }));
+    const layout = {
+      autosize: true,
+      funnelmode: "stack",
+      showlegend: true,
+      legend: { orientation: "h", x: 0, y: 1.05, xanchor: "left", yanchor: "bottom", traceorder: "normal", font: { size: 13 } },
+      paper_bgcolor: "rgba(0, 0, 0, 0)",
+      plot_bgcolor: "rgba(0, 0, 0, 0)",
+      margin: { l: 8, r: 12, t: chart.compact ? 56 : 70, b: 12 },
+      font: { color: "#10382e", family: "ui-sans-serif, system-ui, sans-serif", size: 13 },
+      uniformtext: { minsize: 12, mode: "hide" },
+      xaxis: { visible: false, fixedrange: true },
+      yaxis: {
+        automargin: true,
+        autorange: "reversed",
+        fixedrange: true,
+        categoryorder: "array",
+        categoryarray: chart.traces[0].y,
+        tickvals: chart.traces[0].y,
+        ticktext: chart.tickLabels,
+      },
+      hoverlabel: { bgcolor: "#ffffff", bordercolor: "#427d6c", font: { color: "#10382e", size: 14 } },
+    };
+    const config = { responsive: true, displayModeBar: false, displaylogo: false };
+    const showChart = () => {
+      if (element.dataset.segmentedRendered === "true") {
+        Plotly.Plots.resize(element);
+      } else {
+        element.dataset.segmentedRendered = "true";
+        Plotly.newPlot(element, traces, layout, config);
+      }
+    };
+    const funnelView = element.closest<HTMLElement>("[data-customer-funnel-view], [data-ride-funnel-view]");
+    funnelView?.addEventListener("funnel-view-shown", showChart);
+    const resultPanel = element.closest("details.python-cell-output");
+    if (resultPanel instanceof HTMLDetailsElement) {
+      resultPanel.addEventListener("toggle", () => { if (resultPanel.open) showChart(); });
+      if (resultPanel.open) showChart();
+    } else if (!funnelView?.hidden) {
+      showChart();
+    }
+  }
+</script>

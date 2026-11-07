@@ -55,6 +55,7 @@ html.analysis-reading {
 .finding-panel h3 strong { font-size: clamp(3.25rem, 5vw, 4rem); font-weight: 600; line-height: 1.05; letter-spacing: -.06em; }
 .finding-panel p { margin: 0; padding-left: 24px; border-left: 1px solid var(--line); color: var(--text-soft); font-size: 1rem; }
 .finding-panel p strong { color: var(--text); }
+.finding-scope { display: block; margin-bottom: 4px; font-size: .875rem; }
 .metrocar-dashboard .funnel-grid { gap: 16px; }
 .metrocar-dashboard .funnel-panel { padding: 16px; border-radius: 12px; background: var(--surface); }
 .metrocar-dashboard .panel-header { min-height: 0; gap: 12px; }

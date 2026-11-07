@@ -2,6 +2,9 @@
 .venv/
 .DS_Store
 
+# Unchanged school notebook is for local review only.
+/metrocar_original.ipynb
+
 # Astro frontend build output and local dependencies
 web/node_modules/
 web/dist/
