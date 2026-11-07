@@ -1,13 +1,13 @@
 # Original school notebook and extended analysis
 
-The two primary reading paths are the original school notebook supplied and identified by Data, and the extended Python analysis. Both are in the root of the local working folder; the original notebook is not included on GitHub. The later Python version from the older Git repository and its requirements are preserved in `archive/`; that version must not be presented as the original school submission.
+The two primary reading paths are the [public copy of the original school notebook](../metrocar_original_public.ipynb) and the [extended Python analysis](../metrocar_funnel_analysis.py), both in the repository root. The unchanged school original remains local. The later Python version from the older Git repository and its requirements are preserved in `archive/`; that version must not be presented as the original school submission.
 
 The only active local working folder is `metrocar-funnel-analysis-rebuild`. Python changes, captured results and the web preview belong to this checkout, which retains the existing GitHub and Render connection. Other Metrocar checkouts are preserved reference copies.
 
 | | Original school notebook | Extended analysis |
 | --- | --- | --- |
-| Source | `metrocar_original.ipynb`, unchanged local copy; not included on GitHub | [`metrocar_funnel_analysis.py`](../metrocar_funnel_analysis.py) |
-| Provenance | The notebook supplied by Data as the original school project | The analysis from the rebuild repository |
+| Source | [`metrocar_original_public.ipynb`](../metrocar_original_public.ipynb); unchanged local source: `metrocar_original.ipynb` | [`metrocar_funnel_analysis.py`](../metrocar_funnel_analysis.py) |
+| Provenance | Public copy of the notebook supplied by Data as the original school project; database credentials removed | The analysis from the rebuild repository |
 | Form | Jupyter notebook: 62 cells, including 39 code and 23 Markdown cells | Python percent cells; linear pandas/Plotly code, without functions or classes |
 | Evidence status | Historical saved outputs preserved; not rerun or analytically revalidated during consolidation | Captured evidence used by the current Astro presentation |
 | Environment | Historical notebook environment; not established by either current requirements file | [`requirements.txt`](../requirements.txt) |
@@ -15,7 +15,9 @@ The only active local working folder is `metrocar-funnel-analysis-rebuild`. Pyth
 | Platform and age | Customer funnels grouped by platform and recorded age | Restored using the validated customer flags and the original grouping/Plotly-loop approach |
 | Ride funnel | No separate Request → Finished → Paid → Reviewed funnel | Added at individual-ride grain, overall and by platform/age; Reviewed is restricted to the Approved-payment path |
 
-The original notebook contains embedded historical database connection details and saved outputs. Its exact local copy is excluded from Git through `.gitignore` and `.git/info/exclude`. Review those contents separately before publication; keeping the original unchanged does not authorize publishing credentials or private records.
+The public copy changes only the database setup in cells 7 and 9: the Markdown instructions omit the connection URL, and the code imports `os` and reads `METROCAR_DATABASE_URL` from the local environment. All analytical code, saved outputs (including charts and historical errors), execution counts and notebook metadata are preserved. The notebook was not rerun. Its source brief identifies the dataset as generated specifically for this school project.
+
+The byte-identical original contains historical connection details and stays local, excluded from Git through `.gitignore` and `.git/info/exclude`. The public copy is a reviewed derivative, not a byte-identical original.
 
 ## The later Python version
 
