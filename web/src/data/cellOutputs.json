@@ -1,13 +1,13 @@
 {
   "sourceFile": "metrocar_funnel_analysis.py",
-  "sourceSha256": "1253a33b593e439ca090b93726f01d5901411cee91f1b607fd0bf863d237bddd",
-  "capturedAtUTC": "2026-11-04T12:04:25.460276+00:00",
+  "sourceSha256": "0d34b217d5d3258d65e3f3d049e142dc2e3701cef854fcf4ee2a2200f5e3dbd6",
+  "capturedAtUTC": "2026-11-07T21:26:42.739804+00:00",
   "environment": {
     "python": "3.12.11",
     "ipython": "9.17.1",
     "pandas": "3.0.5"
   },
-  "method": "Source cells executed top to bottom in a read-only database transaction. Final expressions formatted by the installed IPython display formatter. School-dataset row previews included. Longer table or text representations are explicitly labelled excerpts with full results retained.",
+  "method": "Source cells executed top to bottom in a read-only database transaction. Final expressions formatted by the installed IPython display formatter. School-dataset row previews included. Longer table or text representations are explicitly labelled excerpts with full results retained. Existing outputs were reproduced unchanged when adding the platform and age segmentation. The platform and age Plotly figure cells are also replayed from their verified captured tables, with traces exported for the web presentation. Ride platform and age breakdowns were added in a later top-to-bottom read-only run; existing outputs and overall funnels were reproduced unchanged. Ride Plotly traces were exported directly from that run.",
   "cells": [
     {
       "sourceCell": 3,
@@ -580,6 +580,414 @@
       "expression": "metrocar_ride_funnel",
       "kind": "figure",
       "figure": "ride"
+    },
+    {
+      "sourceCell": 116,
+      "sourceLine": 2901,
+      "sourceCellSha256": "6443320393373de72ff98f2a6d89e5b16779b8f46701d813c1f063e61984099f",
+      "expression": "full_funnel_by_platform",
+      "kind": "table",
+      "text": "platform                     android    ios   web\nDownload                        6935  14290  2383\nSignup                          5148  10728  1747\nRequested at least one ride     3619   7550  1237\nCompleted at least one ride     1830   3792   611",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th>platform</th>\n      <th>android</th>\n      <th>ios</th>\n      <th>web</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>Download</th>\n      <td>6935</td>\n      <td>14290</td>\n      <td>2383</td>\n    </tr>\n    <tr>\n      <th>Signup</th>\n      <td>5148</td>\n      <td>10728</td>\n      <td>1747</td>\n    </tr>\n    <tr>\n      <th>Requested at least one ride</th>\n      <td>3619</td>\n      <td>7550</td>\n      <td>1237</td>\n    </tr>\n    <tr>\n      <th>Completed at least one ride</th>\n      <td>1830</td>\n      <td>3792</td>\n      <td>611</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 4
+    },
+    {
+      "sourceCell": 117,
+      "sourceLine": 2923,
+      "sourceCellSha256": "0573036bae3254bc1a73549987e8cb17491431f83f6ab70f2bc712d19e45bfec",
+      "expression": "platform_funnel_validation",
+      "kind": "text",
+      "text": "{'download_rows_preserved': True, 'segment_counts_match_customer_funnel': True}"
+    },
+    {
+      "sourceCell": 118,
+      "sourceLine": 2939,
+      "sourceCellSha256": "0a1c97c247b67caab1c3f629dfa278fba05edb1c1bec27457d7755728e54a6d8",
+      "expression": "metrocar_customer_funnel_by_platform",
+      "kind": "figure",
+      "figure": "platform",
+      "plotlyData": [
+        {
+          "type": "funnel",
+          "name": "android",
+          "x": [
+            6935,
+            5148,
+            3619,
+            1830
+          ],
+          "y": [
+            "Download",
+            "Signup",
+            "Requested at least one ride",
+            "Completed at least one ride"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "ios",
+          "x": [
+            14290,
+            10728,
+            7550,
+            3792
+          ],
+          "y": [
+            "Download",
+            "Signup",
+            "Requested at least one ride",
+            "Completed at least one ride"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "web",
+          "x": [
+            2383,
+            1747,
+            1237,
+            611
+          ],
+          "y": [
+            "Download",
+            "Signup",
+            "Requested at least one ride",
+            "Completed at least one ride"
+          ],
+          "textinfo": "value+percent initial"
+        }
+      ],
+      "plotlyTitle": "Metrocar Customer Funnel by Platform",
+      "legendTitle": "Download platform",
+      "tableSourceCell": 116,
+      "tableSourceCellSha256": "6443320393373de72ff98f2a6d89e5b16779b8f46701d813c1f063e61984099f",
+      "figureCapturedAtUTC": "2026-11-07T20:41:26.730837+00:00",
+      "figureCaptureMethod": "Original Plotly figure cell replayed from its verified captured aggregate table; no database queries."
+    },
+    {
+      "sourceCell": 121,
+      "sourceLine": 2983,
+      "sourceCellSha256": "093c6e30670d187dda0048f8a1f7db7092574c3ca6707149bf6701c8a0cfebe9",
+      "expression": "full_funnel_by_age",
+      "kind": "table",
+      "text": "age_range                    18-24  25-34  35-44  45-54  Unknown\nDownload                      1865   3447   5181   1826    11289\nSignup                        1865   3447   5181   1826     5304\nRequested at least one ride   1300   2425   3662   1285     3734\nCompleted at least one ride    670   1227   1861    630     1845",
+      "html": "<div>\n\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th>age_range</th>\n      <th>18-24</th>\n      <th>25-34</th>\n      <th>35-44</th>\n      <th>45-54</th>\n      <th>Unknown</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>Download</th>\n      <td>1865</td>\n      <td>3447</td>\n      <td>5181</td>\n      <td>1826</td>\n      <td>11289</td>\n    </tr>\n    <tr>\n      <th>Signup</th>\n      <td>1865</td>\n      <td>3447</td>\n      <td>5181</td>\n      <td>1826</td>\n      <td>5304</td>\n    </tr>\n    <tr>\n      <th>Requested at least one ride</th>\n      <td>1300</td>\n      <td>2425</td>\n      <td>3662</td>\n      <td>1285</td>\n      <td>3734</td>\n    </tr>\n    <tr>\n      <th>Completed at least one ride</th>\n      <td>670</td>\n      <td>1227</td>\n      <td>1861</td>\n      <td>630</td>\n      <td>1845</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 4
+    },
+    {
+      "sourceCell": 122,
+      "sourceLine": 3007,
+      "sourceCellSha256": "6dea1af06f4f0e4d2281f8c5ec65fa562162d50a2c55b743922c524d4bb9f9af",
+      "expression": "age_funnel_validation",
+      "kind": "text",
+      "text": "{'download_rows_preserved': True, 'segment_counts_match_customer_funnel': True}"
+    },
+    {
+      "sourceCell": 123,
+      "sourceLine": 3023,
+      "sourceCellSha256": "00374c956ff4c9324efe1f1ba59514bb19d551a26770f528aacb870cc773e96e",
+      "expression": "metrocar_customer_funnel_by_age",
+      "kind": "figure",
+      "figure": "age",
+      "plotlyData": [
+        {
+          "type": "funnel",
+          "name": "18-24",
+          "x": [
+            1865,
+            1865,
+            1300,
+            670
+          ],
+          "y": [
+            "Download",
+            "Signup",
+            "Requested at least one ride",
+            "Completed at least one ride"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "25-34",
+          "x": [
+            3447,
+            3447,
+            2425,
+            1227
+          ],
+          "y": [
+            "Download",
+            "Signup",
+            "Requested at least one ride",
+            "Completed at least one ride"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "35-44",
+          "x": [
+            5181,
+            5181,
+            3662,
+            1861
+          ],
+          "y": [
+            "Download",
+            "Signup",
+            "Requested at least one ride",
+            "Completed at least one ride"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "45-54",
+          "x": [
+            1826,
+            1826,
+            1285,
+            630
+          ],
+          "y": [
+            "Download",
+            "Signup",
+            "Requested at least one ride",
+            "Completed at least one ride"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "Unknown",
+          "x": [
+            11289,
+            5304,
+            3734,
+            1845
+          ],
+          "y": [
+            "Download",
+            "Signup",
+            "Requested at least one ride",
+            "Completed at least one ride"
+          ],
+          "textinfo": "value+percent initial"
+        }
+      ],
+      "plotlyTitle": "Metrocar Customer Funnel by Recorded Age Range",
+      "legendTitle": "Recorded age range",
+      "tableSourceCell": 121,
+      "tableSourceCellSha256": "093c6e30670d187dda0048f8a1f7db7092574c3ca6707149bf6701c8a0cfebe9",
+      "figureCapturedAtUTC": "2026-11-07T20:41:26.733515+00:00",
+      "figureCaptureMethod": "Original Plotly figure cell replayed from its verified captured aggregate table; no database queries."
+    },
+    {
+      "sourceCell": 126,
+      "sourceLine": 3068,
+      "sourceCellSha256": "64763a84ed7b0c365433efbd07f3f0b6c925be9298b17c600be038b889ccac70",
+      "expression": "ride_funnel_by_platform",
+      "kind": "table",
+      "text": "platform  android     ios    web\nRequest    112317  234693  38467\nFinished    65431  136146  22075\nPaid        62223  129387  21018\nReviewed    43219   90670  14575",
+      "html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th>platform</th>\n      <th>android</th>\n      <th>ios</th>\n      <th>web</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>Request</th>\n      <td>112317</td>\n      <td>234693</td>\n      <td>38467</td>\n    </tr>\n    <tr>\n      <th>Finished</th>\n      <td>65431</td>\n      <td>136146</td>\n      <td>22075</td>\n    </tr>\n    <tr>\n      <th>Paid</th>\n      <td>62223</td>\n      <td>129387</td>\n      <td>21018</td>\n    </tr>\n    <tr>\n      <th>Reviewed</th>\n      <td>43219</td>\n      <td>90670</td>\n      <td>14575</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 4
+    },
+    {
+      "sourceCell": 127,
+      "sourceLine": 3099,
+      "sourceCellSha256": "f5c70d831c0860c16b1d851aadca1e6ca54faa0175c5fb78841a353eb55c9059",
+      "expression": "ride_platform_funnel_validation",
+      "kind": "text",
+      "text": "{'ride_rows_preserved': True,\n 'ride_id_is_unique': True,\n 'all_rides_matched': True,\n 'request_counts_match_q09': True,\n 'segment_counts_match_ride_funnel': True,\n 'stage_counts_are_non_increasing': True}"
+    },
+    {
+      "sourceCell": 128,
+      "sourceLine": 3126,
+      "sourceCellSha256": "fc9f36d7d391d72d49c3c722cbf9d3c146ba8620bd8967b06eff62334b7fc32a",
+      "expression": "metrocar_ride_funnel_by_platform",
+      "kind": "figure",
+      "figure": "ride-platform",
+      "plotlyData": [
+        {
+          "type": "funnel",
+          "name": "android",
+          "x": [
+            112317,
+            65431,
+            62223,
+            43219
+          ],
+          "y": [
+            "Request",
+            "Finished",
+            "Paid",
+            "Reviewed"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "ios",
+          "x": [
+            234693,
+            136146,
+            129387,
+            90670
+          ],
+          "y": [
+            "Request",
+            "Finished",
+            "Paid",
+            "Reviewed"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "web",
+          "x": [
+            38467,
+            22075,
+            21018,
+            14575
+          ],
+          "y": [
+            "Request",
+            "Finished",
+            "Paid",
+            "Reviewed"
+          ],
+          "textinfo": "value+percent initial"
+        }
+      ],
+      "plotlyTitle": "Metrocar Ride Funnel by Platform",
+      "legendTitle": "Download platform",
+      "tableSourceCell": 126,
+      "tableSourceCellSha256": "64763a84ed7b0c365433efbd07f3f0b6c925be9298b17c600be038b889ccac70",
+      "figureCapturedAtUTC": "2026-11-07T21:26:42.739804+00:00",
+      "figureCaptureMethod": "Python source executed top to bottom in a read-only database transaction; original Plotly traces exported from the resulting figure."
+    },
+    {
+      "sourceCell": 131,
+      "sourceLine": 3167,
+      "sourceCellSha256": "91698ab8ad55da68144c8747826af8baa145c9d697267a96db3e1cd2a670fbd5",
+      "expression": "ride_funnel_by_age",
+      "kind": "table",
+      "text": "age_range  18-24  25-34   35-44  45-54  Unknown\nRequest    40620  75236  114209  39683   115729\nFinished   24046  44121   66853  22675    65957\nPaid       22922  41900   63521  21529    62756\nReviewed   16189  28744   45487  15443    42601",
+      "html": "<div>\n<style scoped>\n    .dataframe tbody tr th:only-of-type {\n        vertical-align: middle;\n    }\n\n    .dataframe tbody tr th {\n        vertical-align: top;\n    }\n\n    .dataframe thead th {\n        text-align: right;\n    }\n</style>\n<table border=\"1\" class=\"dataframe\">\n  <thead>\n    <tr style=\"text-align: right;\">\n      <th>age_range</th>\n      <th>18-24</th>\n      <th>25-34</th>\n      <th>35-44</th>\n      <th>45-54</th>\n      <th>Unknown</th>\n    </tr>\n  </thead>\n  <tbody>\n    <tr>\n      <th>Request</th>\n      <td>40620</td>\n      <td>75236</td>\n      <td>114209</td>\n      <td>39683</td>\n      <td>115729</td>\n    </tr>\n    <tr>\n      <th>Finished</th>\n      <td>24046</td>\n      <td>44121</td>\n      <td>66853</td>\n      <td>22675</td>\n      <td>65957</td>\n    </tr>\n    <tr>\n      <th>Paid</th>\n      <td>22922</td>\n      <td>41900</td>\n      <td>63521</td>\n      <td>21529</td>\n      <td>62756</td>\n    </tr>\n    <tr>\n      <th>Reviewed</th>\n      <td>16189</td>\n      <td>28744</td>\n      <td>45487</td>\n      <td>15443</td>\n      <td>42601</td>\n    </tr>\n  </tbody>\n</table>\n</div>",
+      "resultRows": 4
+    },
+    {
+      "sourceCell": 132,
+      "sourceLine": 3196,
+      "sourceCellSha256": "0267243965654ebe278b013c411e8adcc5da9d32f7adfc78477bf992c1b4caa2",
+      "expression": "ride_age_funnel_validation",
+      "kind": "text",
+      "text": "{'ride_rows_preserved': True,\n 'ride_id_is_unique': True,\n 'all_rides_have_a_user': True,\n 'all_rides_match_a_signup': True,\n 'segment_counts_match_ride_funnel': True,\n 'stage_counts_are_non_increasing': True}"
+    },
+    {
+      "sourceCell": 133,
+      "sourceLine": 3220,
+      "sourceCellSha256": "9cec1a4878a55c4589fc7fd6bcebf6b831211584c002df76a84ef6d33ae952c4",
+      "expression": "metrocar_ride_funnel_by_age",
+      "kind": "figure",
+      "figure": "ride-age",
+      "plotlyData": [
+        {
+          "type": "funnel",
+          "name": "18-24",
+          "x": [
+            40620,
+            24046,
+            22922,
+            16189
+          ],
+          "y": [
+            "Request",
+            "Finished",
+            "Paid",
+            "Reviewed"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "25-34",
+          "x": [
+            75236,
+            44121,
+            41900,
+            28744
+          ],
+          "y": [
+            "Request",
+            "Finished",
+            "Paid",
+            "Reviewed"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "35-44",
+          "x": [
+            114209,
+            66853,
+            63521,
+            45487
+          ],
+          "y": [
+            "Request",
+            "Finished",
+            "Paid",
+            "Reviewed"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "45-54",
+          "x": [
+            39683,
+            22675,
+            21529,
+            15443
+          ],
+          "y": [
+            "Request",
+            "Finished",
+            "Paid",
+            "Reviewed"
+          ],
+          "textinfo": "value+percent initial"
+        },
+        {
+          "type": "funnel",
+          "name": "Unknown",
+          "x": [
+            115729,
+            65957,
+            62756,
+            42601
+          ],
+          "y": [
+            "Request",
+            "Finished",
+            "Paid",
+            "Reviewed"
+          ],
+          "textinfo": "value+percent initial"
+        }
+      ],
+      "plotlyTitle": "Metrocar Ride Funnel by Recorded Age Range",
+      "legendTitle": "Recorded age range",
+      "tableSourceCell": 131,
+      "tableSourceCellSha256": "91698ab8ad55da68144c8747826af8baa145c9d697267a96db3e1cd2a670fbd5",
+      "figureCapturedAtUTC": "2026-11-07T21:26:42.739804+00:00",
+      "figureCaptureMethod": "Python source executed top to bottom in a read-only database transaction; original Plotly traces exported from the resulting figure."
     }
   ]
 }

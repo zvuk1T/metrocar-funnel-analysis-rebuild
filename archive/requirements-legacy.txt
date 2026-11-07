@@ -1,0 +1,7 @@
+SQLAlchemy==2.0.52
+psycopg[binary]==3.3.4
+pandas==2.3.3
+python-dotenv==1.2.3
+pytest==9.1.1
+plotly==7.0.0
+nbformat==5.11.1

@@ -128,13 +128,16 @@ const chartPayload = JSON.stringify({
       }
     };
 
+    const funnelView = element.closest<HTMLElement>("[data-customer-funnel-view], [data-ride-funnel-view]");
+    funnelView?.addEventListener("funnel-view-shown", showChart);
+
     if (resultPanel instanceof HTMLDetailsElement) {
       // Measure the chart only after its result panel has a visible width.
       resultPanel.addEventListener("toggle", () => {
         if (resultPanel.open) showChart();
       });
       if (resultPanel.open) showChart();
-    } else {
+    } else if (!funnelView?.hidden) {
       showChart();
     }
   }

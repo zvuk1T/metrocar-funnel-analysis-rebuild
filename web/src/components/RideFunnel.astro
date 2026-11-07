@@ -1,0 +1,82 @@
+---
+import FunnelChart from "./FunnelChart.astro";
+import SegmentedFunnelChart from "./SegmentedFunnelChart.astro";
+import { rideFunnel } from "../data/funnels.js";
+import cellOutputs from "../data/cellOutputs.json";
+
+const defaultView = "platform";
+const views = [
+  { key: "overall", label: "Overall" },
+  { key: "platform", label: "By platform" },
+  { key: "age", label: "By age" },
+];
+---
+
+<div data-ride-funnel>
+  <fieldset class="funnel-view-picker">
+    <legend class="visually-hidden">Ride Funnel view</legend>
+    {views.map(({ key, label }) => (
+      <label>
+        <input
+          class="visually-hidden"
+          type="radio"
+          name="ride-funnel-view"
+          value={key}
+          checked={key === defaultView}
+          aria-controls={`ride-view-${key}`}
+        />
+        <span id={`ride-view-label-${key}`}>{label}</span>
+      </label>
+    ))}
+  </fieldset>
+
+  {views.map(({ key }) => (
+    <div
+      id={`ride-view-${key}`}
+      data-ride-funnel-view={key}
+      role="region"
+      aria-labelledby={`ride-view-label-${key}`}
+      hidden={key !== defaultView}
+    >
+      {key === "overall" ? (
+        <FunnelChart
+          funnel={rideFunnel}
+          ariaLabel="Ride Funnel: Request 385,477; Finished 223,652; Paid 212,628; Reviewed 148,464."
+          tableCaption="Ride Funnel values"
+        />
+      ) : (
+        <SegmentedFunnelChart
+          output={cellOutputs.cells.find((cell) => cell.figure === `ride-${key}`)}
+          id={`dashboard-ride-${key}-funnel`}
+          compact
+        />
+      )}
+    </div>
+  ))}
+</div>
+
+<style>
+  .funnel-view-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; min-width: 0; margin: 12px 0 4px; padding: 0; border: 0; }
+  .funnel-view-picker label { min-width: 0; cursor: pointer; }
+  .funnel-view-picker span { display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; color: var(--text); font-size: 0.875rem; line-height: 1.3; text-align: center; }
+  .funnel-view-picker input:checked + span { border-color: var(--text); background: var(--teal); font-weight: 600; }
+  .funnel-view-picker input:focus-visible + span { outline: 2px solid var(--text); outline-offset: 3px; }
+  .funnel-view-picker label:hover span { border-color: var(--text); }
+  [data-ride-funnel-view][hidden] { display: none; }
+</style>
+
+<script>
+  for (const rideFunnel of document.querySelectorAll("[data-ride-funnel]")) {
+    const views = rideFunnel.querySelectorAll<HTMLElement>("[data-ride-funnel-view]");
+    for (const choice of rideFunnel.querySelectorAll<HTMLInputElement>("input[type=radio]")) {
+      choice.addEventListener("change", () => {
+        if (!choice.checked) return;
+        for (const view of views) {
+          view.hidden = view.dataset.rideFunnelView !== choice.value;
+          // Plotly needs a visible container before measuring a newly selected view.
+          if (!view.hidden) view.dispatchEvent(new Event("funnel-view-shown"));
+        }
+      });
+    }
+  }
+</script>
