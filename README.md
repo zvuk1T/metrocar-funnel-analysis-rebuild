@@ -4,7 +4,7 @@
 
 An educational MasterSchool ride-sharing case study.
 
-**[Active analysis — rebuild](metrocar_funnel_analysis.py)** · [Original school work and what changed](docs/original-vs-rebuild.md)
+**[Active analysis — rebuild](metrocar_funnel_analysis.py)** · [School notebook — public copy](metrocar_original_public.ipynb) · [What changed](docs/original-vs-rebuild.md)
 
 <table width="100%">
   <tr>
@@ -74,7 +74,7 @@ Run the [Python source](metrocar_funnel_analysis.py) cells top-to-bottom in VS C
 
 The active analysis restores the school's customer funnels by platform and recorded age, and adds the same breakdowns for the Ride Funnel. The dashboard and Full Analysis display exported Python Plotly traces. Each segment uses its Download count for customer percentages and its Request count for ride percentages.
 
-**Original school notebook:** `metrocar_original.ipynb` is preserved byte-for-byte in the local working folder. It contains historical connection details and saved outputs, is excluded from Git, and is not included in this GitHub repository or web build.
+**School notebook — [public copy](metrocar_original_public.ipynb):** preserves the original analytical code, all 62 cells and historical saved outputs, including charts and errors. Only the database setup changed: embedded connection details were removed, and the connection reads `METROCAR_DATABASE_URL` from the local environment. The notebook has not been rerun. The byte-identical original, `metrocar_original.ipynb`, remains local and excluded from Git and the web build.
 
 The later Python version from the older repository is preserved in [archive/metrocar_legacy.py](archive/metrocar_legacy.py), with its own [requirements](archive/requirements-legacy.txt).
 
