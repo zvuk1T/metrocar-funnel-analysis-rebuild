@@ -83,6 +83,8 @@ html.analysis-reading {
 .learning-insight { margin-top: 16px; padding: 16px 18px; border-left: 3px solid var(--action-accent); background: color-mix(in srgb, var(--action-accent) 28%, var(--surface)); }
 .learning-insight > strong { font-size: 1rem; }
 .learning-insight p { margin-top: 6px; }
+.learning-takeaways .carry-forward-question { margin-top: 18px; }
+.carry-forward-question span { display: block; margin-bottom: 6px; color: var(--text-soft); font-size: .875rem; font-weight: 600; }
 
 @media (min-width: 60rem) {
   .metrocar-dashboard .funnel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
