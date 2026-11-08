@@ -3,6 +3,7 @@ import FullAnalysis from "../components/FullAnalysis.astro";
 import PageShell from "../layouts/PageShell.astro";
 import CustomerFunnel from "../components/CustomerFunnel.astro";
 import RideFunnel from "../components/RideFunnel.astro";
+import SchoolComparison from "../components/SchoolComparison.astro";
 import { customerFunnel } from "../data/funnels.js";
 
 const requesters = customerFunnel.stages[2];
@@ -11,19 +12,20 @@ const completers = customerFunnel.stages[3];
 
 <PageShell
   title="Metrocar — Where Do We Lose Momentum?"
-  description="A MasterSchool funnel study: where Metrocar loses customers, what the recorded evidence shows, and what it cannot explain."
+  description="A Master School funnel analysis project: where Metrocar loses customers, what the recorded evidence shows, and what it cannot explain."
 >
   <main id="main-content" class="overview-main metrocar-project" tabindex="-1">
     <section id="introduction" class="project-introduction project-width" aria-labelledby="project-title" tabindex="-1">
       <div class="project-intro-panel">
         <header class="project-section-header">
-          <p class="eyebrow">MasterSchool · Educational ride-sharing funnel project</p>
+          <p class="eyebrow"><a class="masterschool-link" href="https://joinmsit.de/vergleich/" target="_blank" rel="noreferrer">Master School Project <span aria-hidden="true">↗</span></a> · Ride-sharing funnel analysis</p>
           <h1 id="project-title">Metrocar — Where Do We Lose Momentum?</h1>
         </header>
         <div class="project-intro-copy">
           <p class="project-intro-lead">Where do users stop on the way to a completed ride? If a requesting user never completes one, does that mean they never received an acceptance?</p>
-          <p>Metrocar connects riders and drivers. In this educational MasterSchool case study, separate customer and ride funnels reveal the weakest transition. The analysis then tests one possible explanation and keeps the evidence limits visible.</p>
+          <p>Metrocar connects riders and drivers. Separate customer and ride funnels reveal the weakest transition. The analysis then tests one possible explanation and keeps the evidence limits visible.</p>
           <nav class="project-sections" aria-label="Project sections">
+            <a href="#school-to-rebuild">School → rebuild</a>
             <a href="#question">Question</a>
             <a href="#dashboard">Business Dashboard</a>
             <a href="#full-analysis">Full Analysis</a>
@@ -32,6 +34,8 @@ const completers = customerFunnel.stages[3];
         </div>
       </div>
     </section>
+
+    <SchoolComparison />
 
     <section id="question" class="project-question project-width" aria-labelledby="project-question-title" tabindex="-1">
       <p class="eyebrow">The question</p>
