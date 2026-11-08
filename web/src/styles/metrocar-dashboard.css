@@ -14,18 +14,22 @@ html.analysis-reading {
   scroll-margin-top: calc(var(--project-header-height) + 24px);
 }
 .metrocar-project a { text-underline-offset: .2em; }
+.metrocar-project .masterschool-link { display: inline-flex; align-items: baseline; gap: .3em; padding: .1em .45em; border: 1px solid transparent; border-radius: 6px; background: var(--secondary-accent); color: var(--text); font-weight: 600; white-space: nowrap; text-decoration: underline; text-decoration-thickness: 1px; }
+.metrocar-project .masterschool-link:hover { border-color: var(--text); background: color-mix(in srgb, var(--secondary-accent) 85%, var(--surface)); }
+.metrocar-project .masterschool-link:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
 .project-header a { display: inline-flex; align-items: center; gap: 7px; min-height: 44px; color: var(--text); font-size: 1rem; text-decoration: none; }
 /* Keep return controls painted during large jumps through the long analysis. */
 .project-header { position: fixed; top: 0; inset-inline: 0; z-index: 20; min-height: var(--project-header-height); display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; border-bottom: 1px solid var(--line); background: var(--background); transform: translateZ(0); }
-.project-header svg { flex-shrink: 0; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.project-header svg, .comparison-contact-links svg { flex-shrink: 0; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .project-return-nav { display: flex; gap: 8px; align-items: center; }
 .project-return-nav a, .project-part-nav a { padding-inline: 8px; border: 1px solid transparent; border-radius: 6px; white-space: nowrap; }
 .project-return-nav .project-card-return { border-color: var(--line); }
 .project-part-nav { display: flex; justify-content: center; gap: 4px; min-width: 0; }
 .project-part-nav a { justify-content: center; min-width: 44px; padding-inline: 10px; }
 .project-header a:hover, .project-part-nav a[aria-current="step"] { border-color: var(--text); background: var(--teal); color: var(--text); }
-.project-repository { justify-content: center; min-width: 44px; border: 1px solid transparent; border-radius: 6px; }
-.project-header .project-repository svg { fill: currentColor; stroke: none; }
+.project-social-links { display: flex; align-items: center; gap: 4px; }
+.project-social-links a { justify-content: center; min-width: 44px; padding-inline: 6px; border: 1px solid transparent; border-radius: 6px; white-space: nowrap; }
+.project-header .brand-icon, .comparison-contact-links .brand-icon { fill: currentColor; stroke: none; }
 .project-label-short { display: none; }
 
 .project-section-header { padding: 16px 24px; border-radius: 11px 11px 0 0; background: var(--teal); color: var(--text); }
@@ -90,6 +94,9 @@ html.analysis-reading {
 @media (min-width: 60rem) {
   .metrocar-dashboard .funnel-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+@media (max-width: 1199px) {
+  .project-social-links span { display: none; }
+}
 @media (max-width: 999px) {
   html.analysis-reading { --project-header-height: 104px; }
   .analysis-reading .project-section-header h2 { font-size: 1.625rem; }
@@ -97,12 +104,11 @@ html.analysis-reading {
   .project-return-nav, .project-brand { grid-column: 1; grid-row: 1; }
   .project-part-nav { grid-column: 1 / -1; grid-row: 2; align-items: center; align-self: stretch; border-top: 1px solid var(--line); }
   .project-part-nav a { flex: 1; max-width: 180px; }
-  .project-repository { grid-column: 2; grid-row: 1; }
+  .project-social-links { grid-column: 2; grid-row: 1; }
   .finding-panel h3 { gap: 16px; font-size: 1.375rem; }
   .finding-panel p { padding-left: 16px; }
 }
 @media (max-width: 760px) {
-  .project-repository span { display: none; }
   .finding-panel, .learning-takeaways { grid-template-columns: 1fr; }
   .finding-panel { gap: 16px; }
   .finding-panel p { padding: 12px 0 0; border-left: 0; border-top: 1px solid var(--line); }
@@ -117,7 +123,8 @@ html.analysis-reading {
   .project-header a { gap: 5px; }
   .project-return-nav { gap: 0; }
   .project-return-nav a { padding-inline: 5px; font-size: .9375rem; }
-  .project-repository { font-size: .875rem; }
+  .project-return-nav a:first-child { min-width: 44px; justify-content: center; }
+  .project-home-label { display: none; }
   .project-part-nav { justify-content: space-between; }
   .project-part-nav a { flex: 0 0 auto; max-width: none; padding-inline: 4px; font-size: .9375rem; }
   .project-section-header { padding-inline: 16px; }
