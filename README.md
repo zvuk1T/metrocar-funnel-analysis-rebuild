@@ -82,7 +82,7 @@ Recorded validation: **20 October 2026**, checkpoint [986e278](https://github.co
 Checked keys, joins, preserved populations, nesting, denominators and chart values.
 **SQL/pandas reconciliation: Q01–Q10 only.**
 
-[School source brief](docs/MASTERSCHOOL_METROCAR_SOURCE_BRIEF.md) · [Learning guide](docs/HOW-WE-WORK-AND-LEARN.md)
+[School source brief](docs/MASTERSCHOOL_METROCAR_SOURCE_BRIEF.md) · [Project learning context](docs/PROJECT-LEARNING-CONTEXT.md) · [Shared learning methodology](https://github.com/zvuk1T/zarko-vukovic-homepage/blob/main/docs/MASTER-SCHOOL-HOW-WE-WORK-AND-LEARN.md)
 
 </details>
 

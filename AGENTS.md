@@ -14,7 +14,7 @@
 - **Grain before aggregation.** Define the relevant row grain, keys, and analytical unit before joins, grouping, aggregation, or funnel calculations.
 - **Prefer the simplest readable analytical solution.** Use direct, descriptive, top-to-bottom reasoning before adding helpers, abstractions, frameworks, or automation.
 - **No speculative architecture.** Do not build generic engines, abstraction layers, or infrastructure for possible future needs.
-- **Understanding is required.** Data must be able to explain why every material analytical step exists, what goes in, what comes out, its grain, assumptions, and how it was validated. Follow [How We Work and Learn](docs/HOW-WE-WORK-AND-LEARN.md), distinguishing Technical PASS, Teaching PASS, and Data's demonstrated Learning PASS.
+- **Understanding is required.** Data must be able to explain why every material analytical step exists, what goes in, what comes out, its grain, assumptions, and how it was validated. Follow the [shared Master School learning methodology](https://github.com/zvuk1T/zarko-vukovic-homepage/blob/main/docs/MASTER-SCHOOL-HOW-WE-WORK-AND-LEARN.md) and [Metrocar Project Learning Context](docs/PROJECT-LEARNING-CONTEXT.md), distinguishing Technical PASS, Teaching PASS, and Data's demonstrated Learning PASS.
 - **Use DIKW as the reasoning ladder.** Move from Data → Information → Knowledge → Wisdom; do not jump from raw observations or metrics directly to recommendations.
 - **Keep evidence and judgment separate.** Fact ≠ interpretation ≠ hypothesis ≠ recommendation. State which is which.
 - **No unsupported causal claims.** Association, segmentation, or observed differences do not establish causation.
