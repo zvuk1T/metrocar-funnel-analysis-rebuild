@@ -76,12 +76,30 @@ const projectCardUrl = homepageBaseUrl
     .filter((part): part is HTMLElement => !!part);
   const outlineLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('.analysis-outline a[href^="#"]'));
   const headings = [...new Set(outlineLinks.map(link => link.hash.slice(1)))]
-    .map(id => document.getElementById(id)).filter((heading): heading is HTMLElement => !!heading)
+    .map(id => document.getElementById(id)).filter((heading): heading is HTMLElement => !!heading?.matches('h1, h2, h3, h4, h5, h6'))
     .sort((a, b) => a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1);
   const groups = Array.from(document.querySelectorAll<HTMLElement>('[data-outline-group]'));
   const mobileOutline = document.querySelector<HTMLDetailsElement>('.analysis-toc-mobile');
   let activeChapter = '';
   let scheduled = false;
+  let readingPaused = false;
+
+  function pauseReading() {
+    // Anchor settling and disclosure layout are not resumed reading.
+    readingPaused = true;
+  }
+  function resumeReading(event: Event) {
+    if (event.target instanceof Element && event.type !== 'keydown' && (
+      event.target.closest('.analysis-outline') || event.type === 'pointerdown' && event.target.closest('.analysis-toc-mobile')
+    )) return;
+    readingPaused = false;
+  }
+  window.addEventListener('wheel', resumeReading, { passive: true });
+  window.addEventListener('touchmove', resumeReading, { passive: true });
+  window.addEventListener('pointerdown', resumeReading, { passive: true });
+  window.addEventListener('keydown', event => {
+    if (['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '].includes(event.key)) resumeReading(event);
+  });
 
   function toggleGroup(group: HTMLElement, expanded: boolean) {
     const button = group.querySelector<HTMLButtonElement>(':scope > .outline-row > .outline-toggle');
@@ -95,10 +113,11 @@ const projectCardUrl = homepageBaseUrl
     for (const list of document.querySelectorAll<HTMLElement>('.analysis-outline > ol')) {
       const link = list.querySelector<HTMLElement>('[aria-current="location"]');
       if (!link?.getBoundingClientRect().height || !list.getBoundingClientRect().height) continue;
-      const bounds = list.getBoundingClientRect();
+      const scroller = getComputedStyle(list).overflowY === 'visible' ? list.parentElement! : list;
+      const bounds = scroller.getBoundingClientRect();
       const linkBounds = link.getBoundingClientRect();
-      if (linkBounds.top < bounds.top) list.scrollTop += linkBounds.top - bounds.top;
-      else if (linkBounds.bottom > bounds.bottom) list.scrollTop += linkBounds.bottom - bounds.bottom;
+      if (linkBounds.top < bounds.top) scroller.scrollTop += linkBounds.top - bounds.top;
+      else if (linkBounds.bottom > bounds.bottom) scroller.scrollTop += linkBounds.bottom - bounds.bottom;
     }
   }
 
@@ -108,14 +127,17 @@ const projectCardUrl = homepageBaseUrl
     button.hidden = false;
     toggleGroup(group, false);
     button.addEventListener('click', () => {
+      pauseReading();
       const expanded = button.getAttribute('aria-expanded') !== 'true';
       groups.filter(peer => peer.dataset.outlineGroup === group.dataset.outlineGroup)
         .forEach(peer => toggleGroup(peer, expanded));
     });
   }
 
-  function updateNavigation(reveal = false) {
+  function updateNavigation(target?: HTMLElement | null) {
     scheduled = false;
+    if (target) pauseReading();
+    else if (readingPaused) return;
     const readingLine = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--project-header-height')) + 32;
     let currentPart = parts[0];
     for (const part of parts) {
@@ -123,25 +145,32 @@ const projectCardUrl = homepageBaseUrl
       else break;
     }
     if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 2) currentPart = parts.at(-1);
+    if (target) currentPart = parts.find(part => part.contains(target)) || currentPart;
     for (const link of partLinks) {
       if (link.hash === `#${currentPart?.id}`) link.setAttribute('aria-current', 'step');
       else link.removeAttribute('aria-current');
     }
 
-    let currentHeading = currentPart?.id === 'full-analysis' ? headings[0] : undefined;
-    if (currentHeading) {
+    let currentHeading: HTMLElement | undefined;
+    if (target?.closest('#full-analysis')) {
       for (const heading of headings) {
+        if (heading === target || heading.compareDocumentPosition(target) & Node.DOCUMENT_POSITION_FOLLOWING) currentHeading = heading;
+        else break;
+      }
+    } else if (!target && currentPart?.id === 'full-analysis') {
+      for (const heading of headings) {
+        if (!heading.getClientRects().length) continue;
         if (heading.getBoundingClientRect().top <= readingLine) currentHeading = heading;
         else break;
       }
     }
     const chapter = outlineLinks.find(link => link.hash === `#${currentHeading?.id}`)
       ?.closest<HTMLElement>('[data-outline-group]')?.dataset.outlineGroup || '';
-    if (reveal || chapter !== activeChapter) {
-      activeChapter = chapter;
-      // Respect a manually closed chapter until navigation or a new chapter is reached.
+    if (chapter || activeChapter) {
+      // Reopen the reading group on resumed scrolling; clear it above the first heading.
       groups.forEach(group => toggleGroup(group, group.dataset.outlineGroup === chapter));
     }
+    activeChapter = chapter;
     for (const link of outlineLinks) {
       if (link.hash === `#${currentHeading?.id}`) link.setAttribute('aria-current', 'location');
       else link.removeAttribute('aria-current');
@@ -153,9 +182,18 @@ const projectCardUrl = homepageBaseUrl
     if (!scheduled) { scheduled = true; requestAnimationFrame(() => updateNavigation()); }
   }, { passive: true });
   window.addEventListener('resize', () => updateNavigation());
-  window.addEventListener('hashchange', () => updateNavigation(true));
+  window.addEventListener('hashchange', () => updateNavigation(document.getElementById(window.location.hash.slice(1))));
   mobileOutline?.addEventListener('toggle', () => {
-    if (mobileOutline?.open) keepCurrentLinkVisible();
+    pauseReading();
+    const activeLink = outlineLinks.find(link => link.getAttribute('aria-current') === 'location');
+    if (mobileOutline.open && activeLink) updateNavigation(document.getElementById(activeLink.hash.slice(1)));
+    keepCurrentLinkVisible();
+  });
+  mobileOutline?.addEventListener('keydown', event => {
+    if (event.key !== 'Escape' || event.defaultPrevented || !mobileOutline.open) return;
+    mobileOutline.open = false;
+    mobileOutline.querySelector('summary')?.focus();
+    event.preventDefault();
   });
 
   for (const outline of document.querySelectorAll<HTMLElement>('.analysis-outline')) {
@@ -164,6 +202,7 @@ const projectCardUrl = homepageBaseUrl
       const group = event.target.closest<HTMLElement>('[data-outline-group]');
       const button = group?.querySelector<HTMLButtonElement>(':scope > .outline-row > .outline-toggle');
       if (group && button?.getAttribute('aria-expanded') === 'true') {
+        pauseReading();
         groups.filter(peer => peer.dataset.outlineGroup === group.dataset.outlineGroup)
           .forEach(peer => toggleGroup(peer, false));
         button.focus();
@@ -187,7 +226,7 @@ const projectCardUrl = homepageBaseUrl
     if (!target.hasAttribute('tabindex')) target.tabIndex = -1;
     target.focus({ preventScroll: true });
     target.scrollIntoView({ block: 'start' });
-    updateNavigation(true);
+    updateNavigation(target);
   });
-  updateNavigation();
+  updateNavigation(document.getElementById(window.location.hash.slice(1)));
 </script>
